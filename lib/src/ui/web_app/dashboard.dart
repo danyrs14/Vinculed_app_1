@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
+import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 
 class Dashboard extends StatelessWidget {
   const Dashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.background(),
         elevation: 0,
         titleSpacing: 20,
         title: Row(
           children: [
             Image.asset(
               'assets/images/escom.png',
-              height: 40,
+              height: 50,
             ),
             const SizedBox(width: 10),
           ],
@@ -28,19 +32,16 @@ class Dashboard extends StatelessWidget {
           _navButton("FAQ"),
           TextButton(
             onPressed: () {},
-            child: const Text(
+            child: Text(
               "Iniciar Sesion",
-              style: TextStyle(color: Colors.blue),
+              style: TextStyle(color: theme.secundario(), fontWeight: FontWeight.bold),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-              ),
-              child: const Text("Registrarse"),
+            child: MiniButton(
+              onTap: () {},
+             title: "Registrarse"
             ),
           ),
           IconButton(
@@ -71,28 +72,23 @@ class Dashboard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            padding:
-                            const EdgeInsets.symmetric(horizontal: 25),
-                          ),
-                          child: const Text("Registrarse"),
+                        SimpleButton(
+                          onTap: () {},
+                          title: "Postularse",
                         ),
                       ],
                     ),
                   ),
                 ),
                 // Imagen ilustrativa
-                Expanded(
+                /*Expanded(
                   child: Center(
                     child: Image.asset(
                       'assets/illustration.png',
                       height: 300,
                     ),
                   ),
-                ),
+                ),*/
               ],
             ),
           ),
@@ -103,7 +99,7 @@ class Dashboard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
+                const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text(
