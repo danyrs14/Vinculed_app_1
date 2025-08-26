@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
@@ -49,7 +50,9 @@ class Dashboard extends StatelessWidget {
           _navButton("Preferencias"),
           _navButton("FAQ"),
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              context.go('/login');
+            },
             child: Text(
               "Iniciar Sesión",
               style: TextStyle(color: theme.secundario(), fontWeight: FontWeight.bold),
