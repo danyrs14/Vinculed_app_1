@@ -15,10 +15,7 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   final _scrollCtrl = ScrollController();
 
-  // Estado para mostrar/ocultar footer
   bool _showFooter = false;
-
-  // Altura aprox. del footer para dar padding al contenido
   static const double _footerHeight = 240;
 
   @override
@@ -28,16 +25,10 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void _onScroll() {
-    // Mostrar footer cuando el usuario se desplaza HACIA ABAJO (reverse)
-    // y ocultarlo cuando se desplaza HACIA ARRIBA (forward) o está al inicio.
     final pos = _scrollCtrl.position;
     final isAtTop = pos.pixels <= 0;
-
-    // userScrollDirection: reverse = abajo, forward = arriba
     final scrollingDown = pos.userScrollDirection == ScrollDirection.reverse;
-
-    bool nextShow =
-        !isAtTop && scrollingDown; // aparece solo si no está arriba y va hacia abajo
+    final nextShow = !isAtTop && scrollingDown;
 
     if (nextShow != _showFooter) {
       setState(() => _showFooter = nextShow);
@@ -104,7 +95,6 @@ class _DashboardState extends State<Dashboard> {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: MiniButton(
               onTap: () {
-                // Ejemplo: ir a registro
                 context.go('/login');
               },
               title: "Registrarse",
@@ -120,85 +110,112 @@ class _DashboardState extends State<Dashboard> {
       // Usamos Stack para superponer el footer animado
       body: Stack(
         children: [
-          // CONTENIDO SCROLLEABLE
+          // CONTENIDO SCROLLEABLE CENTRADO
           Positioned.fill(
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final isNarrow = constraints.maxWidth < 800;
 
+                // Altura mínima que debe ocupar el contenido para poder centrarse verticalmente
+                final minBodyHeight = constraints.maxHeight - (_showFooter ? _footerHeight : 0) - 24;
+
                 return SingleChildScrollView(
                   controller: _scrollCtrl,
                   padding: EdgeInsets.only(
-                    bottom:
-                    _showFooter ? _footerHeight + 24 : 24, // espacio cuando el footer aparece
+                    bottom: _showFooter ? _footerHeight + 24 : 24,
                   ),
-                  child: isNarrow
-                      ? Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 8),
-                        const Text(
-                          "¡Mejores\nOportunidades nos\nesperan!",
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        SimpleButton(
-                          onTap: () {},
-                          title: "Postularse",
-                        ),
-                        const SizedBox(height: 20),
-                        Center(
-                          child: Image.asset(
-                            'assets/illustration.png',
-                            height: 200,
-                          ),
-                        ),
-                        const SizedBox(height: 500), // contenido de ejemplo
-                      ],
-                    ),
-                  )
-                      : Padding(
-                    padding: const EdgeInsets.all(40.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1100),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: minBodyHeight > 0 ? minBodyHeight : 0),
+                          child: isNarrow
+                              ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
+                              const SizedBox(height: 8),
                               const Text(
                                 "¡Mejores\nOportunidades nos\nesperan!",
+                                textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: 40,
+                                  fontSize: 32,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black87,
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              SimpleButton(
-                                onTap: () {},
-                                title: "Postularse",
+                              SizedBox(
+                                width: 220,
+                                child: SimpleButton(
+                                  onTap: () {},
+                                  title: "Postularse",
+                                ),
                               ),
-                              const SizedBox(height: 600), // contenido de ejemplo
+                              const SizedBox(height: 24),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.asset(
+                                  'assets/illustration.png',
+                                  height: 220,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                            ],
+                          )
+                              : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Columna de texto y CTA
+                              Flexible(
+                                flex: 5,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "¡Mejores\nOportunidades nos\nesperan!",
+                                      style: TextStyle(
+                                        fontSize: 44,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                        height: 1.1,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    SizedBox(
+                                      width: 240,
+                                      child: SimpleButton(
+                                        onTap: () {},
+                                        title: "Postularse",
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 48),
+                              // Ilustración
+                              Flexible(
+                                flex: 5,
+                                child: Center(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(18),
+                                    child: Image.asset(
+                                      'assets/illustration.png',
+                                      height: 300,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                        Expanded(
-                          child: Center(
-                            child: Image.asset(
-                              'assets/illustration.png',
-                              height: 300,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 );
@@ -227,6 +244,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
+  // ================= Footer =================
 
   Widget _footer(bool isMobile) {
     return Container(
