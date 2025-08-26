@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
@@ -15,8 +16,32 @@ class _LoginPageWebState extends State<LoginPageWeb> {
   final _emailCtrl = TextEditingController();
   final _passCtrl  = TextEditingController();
 
+  final ScrollController _scrollCtrl = ScrollController();
+  bool _showFooter = false;
+  static const double _footerHeight = 240;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollCtrl.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    final pos = _scrollCtrl.position;
+    final isAtTop = pos.pixels <= 0;
+    final scrollingDown = pos.userScrollDirection == ScrollDirection.reverse;
+
+    final nextShow = !isAtTop && scrollingDown;
+    if (nextShow != _showFooter) {
+      setState(() => _showFooter = nextShow);
+    }
+  }
+
   @override
   void dispose() {
+    _scrollCtrl
+      ..removeListener(_onScroll)
+      ..dispose();
     _emailCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
@@ -82,23 +107,27 @@ class _LoginPageWebState extends State<LoginPageWeb> {
         ],
       ),
 
-      body: Column(
+      // Stack para superponer footer animado
+      body: Stack(
         children: [
-          // CONTENIDO CENTRAL
-          Expanded(
+          // CONTENIDO SCROLLEABLE
+          Positioned.fill(
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 520),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  controller: _scrollCtrl,
+                  padding: EdgeInsets.fromLTRB(
+                    24, 32, 24, _showFooter ? _footerHeight + 24 : 24,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Ilustración con bordes redondeados (como en la imagen)
+                      // Ilustración con bordes redondeados
                       ClipRRect(
                         borderRadius: BorderRadius.circular(18),
                         child: Image.asset(
-                          'assets/illustration.png', // coloca tu imagen
+                          'assets/illustration.png',
                           height: 200,
                           fit: BoxFit.cover,
                         ),
@@ -129,7 +158,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                         ),
                       ),
 
-                      // Botón Iniciar Sesión (usa tu SimpleButton para mantener estilo)
+                      // Botón Iniciar Sesión
                       SimpleButton(
                         onTap: () {/* login */},
                         title: 'Iniciar Sesión',
@@ -151,7 +180,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
 
                       const SizedBox(height: 16),
 
-                      // Botones de registro (estilo similar al de la maqueta)
+                      // Botones de registro
                       SizedBox(
                         height: 44,
                         child: ElevatedButton(
@@ -173,6 +202,9 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                           child: const Text('Registrarme como Reclutador'),
                         ),
                       ),
+
+                      // Contenido extra para permitir scroll en pantallas altas
+                      const SizedBox(height: 400),
                     ],
                   ),
                 ),
@@ -180,14 +212,28 @@ class _LoginPageWebState extends State<LoginPageWeb> {
             ),
           ),
 
-          // FOOTER (mismo del Dashboard)
-          _footer(isMobile),
+          // FOOTER ANIMADO
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AnimatedSlide(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+              offset: _showFooter ? Offset.zero : const Offset(0, 1),
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 250),
+                opacity: _showFooter ? 1 : 0,
+                child: _footer(screenWidth < 700),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  // ====== Helpers reutilizando el estilo del Dashboard ======
+  // ====== Helpers de UI ======
 
   Widget _input({
     required TextEditingController controller,
@@ -206,7 +252,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(width: 1.6, color: Color(0xFF64B5F6)), // azul suave
+            borderSide: const BorderSide(width: 1.6, color: Color(0xFF64B5F6)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
@@ -224,28 +270,14 @@ class _LoginPageWebState extends State<LoginPageWeb> {
   Widget _navButton(String text) {
     return TextButton(
       onPressed: () {},
-      child: const Text(
-        // El AppBar de la maqueta usa tipografía oscura
-        // para las opciones del menú
-        '',
-      ),
-      // Corregimos el child para mostrar el texto:
-      // (se deja así para no romper estilos del Dashboard)
+      child: Text(text, style: const TextStyle(color: Colors.black87)),
     );
   }
 
-  // Corrige el _navButton (arriba dejamos un placeholder para mantener orden)
-  // y devolvemos la versión buena:
-  static Widget _navButtonFixed(String text) {
-    return TextButton(
-      onPressed: () {},
-      child: const Text(''),
-    );
-  }
 
-  // === Footer idéntico al del Dashboard ===
   Widget _footer(bool isMobile) {
     return Container(
+      height: _footerHeight,
       color: const Color(0xFF2B2F33),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
       child: isMobile
