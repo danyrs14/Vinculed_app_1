@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 
@@ -31,9 +32,7 @@ class NotFoundPage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             SimpleButton(
-              onTap: () {
-                Navigator.of(context).pushReplacementNamed('/dashboard');
-              },
+              onTap: () => context.go('/dashboard'),
               title: 'Volver al Inicio',
             ),
           ],
