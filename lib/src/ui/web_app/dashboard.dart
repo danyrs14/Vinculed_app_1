@@ -48,10 +48,9 @@ class _DashboardState extends State<Dashboard> {
     final isMobile = screenWidth < 700;
 
     return Scaffold(
-      // ✅ Encabezado reutilizable
       appBar: EscomHeader(
         onLoginTap: () => context.go('/login'),
-        onRegisterTap: () => context.go('/login'), // cambia si tienes ruta de registro
+        onRegisterTap: () => context.go('/signin'), // cambia si tienes ruta de registro
         onNotifTap: () {
           // lógica de notificaciones
         },

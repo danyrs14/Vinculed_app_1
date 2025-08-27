@@ -3,21 +3,28 @@ import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 
-import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
+import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 
-class LoginPageWeb extends StatefulWidget {
-  const LoginPageWeb({super.key});
+class RegisterPageWeb extends StatefulWidget {
+  const RegisterPageWeb({super.key});
 
   @override
-  State<LoginPageWeb> createState() => _LoginPageWebState();
+  State<RegisterPageWeb> createState() => _RegisterPageWebState();
 }
 
-class _LoginPageWebState extends State<LoginPageWeb> {
-  final _emailCtrl = TextEditingController();
-  final _passCtrl  = TextEditingController();
+class _RegisterPageWebState extends State<RegisterPageWeb> {
+  // Controllers
+  final _nombreCtrl = TextEditingController();
+  final _apPaternoCtrl = TextEditingController();
+  final _apMaternoCtrl = TextEditingController();
+  final _correoCtrl = TextEditingController();
+  final _carreraCtrl = TextEditingController();
+  final _edadCtrl = TextEditingController();
+  final _semestreCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
 
   final ScrollController _scrollCtrl = ScrollController();
   bool _showFooter = false;
@@ -32,8 +39,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
     final pos = _scrollCtrl.position;
     final isAtTop = pos.pixels <= 0;
     final scrollingDown = pos.userScrollDirection == ScrollDirection.reverse;
-
-    final nextShow = !isAtTop && scrollingDown; // aparece solo al bajar
+    final nextShow = !isAtTop && scrollingDown;
     if (nextShow != _showFooter) {
       setState(() => _showFooter = nextShow);
     }
@@ -41,63 +47,45 @@ class _LoginPageWebState extends State<LoginPageWeb> {
 
   @override
   void dispose() {
-    _scrollCtrl
-      ..removeListener(_onScroll)
-      ..dispose();
-    _emailCtrl.dispose();
+    _scrollCtrl..removeListener(_onScroll)..dispose();
+    _nombreCtrl.dispose();
+    _apPaternoCtrl.dispose();
+    _apMaternoCtrl.dispose();
+    _correoCtrl.dispose();
+    _carreraCtrl.dispose();
+    _edadCtrl.dispose();
+    _semestreCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 700;
+    final isMobile = MediaQuery.of(context).size.width < 700;
 
     return Scaffold(
-      // ✅ Encabezado reutilizable
+      // Encabezado reutilizable
       appBar: EscomHeader(
         onLoginTap: () => context.go('/login'),
-        onRegisterTap: () {
-          // cambia esta ruta si tienes pantalla de registro distinta
-          context.go('/login');
-        },
-        onNotifTap: () {
-          // lógica para notificaciones (si aplica)
-        },
+        onRegisterTap: () => context.go('/register'),
+        onNotifTap: () {},
         onMenuSelected: (label) {
-          // navegación por menú
           switch (label) {
             case "Inicio":
               context.go('/dashboard');
               break;
-            case "Postulaciones":
-            // context.go('/postulaciones');
-              break;
-            case "Experiencias":
-            // context.go('/experiencias');
-              break;
-            case "Mensajes":
-            // context.go('/mensajes');
-              break;
-            case "Preferencias":
-            // context.go('/preferencias');
-              break;
-            case "FAQ":
-            // context.go('/faq');
-              break;
+          // Agrega aquí tus rutas reales
           }
         },
       ),
 
-      // Stack para superponer footer animado
+      // Contenido + footer animado
       body: Stack(
         children: [
-          // CONTENIDO SCROLLEABLE
           Positioned.fill(
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 520),
+                constraints: const BoxConstraints(maxWidth: 620),
                 child: SingleChildScrollView(
                   controller: _scrollCtrl,
                   padding: EdgeInsets.fromLTRB(
@@ -106,42 +94,50 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Animación
+                      // Ilustración superior
                       Lottie.asset(
                         'assets/images/logen.json', // verifica que exista en pubspec.yaml
                         width: 400,
                         height: 300,
                         fit: BoxFit.cover,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 50),
 
-                      // Correo institucional
+                      // Inputs
+                      TextInput(title: 'Nombre', controller: _nombreCtrl),
+                      const SizedBox(height: 12),
+                      TextInput(title: 'Apellido Paterno', controller: _apPaternoCtrl),
+                      const SizedBox(height: 12),
+                      TextInput(title: 'Apellido Materno', controller: _apMaternoCtrl),
+                      const SizedBox(height: 12),
                       TextInput(
-                        title: 'Correo institucional',
-                        controller: _emailCtrl,
+                        title: 'Correo Institucional',
+                        controller: _correoCtrl,
                         keyboardType: TextInputType.emailAddress,
                       ),
-                      const SizedBox(height: 5),
-
-                      // Contraseña
+                      const SizedBox(height: 12),
+                      TextInput(title: 'Carrera', controller: _carreraCtrl),
+                      const SizedBox(height: 12),
                       TextInput(
-                        controller: _passCtrl,
-                        title: 'Contraseña',
+                        title: 'Edad',
+                        controller: _edadCtrl,
+                        keyboardType: TextInputType.number,
                       ),
-
-                      // "Se me olvidó la contraseña"
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {/* recuperar contraseña */},
-                          child: const Text('Se me olvidó la contraseña'),
-                        ),
+                      const SizedBox(height: 12),
+                      TextInput(
+                        title: 'Semestre',
+                        controller: _semestreCtrl,
+                        keyboardType: TextInputType.number,
                       ),
+                      const SizedBox(height: 12),
+                      TextInput(title: 'Contraseña', controller: _passCtrl),
 
-                      // Botón Iniciar Sesión
+                      const SizedBox(height: 20),
+
+                      // Botón Registrarme
                       LargeButton(
-                        onTap: () {/* login */},
-                        title: 'Iniciar Sesión',
+                        onTap: _onRegister,
+                        title: 'Registrarme',
                       ),
 
                       const SizedBox(height: 24),
@@ -160,25 +156,13 @@ class _LoginPageWebState extends State<LoginPageWeb> {
 
                       const SizedBox(height: 16),
 
-                      // Botones de registro
-                      SizedBox(
-                        height: 44,
-                        child: LargeButton(
-                          onTap: () => context.go('/login'),
-                          title: 'Registrarme como Candidato',
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        height: 44,
-                        child: LargeButton(
-                          onTap: () {/* registro reclutador */},
-                          title: 'Registrarme como Reclutador',
-                        ),
+                      // Botón Iniciar Sesión
+                      LargeButton(
+                        onTap: () => context.go('/login'),
+                        title: 'Iniciar Sesión',
                       ),
 
-                      // Relleno para permitir scroll en pantallas altas
-                      const SizedBox(height: 300),
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -186,7 +170,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
             ),
           ),
 
-          // FOOTER ANIMADO (llamando al widget reutilizable)
+          // Footer animado
           Positioned(
             left: 0,
             right: 0,
@@ -205,5 +189,11 @@ class _LoginPageWebState extends State<LoginPageWeb> {
         ],
       ),
     );
+  }
+
+  void _onRegister() {
+    // Aquí validas y envías tu formulario.
+    // Por ahora solo ejemplo:
+    // print('Enviar registro con: ${_pngbreCtrl.text} ...');
   }
 }

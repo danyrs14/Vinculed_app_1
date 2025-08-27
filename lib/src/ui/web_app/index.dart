@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vinculed_app_1/src/ui/web_app/dashboard.dart';
 import 'package:vinculed_app_1/src/ui/web_app/login.dart';
+import 'package:vinculed_app_1/src/ui/web_app/signin.dart';
 
 class AdminApp extends StatelessWidget {
   const AdminApp({super.key});
@@ -17,6 +18,10 @@ class AdminApp extends StatelessWidget {
         GoRoute(
           path: '/login',
           builder: (context, state) => const LoginPageWeb(),
+        ),
+        GoRoute(
+          path: '/signin',
+          builder: (context, state) => const RegisterPageWeb(),
         ),
       ],
       initialLocation: '/dashboard',
