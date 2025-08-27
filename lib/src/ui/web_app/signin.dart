@@ -61,10 +61,11 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 700;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 700;
 
     return Scaffold(
-      // Encabezado reutilizable
+      // Header reutilizable
       appBar: EscomHeader(
         onLoginTap: () => context.go('/login'),
         onRegisterTap: () => context.go('/register'),
@@ -74,103 +75,128 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
             case "Inicio":
               context.go('/dashboard');
               break;
-          // agrega aquí más rutas si las usas
+          // agrega más rutas si las necesitas
           }
         },
       ),
 
-      // Contenido + footer animado
       body: Stack(
         children: [
+          // SCROLL EN TODA LA PANTALLA (igual al Dashboard)
           Positioned.fill(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 620),
-                child: SingleChildScrollView(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // altura mínima que debe ocupar el contenido para
+                // permitir centrado vertical y que el scroll sea global
+                final minBodyHeight =
+                    constraints.maxHeight - (_showFooter ? EscomFooter.height : 0) - 24;
+
+                return SingleChildScrollView(
                   controller: _scrollCtrl,
-                  padding: EdgeInsets.fromLTRB(
-                    24, 32, 24, _showFooter ? EscomFooter.height + 24 : 24,
+                  padding: EdgeInsets.only(
+                    bottom: _showFooter ? EscomFooter.height + 24 : 24,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Ilustración/Lottie superior — ENCAPSULADA para evitar que invada el primer input
-                      Lottie.asset(
-                        'assets/images/logen.json',
-                        width: 400,
-                        height: 300,
-                        fit: BoxFit.cover,
-                      ),
-                      const SizedBox(height: 100), // <- separación clara respecto al primer input
-
-                      // Inputs
-                      TextInput(title: 'Nombre', controller: _nombreCtrl),
-                      const SizedBox(height: 12),
-                      TextInput(title: 'Apellido Paterno', controller: _apPaternoCtrl),
-                      const SizedBox(height: 12),
-                      TextInput(title: 'Apellido Materno', controller: _apMaternoCtrl),
-                      const SizedBox(height: 12),
-                      TextInput(
-                        title: 'Correo Institucional',
-                        controller: _correoCtrl,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: 12),
-                      TextInput(title: 'Carrera', controller: _carreraCtrl),
-                      const SizedBox(height: 12),
-                      TextInput(
-                        title: 'Edad',
-                        controller: _edadCtrl,
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 12),
-                      TextInput(
-                        title: 'Semestre',
-                        controller: _semestreCtrl,
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 12),
-                      TextInput(title: 'Contraseña', controller: _passCtrl),
-
-                      const SizedBox(height: 20),
-
-                      // Botón Registrarme
-                      LargeButton(
-                        onTap: _onRegister,
-                        title: 'Registrarme',
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Separador OR
-                      Row(
-                        children: const [
-                          Expanded(child: Divider(thickness: 1)),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12.0),
-                            child: Text('OR'),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 620),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: minBodyHeight > 0 ? minBodyHeight : 0,
                           ),
-                          Expanded(child: Divider(thickness: 1)),
-                        ],
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // LOTTIE/ILUSTRACIÓN SUPERIOR (encapsulada)
+                              Align(
+                                alignment: Alignment.center,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: SizedBox(
+                                    height: 180,
+                                    width: 280,
+                                    child: Lottie.asset(
+                                      'assets/images/logen.json',
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+
+                              // Inputs
+                              TextInput(title: 'Nombre', controller: _nombreCtrl),
+                              const SizedBox(height: 12),
+                              TextInput(title: 'Apellido Paterno', controller: _apPaternoCtrl),
+                              const SizedBox(height: 12),
+                              TextInput(title: 'Apellido Materno', controller: _apMaternoCtrl),
+                              const SizedBox(height: 12),
+                              TextInput(
+                                title: 'Correo Institucional',
+                                controller: _correoCtrl,
+                                keyboardType: TextInputType.emailAddress,
+                              ),
+                              const SizedBox(height: 12),
+                              TextInput(title: 'Carrera', controller: _carreraCtrl),
+                              const SizedBox(height: 12),
+                              TextInput(
+                                title: 'Edad',
+                                controller: _edadCtrl,
+                                keyboardType: TextInputType.number,
+                              ),
+                              const SizedBox(height: 12),
+                              TextInput(
+                                title: 'Semestre',
+                                controller: _semestreCtrl,
+                                keyboardType: TextInputType.number,
+                              ),
+                              const SizedBox(height: 12),
+                              TextInput(title: 'Contraseña', controller: _passCtrl),
+
+                              const SizedBox(height: 20),
+
+                              // Botón Registrarme
+                              LargeButton(
+                                onTap: _onRegister,
+                                title: 'Registrarme',
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              // Separador OR
+                              Row(
+                                children: const [
+                                  Expanded(child: Divider(thickness: 1)),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 12.0),
+                                    child: Text('OR'),
+                                  ),
+                                  Expanded(child: Divider(thickness: 1)),
+                                ],
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              // Botón Iniciar Sesión
+                              LargeButton(
+                                onTap: () => context.go('/login'),
+                                title: 'Iniciar Sesión',
+                              ),
+
+                              const SizedBox(height: 40),
+                            ],
+                          ),
+                        ),
                       ),
-
-                      const SizedBox(height: 16),
-
-                      // Botón Iniciar Sesión
-                      LargeButton(
-                        onTap: () => context.go('/login'),
-                        title: 'Iniciar Sesión',
-                      ),
-
-                      const SizedBox(height: 40),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
 
-          // Footer animado
+          // Footer animado reutilizable
           Positioned(
             left: 0,
             right: 0,
@@ -192,6 +218,6 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
   }
 
   void _onRegister() {
-    // TODO: valida y envía el formulario
+    // TODO: validación/envío de formulario
   }
 }
