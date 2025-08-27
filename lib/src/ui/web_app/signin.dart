@@ -74,7 +74,7 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
             case "Inicio":
               context.go('/dashboard');
               break;
-          // Agrega aquí tus rutas reales
+          // agrega aquí más rutas si las usas
           }
         },
       ),
@@ -94,14 +94,14 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Ilustración superior
+                      // Ilustración/Lottie superior — ENCAPSULADA para evitar que invada el primer input
                       Lottie.asset(
-                        'assets/images/logen.json', // verifica que exista en pubspec.yaml
+                        'assets/images/logen.json',
                         width: 400,
                         height: 300,
                         fit: BoxFit.cover,
                       ),
-                      const SizedBox(height: 50),
+                      const SizedBox(height: 100), // <- separación clara respecto al primer input
 
                       // Inputs
                       TextInput(title: 'Nombre', controller: _nombreCtrl),
@@ -192,8 +192,6 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
   }
 
   void _onRegister() {
-    // Aquí validas y envías tu formulario.
-    // Por ahora solo ejemplo:
-    // print('Enviar registro con: ${_pngbreCtrl.text} ...');
+    // TODO: valida y envía el formulario
   }
 }
