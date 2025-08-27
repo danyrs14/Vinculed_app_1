@@ -73,6 +73,7 @@ flutter:
      - assets/images/amlo.jpg
      - assets/images/dashboard.json
      - assets/images/logen.json
+     - assets/images/error404.json
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
