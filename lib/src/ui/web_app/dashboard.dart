@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -15,9 +16,7 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   final _scrollCtrl = ScrollController();
-
   bool _showFooter = false;
-  static const double _footerHeight = 240;
 
   @override
   void initState() {
@@ -108,7 +107,6 @@ class _DashboardState extends State<Dashboard> {
         ],
       ),
 
-      // Usamos Stack para superponer el footer animado
       body: Stack(
         children: [
           // CONTENIDO SCROLLEABLE CENTRADO
@@ -116,14 +114,13 @@ class _DashboardState extends State<Dashboard> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final isNarrow = constraints.maxWidth < 800;
-
-                // Altura mínima que debe ocupar el contenido para poder centrarse verticalmente
-                final minBodyHeight = constraints.maxHeight - (_showFooter ? _footerHeight : 0) - 24;
+                final minBodyHeight =
+                    constraints.maxHeight - (_showFooter ? EscomFooter.height : 0) - 24;
 
                 return SingleChildScrollView(
                   controller: _scrollCtrl,
                   padding: EdgeInsets.only(
-                    bottom: _showFooter ? _footerHeight + 24 : 24,
+                    bottom: _showFooter ? EscomFooter.height + 24 : 24,
                   ),
                   child: Center(
                     child: ConstrainedBox(
@@ -131,7 +128,8 @@ class _DashboardState extends State<Dashboard> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                         child: ConstrainedBox(
-                          constraints: BoxConstraints(minHeight: minBodyHeight > 0 ? minBodyHeight : 0),
+                          constraints:
+                          BoxConstraints(minHeight: minBodyHeight > 0 ? minBodyHeight : 0),
                           child: isNarrow
                               ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -159,7 +157,7 @@ class _DashboardState extends State<Dashboard> {
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(16),
                                 child: Image.asset(
-                                  'assets/illustration.png',
+                                  'assets/images/illustration.png',
                                   height: 220,
                                   fit: BoxFit.cover,
                                 ),
@@ -171,7 +169,6 @@ class _DashboardState extends State<Dashboard> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              // Columna de texto y CTA
                               Flexible(
                                 flex: 5,
                                 child: Column(
@@ -199,13 +196,16 @@ class _DashboardState extends State<Dashboard> {
                                 ),
                               ),
                               const SizedBox(width: 48),
-                              // Ilustración
-                              Lottie.asset(
-                                'assets/images/dashboard.json', // Ruta de tu archivo .json de la animación
-                                width: 400, // Tamaño de la animación
-                                height: 300, // Tamaño de la animación
-                                fit: BoxFit.cover,
-                                // Ajusta la animación
+                              Flexible(
+                                flex: 5,
+                                child: Center(
+                                  child: Lottie.asset(
+                                    'assets/images/dashboard.json',
+                                    width: 400,
+                                    height: 300,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -218,7 +218,7 @@ class _DashboardState extends State<Dashboard> {
             ),
           ),
 
-          // FOOTER ANIMADO (aparece al hacer scroll hacia abajo)
+          // FOOTER ANIMADO LLAMANDO AL NUEVO WIDGET
           Positioned(
             left: 0,
             right: 0,
@@ -230,105 +230,12 @@ class _DashboardState extends State<Dashboard> {
               child: AnimatedOpacity(
                 duration: const Duration(milliseconds: 250),
                 opacity: _showFooter ? 1 : 0,
-                child: _footer(MediaQuery.of(context).size.width < 700),
+                child: EscomFooter(isMobile: isMobile),
               ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  // ================= Footer =================
-
-  Widget _footer(bool isMobile) {
-    return Container(
-      height: _footerHeight,
-      color: const Color(0xFF2B2F33),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-      child: isMobile
-          ? Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("ESCOM", style: TextStyle(color: Colors.white, fontSize: 20)),
-          const SizedBox(height: 10),
-          const Text(
-            "Copyright © 2025\nDerechos Reservados",
-            style: TextStyle(color: Colors.white70),
-          ),
-          const SizedBox(height: 20),
-          _footerColumn("Equipo TT", ["Acerca de", "Blog", "Contactanos", "Pricing", "Testimonials"]),
-          const SizedBox(height: 20),
-          _footerColumn("Soporte", ["Emergencias", "Ayuda", "Ubicacion", "Privacy policy", "Status"]),
-          const SizedBox(height: 20),
-          _footerSubscribe(),
-        ],
-      )
-          : Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("ESCOM", style: TextStyle(color: Colors.white, fontSize: 20)),
-              SizedBox(height: 10),
-              Text(
-                "Copyright © 2025\nDerechos Reservados",
-                style: TextStyle(color: Colors.white70),
-              )
-            ],
-          ),
-          const Spacer(),
-          _footerColumn("Equipo TT", ["Acerca de", "Blog", "Contactanos", "Pricing", "Testimonials"]),
-          const SizedBox(width: 60),
-          _footerColumn("Soporte", ["Emergencias", "Ayuda", "Ubicacion", "Privacy policy", "Status"]),
-          const SizedBox(width: 60),
-          _footerSubscribe(),
-        ],
-      ),
-    );
-  }
-
-  static Widget _footerSubscribe() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("Conócenos", style: TextStyle(color: Colors.white, fontSize: 16)),
-        const SizedBox(height: 10),
-        SizedBox(
-          width: 200,
-          child: TextField(
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: "Correo Electrónico",
-              hintStyle: const TextStyle(color: Colors.white70),
-              filled: true,
-              fillColor: Colors.grey[800],
-              suffixIcon: const Icon(Icons.send, color: Colors.white70),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
-        )
-      ],
-    );
-  }
-
-  static Widget _footerColumn(String title, List<String> links) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
-        const SizedBox(height: 5),
-        for (var link in links)
-          TextButton(
-            onPressed: () {},
-            style: TextButton.styleFrom(padding: EdgeInsets.zero),
-            child: Text(link, style: const TextStyle(color: Colors.white70)),
-          ),
-      ],
     );
   }
 

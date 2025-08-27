@@ -5,7 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
-import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 
 class LoginPageWeb extends StatefulWidget {
@@ -21,7 +21,6 @@ class _LoginPageWebState extends State<LoginPageWeb> {
 
   final ScrollController _scrollCtrl = ScrollController();
   bool _showFooter = false;
-  static const double _footerHeight = 240;
 
   @override
   void initState() {
@@ -34,7 +33,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
     final isAtTop = pos.pixels <= 0;
     final scrollingDown = pos.userScrollDirection == ScrollDirection.reverse;
 
-    final nextShow = !isAtTop && scrollingDown;
+    final nextShow = !isAtTop && scrollingDown; // aparece solo al bajar
     if (nextShow != _showFooter) {
       setState(() => _showFooter = nextShow);
     }
@@ -121,18 +120,17 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                 child: SingleChildScrollView(
                   controller: _scrollCtrl,
                   padding: EdgeInsets.fromLTRB(
-                    24, 32, 24, _showFooter ? _footerHeight + 24 : 24,
+                    24, 32, 24, _showFooter ? EscomFooter.height + 24 : 24,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Ilustración con bordes redondeados
+                      // Animación
                       Lottie.asset(
-                        'assets/images/logen.json', // Ruta de tu archivo .json de la animación
-                        width: 400, // Tamaño de la animación
-                        height: 300, // Tamaño de la animación
+                        'assets/images/logen.json', // Asegúrate de que exista y esté en pubspec.yaml
+                        width: 400,
+                        height: 300,
                         fit: BoxFit.cover,
-                        // Ajusta la animación
                       ),
                       const SizedBox(height: 24),
 
@@ -198,8 +196,8 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                         ),
                       ),
 
-                      // Contenido extra para permitir scroll en pantallas altas
-                      const SizedBox(height: 400),
+                      // Relleno para permitir scroll en pantallas altas
+                      const SizedBox(height: 300),
                     ],
                   ),
                 ),
@@ -207,7 +205,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
             ),
           ),
 
-          // FOOTER ANIMADO
+          // FOOTER ANIMADO (llamando al widget reutilizable)
           Positioned(
             left: 0,
             right: 0,
@@ -219,7 +217,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
               child: AnimatedOpacity(
                 duration: const Duration(milliseconds: 250),
                 opacity: _showFooter ? 1 : 0,
-                child: _footer(screenWidth < 700),
+                child: EscomFooter(isMobile: isMobile),
               ),
             ),
           ),
@@ -229,135 +227,10 @@ class _LoginPageWebState extends State<LoginPageWeb> {
   }
 
   // ====== Helpers de UI ======
-
-  Widget _input({
-    required TextEditingController controller,
-    required String hint,
-    bool isPassword = false,
-    TextInputType? keyboardType,
-  }) {
-    return SizedBox(
-      height: 48,
-      child: TextField(
-        controller: controller,
-        obscureText: isPassword,
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          hintText: hint,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(width: 1.6, color: Color(0xFF64B5F6)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(width: 1.6, color: Color(0xFF64B5F6)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(width: 2, color: Color(0xFF1E88E5)),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _navButton(String text) {
     return TextButton(
       onPressed: () {},
       child: Text(text, style: const TextStyle(color: Colors.black87)),
-    );
-  }
-
-
-  Widget _footer(bool isMobile) {
-    return Container(
-      height: _footerHeight,
-      color: const Color(0xFF2B2F33),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-      child: isMobile
-          ? Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("ESCOM", style: TextStyle(color: Colors.white, fontSize: 20)),
-          const SizedBox(height: 10),
-          const Text(
-            "Copyright © 2025\nDerechos Reservados",
-            style: TextStyle(color: Colors.white70),
-          ),
-          const SizedBox(height: 20),
-          _footerColumn("Equipo TT", ["Acerca de", "Blog", "Contactanos", "Pricing", "Testimonials"]),
-          const SizedBox(height: 20),
-          _footerColumn("Soporte", ["Emergencias", "Ayuda", "Ubicacion", "Privacy policy", "Status"]),
-          const SizedBox(height: 20),
-          _footerSubscribe(),
-        ],
-      )
-          : Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("ESCOM", style: TextStyle(color: Colors.white, fontSize: 20)),
-              SizedBox(height: 10),
-              Text(
-                "Copyright © 2025\nDerechos Reservados",
-                style: TextStyle(color: Colors.white70),
-              )
-            ],
-          ),
-          const Spacer(),
-          _footerColumn("Equipo TT", ["Acerca de", "Blog", "Contactanos", "Pricing", "Testimonials"]),
-          const SizedBox(width: 60),
-          _footerColumn("Soporte", ["Emergencias", "Ayuda", "Ubicacion", "Privacy policy", "Status"]),
-          const SizedBox(width: 60),
-          _footerSubscribe(),
-        ],
-      ),
-    );
-  }
-
-  static Widget _footerSubscribe() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("Conócenos", style: TextStyle(color: Colors.white, fontSize: 16)),
-        const SizedBox(height: 10),
-        SizedBox(
-          width: 200,
-          child: TextField(
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: "Correo Electrónico",
-              hintStyle: const TextStyle(color: Colors.white70),
-              filled: true,
-              fillColor: Colors.grey,
-              suffixIcon: const Icon(Icons.send, color: Colors.white70),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
-        )
-      ],
-    );
-  }
-
-  static Widget _footerColumn(String title, List<String> links) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
-        const SizedBox(height: 5),
-        for (var link in links)
-          TextButton(
-            onPressed: () {},
-            style: TextButton.styleFrom(padding: EdgeInsets.zero),
-            child: Text(link, style: const TextStyle(color: Colors.white70)),
-          ),
-      ],
     );
   }
 }
