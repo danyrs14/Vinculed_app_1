@@ -23,7 +23,7 @@ class AdminApp extends StatelessWidget {
     );
 
     return MaterialApp.router(
-      title: 'Web Dashboard',
+      title: 'TT 2025-B003',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 
 class LoginPageWeb extends StatefulWidget {
   const LoginPageWeb({super.key});
@@ -124,29 +127,27 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Ilustración con bordes redondeados
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
-                        child: Image.asset(
-                          'assets/illustration.png',
-                          height: 200,
-                          fit: BoxFit.cover,
-                        ),
+                      Lottie.asset(
+                        'assets/images/logen.json', // Ruta de tu archivo .json de la animación
+                        width: 400, // Tamaño de la animación
+                        height: 300, // Tamaño de la animación
+                        fit: BoxFit.cover,
+                        // Ajusta la animación
                       ),
                       const SizedBox(height: 24),
 
                       // Correo institucional
-                      _input(
+                      TextInput(
+                        title: 'Correo institucional',
                         controller: _emailCtrl,
-                        hint: 'Correo Institucional',
                         keyboardType: TextInputType.emailAddress,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 5),
 
                       // Contraseña
-                      _input(
+                      TextInput(
                         controller: _passCtrl,
-                        hint: 'Contraseña',
-                        isPassword: true,
+                        title: 'Contraseña',
                       ),
 
                       // "Se me olvidó la contraseña"
@@ -159,7 +160,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                       ),
 
                       // Botón Iniciar Sesión
-                      SimpleButton(
+                      LargeButton(
                         onTap: () {/* login */},
                         title: 'Iniciar Sesión',
                       ),
@@ -183,23 +184,17 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                       // Botones de registro
                       SizedBox(
                         height: 44,
-                        child: ElevatedButton(
-                          onPressed: () {/* registro candidato */},
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          child: const Text('Registrarme como Candidato'),
+                        child: LargeButton(
+                          onTap: () {/* registro candidato */},
+                          title: 'Registrarme como Candidato',
                         ),
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
                         height: 44,
-                        child: ElevatedButton(
-                          onPressed: () {/* registro reclutador */},
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          child: const Text('Registrarme como Reclutador'),
+                        child: LargeButton(
+                          onTap: () {/* registro reclutador */},
+                          title: 'Registrarme como Reclutador',
                         ),
                       ),
 

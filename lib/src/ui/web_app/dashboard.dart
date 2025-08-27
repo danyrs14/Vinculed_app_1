@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
@@ -199,18 +200,12 @@ class _DashboardState extends State<Dashboard> {
                               ),
                               const SizedBox(width: 48),
                               // Ilustración
-                              Flexible(
-                                flex: 5,
-                                child: Center(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(18),
-                                    child: Image.asset(
-                                      'assets/illustration.png',
-                                      height: 300,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
+                              Lottie.asset(
+                                'assets/images/dashboard.json', // Ruta de tu archivo .json de la animación
+                                width: 400, // Tamaño de la animación
+                                height: 300, // Tamaño de la animación
+                                fit: BoxFit.cover,
+                                // Ajusta la animación
                               ),
                             ],
                           ),
