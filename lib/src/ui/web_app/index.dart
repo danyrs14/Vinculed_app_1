@@ -4,6 +4,7 @@ import 'package:vinculed_app_1/src/ui/web_app/dashboard.dart';
 import 'package:vinculed_app_1/src/ui/web_app/login.dart';
 import 'package:vinculed_app_1/src/ui/web_app/not_found_page.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin.dart';
+import 'package:vinculed_app_1/src/ui/web_app/signin_rec.dart';
 
 class AdminApp extends StatelessWidget {
   const AdminApp({super.key});
@@ -23,6 +24,10 @@ class AdminApp extends StatelessWidget {
         GoRoute(
           path: '/signin',
           builder: (context, state) => const RegisterPageWeb(),
+        ),
+        GoRoute(
+          path: '/signin_rec',
+          builder: (context, state) => const RegisterPageWebRec(),
         ),
       ],
       initialLocation: '/dashboard',

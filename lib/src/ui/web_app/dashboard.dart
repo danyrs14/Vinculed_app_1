@@ -50,7 +50,7 @@ class _DashboardState extends State<Dashboard> {
     return Scaffold(
       appBar: EscomHeader(
         onLoginTap: () => context.go('/login'),
-        onRegisterTap: () => context.go('/signin'), // cambia si tienes ruta de registro
+        onRegisterTap: () => context.go(''),
         onNotifTap: () {
           // lógica de notificaciones
         },
