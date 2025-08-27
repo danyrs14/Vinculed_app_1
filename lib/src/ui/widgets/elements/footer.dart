@@ -5,7 +5,7 @@ class EscomFooter extends StatelessWidget {
 
   final bool isMobile;
 
-  static const double height = 260;
+  static const double height = 300; // aumentamos para la imagen
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +22,17 @@ class EscomFooter extends StatelessWidget {
     return ScrollConfiguration(
       behavior: const _NoGlowBehavior(),
       child: SingleChildScrollView(
-        // Permite deslizar dentro del footer si el contenido es alto
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min, // evita ocupar más de lo necesario
+          mainAxisSize: MainAxisSize.min,
           children: [
+            // Imagen arriba de todo
+            Image.asset(
+              'assets/images/escom.png', // cambia la ruta si es otra
+              height: 50,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 12),
             const Text("ESCOM", style: TextStyle(color: Colors.white, fontSize: 20)),
             const SizedBox(height: 8),
             const Text(
@@ -55,15 +61,22 @@ class EscomFooter extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text("ESCOM", style: TextStyle(color: Colors.white, fontSize: 20)),
-            SizedBox(height: 8),
-            Text(
-              "Copyright © 2025\nDerechos Reservados",
-              style: TextStyle(color: Colors.white70),
+            // Imagen arriba de todo
+            Image.asset(
+              'assets/images/escudoESCOM.png', // cambia la ruta si es otra
+              height: 150,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 12),
+            Center(
+              child: const Text(
+                "Copyright © 2025\nDerechos Reservados",
+                style: TextStyle(color: Colors.white70),
+              ),
             ),
           ],
         ),
@@ -90,7 +103,7 @@ class EscomFooter extends StatelessWidget {
   static Widget _footerColumn(String title, List<String> links) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min, // clave para no desbordar
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
         const SizedBox(height: 6),
@@ -99,7 +112,7 @@ class EscomFooter extends StatelessWidget {
             onPressed: () {},
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
-              minimumSize: const Size(0, 28), // más compacto
+              minimumSize: const Size(0, 28),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               alignment: Alignment.centerLeft,
             ),
@@ -119,7 +132,7 @@ class _FooterSubscribeBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min, // no crecer innecesariamente
+      mainAxisSize: MainAxisSize.min,
       children: [
         const Text("Conócenos", style: TextStyle(color: Colors.white, fontSize: 16)),
         const SizedBox(height: 8),
