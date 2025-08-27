@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
-import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+
 import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
-import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 
 class LoginPageWeb extends StatefulWidget {
@@ -51,62 +51,43 @@ class _LoginPageWebState extends State<LoginPageWeb> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ThemeController.instance;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 700;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: theme.background(),
-        elevation: 0,
-        titleSpacing: 20,
-        title: Row(
-          children: [
-            Image.asset('assets/images/escom.png', height: 40),
-            const SizedBox(width: 10),
-          ],
-        ),
-        actions: isMobile
-            ? [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.menu),
-            onSelected: (value) {},
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: "Inicio", child: Text("Inicio")),
-              PopupMenuItem(value: "Postulaciones", child: Text("Postulaciones")),
-              PopupMenuItem(value: "Experiencias", child: Text("Experiencias")),
-              PopupMenuItem(value: "Mensajes", child: Text("Mensajes")),
-              PopupMenuItem(value: "Preferencias", child: Text("Preferencias")),
-              PopupMenuItem(value: "FAQ", child: Text("FAQ")),
-            ],
-          )
-        ]
-            : [
-          _navButton("Inicio"),
-          _navButton("Postulaciones"),
-          _navButton("Experiencias"),
-          _navButton("Mensajes"),
-          _navButton("Preferencias"),
-          _navButton("FAQ"),
-          TextButton(
-            onPressed: () => context.go('/login'),
-            child: Text(
-              "Iniciar Sesión",
-              style: TextStyle(color: theme.secundario(), fontWeight: FontWeight.bold),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: MiniButton(
-              onTap: () {/* ir a registro */},
-              title: "Registrarse",
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications),
-          ),
-        ],
+      // ✅ Encabezado reutilizable
+      appBar: EscomHeader(
+        onLoginTap: () => context.go('/login'),
+        onRegisterTap: () {
+          // cambia esta ruta si tienes pantalla de registro distinta
+          context.go('/login');
+        },
+        onNotifTap: () {
+          // lógica para notificaciones (si aplica)
+        },
+        onMenuSelected: (label) {
+          // navegación por menú
+          switch (label) {
+            case "Inicio":
+              context.go('/dashboard');
+              break;
+            case "Postulaciones":
+            // context.go('/postulaciones');
+              break;
+            case "Experiencias":
+            // context.go('/experiencias');
+              break;
+            case "Mensajes":
+            // context.go('/mensajes');
+              break;
+            case "Preferencias":
+            // context.go('/preferencias');
+              break;
+            case "FAQ":
+            // context.go('/faq');
+              break;
+          }
+        },
       ),
 
       // Stack para superponer footer animado
@@ -127,7 +108,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                     children: [
                       // Animación
                       Lottie.asset(
-                        'assets/images/logen.json', // Asegúrate de que exista y esté en pubspec.yaml
+                        'assets/images/logen.json', // verifica que exista en pubspec.yaml
                         width: 400,
                         height: 300,
                         fit: BoxFit.cover,
@@ -223,14 +204,6 @@ class _LoginPageWebState extends State<LoginPageWeb> {
           ),
         ],
       ),
-    );
-  }
-
-  // ====== Helpers de UI ======
-  Widget _navButton(String text) {
-    return TextButton(
-      onPressed: () {},
-      child: Text(text, style: const TextStyle(color: Colors.black87)),
     );
   }
 }

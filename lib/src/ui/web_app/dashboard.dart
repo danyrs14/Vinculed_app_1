@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
-import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';  // EscomFooter
+import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';  // EscomHeader
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -45,66 +44,40 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ThemeController.instance;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 700;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: theme.background(),
-        elevation: 0,
-        titleSpacing: 20,
-        title: Row(
-          children: [
-            Image.asset('assets/images/escom.png', height: 40),
-            const SizedBox(width: 10),
-          ],
-        ),
-        actions: isMobile
-            ? [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.menu),
-            onSelected: (value) {},
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: "Inicio", child: Text("Inicio")),
-              PopupMenuItem(value: "Postulaciones", child: Text("Postulaciones")),
-              PopupMenuItem(value: "Experiencias", child: Text("Experiencias")),
-              PopupMenuItem(value: "Mensajes", child: Text("Mensajes")),
-              PopupMenuItem(value: "Preferencias", child: Text("Preferencias")),
-              PopupMenuItem(value: "FAQ", child: Text("FAQ")),
-            ],
-          )
-        ]
-            : [
-          _navButton("Inicio"),
-          _navButton("Postulaciones"),
-          _navButton("Experiencias"),
-          _navButton("Mensajes"),
-          _navButton("Preferencias"),
-          _navButton("FAQ"),
-          TextButton(
-            onPressed: () {
-              context.go('/login');
-            },
-            child: Text(
-              "Iniciar Sesión",
-              style: TextStyle(color: theme.secundario(), fontWeight: FontWeight.bold),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: MiniButton(
-              onTap: () {
-                context.go('/login');
-              },
-              title: "Registrarse",
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications),
-          ),
-        ],
+      // ✅ Encabezado reutilizable
+      appBar: EscomHeader(
+        onLoginTap: () => context.go('/login'),
+        onRegisterTap: () => context.go('/login'), // cambia si tienes ruta de registro
+        onNotifTap: () {
+          // lógica de notificaciones
+        },
+        onMenuSelected: (label) {
+          // navegación según opción seleccionada
+          switch (label) {
+            case "Inicio":
+              context.go('/dashboard');
+              break;
+            case "Postulaciones":
+            // context.go('/postulaciones');
+              break;
+            case "Experiencias":
+            // context.go('/experiencias');
+              break;
+            case "Mensajes":
+            // context.go('/mensajes');
+              break;
+            case "Preferencias":
+            // context.go('/preferencias');
+              break;
+            case "FAQ":
+            // context.go('/faq');
+              break;
+          }
+        },
       ),
 
       body: Stack(
@@ -128,8 +101,9 @@ class _DashboardState extends State<Dashboard> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                         child: ConstrainedBox(
-                          constraints:
-                          BoxConstraints(minHeight: minBodyHeight > 0 ? minBodyHeight : 0),
+                          constraints: BoxConstraints(
+                            minHeight: minBodyHeight > 0 ? minBodyHeight : 0,
+                          ),
                           child: isNarrow
                               ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -218,7 +192,7 @@ class _DashboardState extends State<Dashboard> {
             ),
           ),
 
-          // FOOTER ANIMADO LLAMANDO AL NUEVO WIDGET
+          // FOOTER ANIMADO (reutilizable)
           Positioned(
             left: 0,
             right: 0,
@@ -236,13 +210,6 @@ class _DashboardState extends State<Dashboard> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _navButton(String text) {
-    return TextButton(
-      onPressed: () {},
-      child: Text(text, style: const TextStyle(color: Colors.black87)),
     );
   }
 }
