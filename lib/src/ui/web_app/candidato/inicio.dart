@@ -127,7 +127,7 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                 _JobsGrid(
                                   items: const [
                                     JobItem(
-                                      title: 'Becario de QA',
+                                      title: 'Becario de Qwert',
                                       location: 'Ciudad de México',
                                       company: 'BBVA México',
                                     ),

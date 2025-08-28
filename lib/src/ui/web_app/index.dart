@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:vinculed_app_1/src/ui/web_app/candidato/inicio.dart';
 import 'package:vinculed_app_1/src/ui/web_app/dashboard.dart';
 import 'package:vinculed_app_1/src/ui/web_app/login.dart';
@@ -7,12 +8,21 @@ import 'package:vinculed_app_1/src/ui/web_app/not_found_page.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin_rec.dart';
 
-class AdminApp extends StatelessWidget {
+class AdminApp extends StatefulWidget {
   const AdminApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final GoRouter router = GoRouter(
+  State<AdminApp> createState() => _AdminAppState();
+}
+
+class _AdminAppState extends State<AdminApp> {
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _router = GoRouter(
       routes: [
         GoRoute(
           path: '/dashboard',
@@ -35,14 +45,15 @@ class AdminApp extends StatelessWidget {
           builder: (context, state) => const HomeRegisteredPage(),
         ),
       ],
-      initialLocation: '/dashboard',
-      errorPageBuilder: (context, state) {
-        return MaterialPage(
-          child: NotFoundPage(),
-        );
-      },
+      errorPageBuilder: (context, state) => const MaterialPage(
+        child: NotFoundPage(),
+      ),
+      debugLogDiagnostics: true,
     );
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'TT 2025-B003',
       debugShowCheckedModeBanner: false,
@@ -50,7 +61,7 @@ class AdminApp extends StatelessWidget {
         useMaterial3: true,
         colorSchemeSeed: Colors.blue,
       ),
-      routerConfig: router,
+      routerConfig: _router,
     );
   }
 }
