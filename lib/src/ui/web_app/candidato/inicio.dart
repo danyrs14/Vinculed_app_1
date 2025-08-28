@@ -7,7 +7,6 @@ import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/job_card.dart';
 
-
 class HomeRegisteredPage extends StatefulWidget {
   const HomeRegisteredPage({super.key});
 
@@ -111,7 +110,7 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                     const CircleAvatar(
                                       radius: 28,
                                       backgroundImage: AssetImage(
-                                        'assets/images/amlo.jpg', // pon tu imagen
+                                        'assets/images/amlo.jpg',
                                       ),
                                     ),
                                     const SizedBox(width: 14),
@@ -129,37 +128,47 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                 ),
                                 const SizedBox(height: 28),
 
-                                // Tarjetas de vacantes (JobsGrid reutilizable)
-                                JobsGrid(
-                                  items: const [
-                                    JobItem(
-                                      title: 'Becario de QA',
-                                      location: 'Ciudad de México',
-                                      company: 'BBVA México',
+                                // Row con 3 JobCards de ejemplo
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: const [
+                                    Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                        child: JobCard(
+                                          item: JobItem(
+                                            title: 'Becario de QA',
+                                            location: 'Ciudad de México',
+                                            company: 'BBVA México',
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                    JobItem(
-                                      title: 'Becario Scrum',
-                                      location: 'Ciudad de México',
-                                      company: 'IDS',
+                                    Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                        child: JobCard(
+                                          item: JobItem(
+                                            title: 'Becario Scrum',
+                                            location: 'Ciudad de México',
+                                            company: 'IDS',
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                    JobItem(
-                                      title: 'Becario de TI',
-                                      location: 'Ciudad de México',
-                                      company: 'Banorte IXE',
+                                    Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                        child: JobCard(
+                                          item: JobItem(
+                                            title: 'Becario de TI',
+                                            location: 'Ciudad de México',
+                                            company: 'Banorte IXE',
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ],
-                                  onApply: (job) {
-                                    // acción al postularse (ejemplo)
-                                    // print('Postularme a ${job.title}');
-                                  },
-                                  onSave: (job) {
-                                    // acción al guardar (ejemplo)
-                                    // print('Guardar ${job.title}');
-                                  },
-                                  onHide: (job) {
-                                    // acción al ocultar (ejemplo)
-                                    // print('Ocultar ${job.title}');
-                                  },
                                 ),
 
                                 const SizedBox(height: 28),

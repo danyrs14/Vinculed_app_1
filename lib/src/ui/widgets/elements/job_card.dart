@@ -14,8 +14,14 @@ class JobItem {
   });
 }
 
-class JobCard extends StatelessWidget {
-  const JobCard({super.key, required this.item, this.onApply, this.onSave, this.onHide});
+class JobCard extends StatefulWidget {
+  const JobCard({
+    super.key,
+    required this.item,
+    this.onApply,
+    this.onSave,
+    this.onHide,
+  });
 
   final JobItem item;
   final VoidCallback? onApply;
@@ -23,8 +29,16 @@ class JobCard extends StatelessWidget {
   final VoidCallback? onHide;
 
   @override
+  State<JobCard> createState() => _JobCardState();
+}
+
+class _JobCardState extends State<JobCard> {
+  bool isSaved = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 22, 18, 16),
       decoration: BoxDecoration(
@@ -35,19 +49,19 @@ class JobCard extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            item.title,
+            widget.item.title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           Text(
-            item.location,
+            widget.item.location,
             style: const TextStyle(color: Colors.black54),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 10),
           Text(
-            item.company,
+            widget.item.company,
             style: const TextStyle(fontWeight: FontWeight.w700),
             textAlign: TextAlign.center,
           ),
@@ -57,21 +71,27 @@ class JobCard extends StatelessWidget {
           Row(
             children: [
               IconButton(
-                onPressed: onSave,
-                icon: const Icon(Icons.favorite_border),
+                onPressed: () {
+                  setState(() => isSaved = !isSaved);
+                  if (widget.onSave != null) widget.onSave!();
+                },
+                icon: Icon(
+                  isSaved ? Icons.favorite : Icons.favorite_border,
+                  color: isSaved ? theme.secundario() : Colors.black54,
+                ),
                 tooltip: 'Guardar',
               ),
               const Spacer(),
               SizedBox(
                 height: 36,
                 child: SimpleButton(
-                  onTap: onApply,
+                  onTap: widget.onApply,
                   title: 'Postularme',
                 ),
               ),
               const Spacer(),
               IconButton(
-                onPressed: onHide,
+                onPressed: widget.onHide,
                 icon: const Icon(Icons.visibility_off_outlined),
                 tooltip: 'Ocultar',
               ),
@@ -94,7 +114,6 @@ class JobsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
-    // Tarjeta ~340px; con márgenes/espaciado cabe 1–3 por fila
     final double cardWidth = w < 420 ? w - 48 : 340.0;
 
     return Wrap(
