@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart'; // EscomHeader
-import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart'; // EscomFooter
+import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/job_card.dart';
+
 
 class HomeRegisteredPage extends StatefulWidget {
   const HomeRegisteredPage({super.key});
@@ -49,10 +53,12 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
     final w = MediaQuery.of(context).size.width;
     final isMobile = w < 700;
 
     return Scaffold(
+      backgroundColor: theme.background(),
       appBar: EscomHeader(
         onLoginTap: () => context.go('/login'),
         onRegisterTap: () => context.go('/signin'),
@@ -123,11 +129,11 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                 ),
                                 const SizedBox(height: 28),
 
-                                // Tarjetas de vacantes (responsive)
-                                _JobsGrid(
+                                // Tarjetas de vacantes (JobsGrid reutilizable)
+                                JobsGrid(
                                   items: const [
                                     JobItem(
-                                      title: 'Becario de Qwert',
+                                      title: 'Becario de QA',
                                       location: 'Ciudad de México',
                                       company: 'BBVA México',
                                     ),
@@ -142,6 +148,18 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                       company: 'Banorte IXE',
                                     ),
                                   ],
+                                  onApply: (job) {
+                                    // acción al postularse (ejemplo)
+                                    // print('Postularme a ${job.title}');
+                                  },
+                                  onSave: (job) {
+                                    // acción al guardar (ejemplo)
+                                    // print('Guardar ${job.title}');
+                                  },
+                                  onHide: (job) {
+                                    // acción al ocultar (ejemplo)
+                                    // print('Ocultar ${job.title}');
+                                  },
                                 ),
 
                                 const SizedBox(height: 28),
@@ -217,120 +235,3 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
     );
   }
 }
-
-/* =========================
- *  Widgets auxiliares
- * ========================= */
-
-class JobItem {
-  final String title;
-  final String location;
-  final String company;
-  const JobItem({
-    required this.title,
-    required this.location,
-    required this.company,
-  });
-}
-
-class _JobsGrid extends StatelessWidget {
-  const _JobsGrid({required this.items});
-
-  final List<JobItem> items;
-
-  @override
-  Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
-    // Tarjeta ~340px; con márgenes/espaciado cabe 1–3 por fila
-    final cardWidth = w < 420 ? w - 48 : 340.0;
-
-    return Wrap(
-      spacing: 28,
-      runSpacing: 28,
-      alignment: WrapAlignment.spaceBetween,
-      children: items
-          .map(
-            (e) => ConstrainedBox(
-          constraints: BoxConstraints.tightFor(width: cardWidth),
-          child: _JobCard(item: e),
-        ),
-      )
-          .toList(),
-    );
-  }
-}
-
-class _JobCard extends StatelessWidget {
-  const _JobCard({required this.item});
-
-  final JobItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(18, 22, 18, 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFF6EA8C2), width: 1.4),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Text(
-            item.title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            item.location,
-            style: const TextStyle(color: Colors.black54),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 10),
-          Text(
-            item.company,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 18),
-
-          // Acciones
-          Row(
-            children: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.favorite_border),
-                tooltip: 'Guardar',
-              ),
-              const Spacer(),
-              SizedBox(
-                height: 36,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0E78A5),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: const Text('Postularme'),
-                ),
-              ),
-              const Spacer(),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.visibility_off_outlined),
-                tooltip: 'Ocultar',
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
