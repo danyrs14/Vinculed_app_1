@@ -71,7 +71,6 @@ class _JobSearchPageState extends State<JobSearchPage> {
         onNotifTap: () {},
         onMenuSelected: (label) {
           if (label == "Inicio") context.go('/dashboard');
-          // agrega más rutas si las necesitas
         },
       ),
 
@@ -154,7 +153,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
                                           width: 320,
                                           child: SimpleButton(
                                             title: 'Buscar Empleo',
-                                            onTap: _onSearch,
+                                            onTap: () => context.go('/vacante_job'),
                                           ),
                                         ),
                                       ),
