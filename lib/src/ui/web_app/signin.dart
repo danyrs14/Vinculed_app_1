@@ -204,7 +204,7 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
 
                                 // Botón Iniciar Sesión
                                 LargeButton(
-                                  onTap: () => context.go('/login'),
+                                  onTap: () => context.go('/inicio_cand'),
                                   title: 'Iniciar Sesión',
                                 ),
 

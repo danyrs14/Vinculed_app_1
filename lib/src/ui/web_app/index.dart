@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vinculed_app_1/src/ui/web_app/candidato/inicio.dart';
 import 'package:vinculed_app_1/src/ui/web_app/dashboard.dart';
 import 'package:vinculed_app_1/src/ui/web_app/login.dart';
 import 'package:vinculed_app_1/src/ui/web_app/not_found_page.dart';
@@ -28,6 +29,10 @@ class AdminApp extends StatelessWidget {
         GoRoute(
           path: '/signin_rec',
           builder: (context, state) => const RegisterPageWebRec(),
+        ),
+        GoRoute(
+          path: '/inicio_cand',
+          builder: (context, state) => const HomeRegisteredPage(),
         ),
       ],
       initialLocation: '/dashboard',
