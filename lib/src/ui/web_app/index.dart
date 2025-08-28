@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vinculed_app_1/src/ui/web_app/candidato/buscar_vacantes.dart';
 
 import 'package:vinculed_app_1/src/ui/web_app/candidato/inicio.dart';
 import 'package:vinculed_app_1/src/ui/web_app/dashboard.dart';
@@ -43,6 +44,10 @@ class _AdminAppState extends State<AdminApp> {
         GoRoute(
           path: '/inicio_cand',
           builder: (context, state) => const HomeRegisteredPage(),
+        ),
+        GoRoute(
+          path: '/busqueda_job',
+          builder: (context, state) => const JobSearchPage(),
         ),
       ],
       errorPageBuilder: (context, state) => const MaterialPage(
