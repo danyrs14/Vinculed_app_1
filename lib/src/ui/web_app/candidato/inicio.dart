@@ -68,6 +68,13 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
             case "Inicio":
               context.go('/dashboard');
               break;
+
+              case "Postulaciones":
+              context.go('/mis_postulaciones');
+              break;
+            case "Experiencias":
+              context.go('/experiencias');
+              break;
           }
         },
       ),

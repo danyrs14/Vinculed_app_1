@@ -4,6 +4,7 @@ import 'package:vinculed_app_1/src/ui/web_app/candidato/buscar_vacantes.dart';
 
 import 'package:vinculed_app_1/src/ui/web_app/candidato/inicio.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/perfil_candidato.dart';
+import 'package:vinculed_app_1/src/ui/web_app/candidato/postulaciones.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/vacante.dart';
 import 'package:vinculed_app_1/src/ui/web_app/dashboard.dart';
 import 'package:vinculed_app_1/src/ui/web_app/login.dart';
@@ -58,6 +59,10 @@ class _AdminAppState extends State<AdminApp> {
         GoRoute(
           path: '/perfil_cand',
           builder: (context, state) => const UserProfilePage(),
+        ),
+        GoRoute(
+          path: '/mis_postulaciones',
+          builder: (context, state) => const MyApplicationsPage(),
         ),
       ],
       errorPageBuilder: (context, state) => const MaterialPage(
