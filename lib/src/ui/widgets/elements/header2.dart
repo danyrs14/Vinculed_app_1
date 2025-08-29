@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
 
-class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
-  const EscomHeader({
+class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
+  const EscomHeader2({
     super.key,
     this.onMenuSelected,
     this.onLoginTap,
@@ -64,7 +64,7 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
         TextButton(
           onPressed: onLoginTap,
           child: Text(
-            "Iniciar Sesión",
+            "Mi Perfil",
             style: TextStyle(
               color: theme.secundario(),
               fontWeight: FontWeight.bold,
@@ -75,7 +75,7 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: MiniButton(
             onTap: onRegisterTap,
-            title: "Registrarse",
+            title: "Cerrar Sesion",
           ),
         ),
         IconButton(
