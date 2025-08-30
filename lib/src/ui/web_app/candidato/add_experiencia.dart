@@ -5,17 +5,19 @@ import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/post_experiencia.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/experience_text_area.dart';
 
-class ExperiencesPage extends StatefulWidget {
-  const ExperiencesPage({super.key});
+class CreateExperiencePage extends StatefulWidget {
+  const CreateExperiencePage({super.key});
 
   @override
-  State<ExperiencesPage> createState() => _ExperiencesPageState();
+  State<CreateExperiencePage> createState() => _CreateExperiencePageState();
 }
 
-class _ExperiencesPageState extends State<ExperiencesPage> {
+class _CreateExperiencePageState extends State<CreateExperiencePage> {
   final _scrollCtrl = ScrollController();
+  final _contentCtrl = TextEditingController();
+
   bool _showFooter = false;
 
   static const double _footerReservedSpace = EscomFooter.height;
@@ -33,10 +35,12 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
     final pos = _scrollCtrl.position;
     if (!pos.hasPixels || !pos.hasContentDimensions) return;
 
+    // Si el contenido cabe en la pantalla, oculta el footer
     if (pos.maxScrollExtent <= 0) {
       if (_showFooter) setState(() => _showFooter = false);
       return;
     }
+
     final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
     if (atBottom != _showFooter) setState(() => _showFooter = atBottom);
   }
@@ -46,14 +50,14 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
     _scrollCtrl
       ..removeListener(_handleScroll)
       ..dispose();
+    _contentCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
-    final w = MediaQuery.of(context).size.width;
-    final isMobile = w < 720;
+    final isMobile = MediaQuery.of(context).size.width < 720;
 
     return Scaffold(
       backgroundColor: theme.background(),
@@ -67,6 +71,7 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
       ),
       body: Stack(
         children: [
+          // Contenido scrolleable
           Positioned.fill(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -82,7 +87,7 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 900),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
                             minHeight: minBodyHeight > 0 ? minBodyHeight : 0,
@@ -91,53 +96,36 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              // Título centrado
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8, bottom: 8),
-                                child: Text(
-                                  'Experiencias',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: isMobile ? 28 : 34,
-                                    fontWeight: FontWeight.w900,
-                                    color: const Color(0xFF22313F),
-                                  ),
+                              // Título
+                              Text(
+                                'Crear Experiencia',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: isMobile ? 28 : 34,
+                                  fontWeight: FontWeight.w900,
+                                  color: const Color(0xFF22313F),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+
+                              // TextArea reutilizable y centrado
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 560),
+                                child: ExperienceTextArea(
+                                  controller: _contentCtrl,
+                                  hintText: '¿Qué nos quieres compartir?',
+                                  height: 220,
                                 ),
                               ),
                               const SizedBox(height: 20),
 
-                              // Post + botón centrados
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  const ExperiencePost(
-                                    authorName: 'Andres Manuel Lopez',
-                                    avatarAsset: 'assets/images/amlo.jpg',
-                                    subtitle: 'Estudiante · 20 h',
-                                    content:
-                                    'Mi experiencia como becaria en el departamento de desarrollo '
-                                        'de software fue increíblemente enriquecedora. Durante mi tiempo '
-                                        'en la empresa, participé activamente en varios proyectos '
-                                        'relacionados con la creación y mejora de aplicaciones móviles.',
-                                    commentCountText: '1 Comentario',
-                                    highlightComment: ExperienceComment(
-                                      avatarAsset: 'assets/images/user_m1.png',
-                                      author: 'Alejandro Yañez Sanchez',
-                                      text: 'Muy buena reseña, me encanta!',
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  SizedBox(
-                                    width: 220,
-                                    child: SimpleButton(
-                                      title: 'Crear',
-                                      onTap: () {
-                                        context.go('/experiencias_create');
-                                      },
-                                    ),
-                                  ),
-                                ],
+                              // Botón "Publicar"
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 360),
+                                child: SimpleButton(
+                                  title: 'Publicar',
+                                  onTap: _onPublish,
+                                ),
                               ),
 
                               const SizedBox(height: 40),
@@ -171,5 +159,20 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
         ],
       ),
     );
+  }
+
+  void _onPublish() {
+    final text = _contentCtrl.text.trim();
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Escribe algo para publicar.')),
+      );
+      return;
+    }
+    // TODO: Envía el contenido a tu backend aquí
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Experiencia publicada')),
+    );
+    _contentCtrl.clear();
   }
 }

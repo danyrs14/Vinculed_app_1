@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vinculed_app_1/src/ui/web_app/candidato/add_experiencia.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/buscar_vacantes.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/experiencias.dart';
 
@@ -73,6 +74,10 @@ class _AdminAppState extends State<AdminApp> {
         GoRoute(
           path: '/experiencias',
           builder: (context, state) => const ExperiencesPage(),
+        ),
+        GoRoute(
+          path: '/experiencias_create',
+          builder: (context, state) => const CreateExperiencePage(),
         ),
       ],
       errorPageBuilder: (context, state) => const MaterialPage(
