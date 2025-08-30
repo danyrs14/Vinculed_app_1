@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/buscar_vacantes.dart';
 
 import 'package:vinculed_app_1/src/ui/web_app/candidato/inicio.dart';
+import 'package:vinculed_app_1/src/ui/web_app/candidato/messages.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/perfil_candidato.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/postulaciones.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/vacante.dart';
@@ -63,6 +64,10 @@ class _AdminAppState extends State<AdminApp> {
         GoRoute(
           path: '/mis_postulaciones',
           builder: (context, state) => const MyApplicationsPage(),
+        ),
+        GoRoute(
+          path: '/messages',
+          builder: (context, state) => const MessagesPage(),
         ),
       ],
       errorPageBuilder: (context, state) => const MaterialPage(
