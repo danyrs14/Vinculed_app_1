@@ -117,7 +117,7 @@ class _FaqPageState extends State<FaqPage> {
                               // Lista de preguntas (FAQ)
                               ConstrainedBox(
                                 constraints: const BoxConstraints(maxWidth: 560),
-                                child: Column(
+                                child: const Column(
                                   children: const [
                                     FaqItem(
                                       question: '¿Cómo postularme?',
