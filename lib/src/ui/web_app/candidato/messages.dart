@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/chat_panel.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/conversation_panel.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
-import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart'; 
 
 class MessagesPage extends StatefulWidget {
   const MessagesPage({super.key});
@@ -69,6 +69,7 @@ class _MessagesPageState extends State<MessagesPage> {
       ),
       body: Stack(
         children: [
+          // Scroll global con padding inferior para el footer
           Positioned.fill(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -111,7 +112,7 @@ class _MessagesPageState extends State<MessagesPage> {
             ),
           ),
 
-          // Footer animado
+          // Footer animado (aparece al llegar al final del contenido)
           Positioned(
             left: 0,
             right: 0,
@@ -145,12 +146,11 @@ class _DesktopRow extends StatelessWidget {
       children: [
         SizedBox(
           width: 340,
-          child: _ConversationsPanel(theme: theme),
+          child: ConversationsPanel(theme: theme), // ⬅️ Reutilizable
         ),
         const SizedBox(width: 16),
         Expanded(
-          // ⬇️ Ahora usamos el ChatPanel reutilizable
-          child: ChatPanel(theme: theme),
+          child: ChatPanel(theme: theme), // ⬅️ Reutilizable
         ),
       ],
     );
@@ -167,191 +167,10 @@ class _MobileStack extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _ConversationsPanel(theme: theme),
+        ConversationsPanel(theme: theme),
         const SizedBox(height: 16),
-        ChatPanel(theme: theme), // ⬅️ también en móvil
+        ChatPanel(theme: theme),
       ],
     );
   }
-}
-
-/* ───────────────────────── Panel de Conversaciones ───────────────────────── */
-
-class _ConversationsPanel extends StatelessWidget {
-  const _ConversationsPanel({required this.theme});
-  final ThemeController theme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: _panelDecoration(theme),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Encabezado usuario
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-            child: Row(
-              children: const [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundImage: AssetImage('assets/images/amlo.jpg'),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Usuario Registrado',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-
-          // Título + búsqueda
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 14, 16, 8),
-            child: Text(
-              'Messages',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: TextInput(title: 'Buscar'),
-          ),
-          const SizedBox(height: 8),
-
-          // Lista shrinkWrap (no scroll interno)
-          ListView(
-            padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            children: const [
-              _ConversationTile(
-                avatar: 'assets/images/user_f1.png',
-                name: 'Andrea Martinez',
-                preview: "Hey there! 🤓 Did you catch the latest episode of it...",
-                time: '5s',
-                unread: true,
-              ),
-              _ConversationTile(
-                avatar: 'assets/images/user_m1.png',
-                name: 'Ian Gonzalez',
-                preview: "When will the work be ready???",
-                time: '5m',
-              ),
-              _ConversationTile(
-                avatar: 'assets/images/user_f2.png',
-                name: 'Cristina Muñoz',
-                preview:
-                "Awesome! 🍦 I love chocolate chip cookie dough. Looking forward...",
-                time: '1h',
-                active: true,
-              ),
-              _ConversationTile(
-                avatar: 'assets/images/user_f3.png',
-                name: 'Andrea Velazquez',
-                preview:
-                "Just wanted to share the awesome pics from our hiking...",
-                time: '2h',
-              ),
-              _ConversationTile(
-                avatar: 'assets/images/user_m2.png',
-                name: 'Maximiliano Vega',
-                preview:
-                "That is a good idea. I will try to communicate this with the team.",
-                time: '1d',
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-}
-
-class _ConversationTile extends StatelessWidget {
-  const _ConversationTile({
-    required this.avatar,
-    required this.name,
-    required this.preview,
-    required this.time,
-    this.unread = false,
-    this.active = false,
-  });
-
-  final String avatar;
-  final String name;
-  final String preview;
-  final String time;
-  final bool unread;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ThemeController.instance;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      decoration: BoxDecoration(
-        color: active ? theme.background() : Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: active ? theme.secundario().withOpacity(.5) : Colors.grey.shade300,
-        ),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        leading: CircleAvatar(backgroundImage: AssetImage(avatar)),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(name, style: const TextStyle(fontWeight: FontWeight.w700)),
-            ),
-            Text(time, style: const TextStyle(fontSize: 12, color: Colors.black54)),
-          ],
-        ),
-        subtitle: Row(
-          children: [
-            Expanded(
-              child: Text(
-                preview,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (unread)
-              Container(
-                width: 18,
-                height: 18,
-                alignment: Alignment.center,
-                margin: const EdgeInsets.only(left: 6),
-                decoration: BoxDecoration(
-                  color: theme.secundario(),
-                  shape: BoxShape.circle,
-                ),
-                child: const Text(
-                  '4',
-                  style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/* ───────────────────────── Util ───────────────────────── */
-
-BoxDecoration _panelDecoration(ThemeController theme) {
-  return BoxDecoration(
-    color: theme.background(),
-    borderRadius: BorderRadius.circular(12),
-    border: Border.all(color: Colors.black12),
-  );
 }
