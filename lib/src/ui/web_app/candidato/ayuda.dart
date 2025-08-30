@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/faq_item.dart';
 
 class FaqPage extends StatefulWidget {
   const FaqPage({super.key});
@@ -31,10 +32,12 @@ class _FaqPageState extends State<FaqPage> {
     final pos = _scrollCtrl.position;
     if (!pos.hasPixels || !pos.hasContentDimensions) return;
 
+    // Si no hay scroll suficiente, oculta el footer
     if (pos.maxScrollExtent <= 0) {
       if (_showFooter) setState(() => _showFooter = false);
       return;
     }
+
     final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
     if (atBottom != _showFooter) setState(() => _showFooter = atBottom);
   }
@@ -64,7 +67,6 @@ class _FaqPageState extends State<FaqPage> {
       ),
       body: Stack(
         children: [
-          // Contenido scrolleable
           Positioned.fill(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -88,7 +90,7 @@ class _FaqPageState extends State<FaqPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              // TÍTULO
+                              // Título principal
                               Text(
                                 'Ayuda',
                                 textAlign: TextAlign.center,
@@ -100,7 +102,7 @@ class _FaqPageState extends State<FaqPage> {
                               ),
                               const SizedBox(height: 10),
 
-                              // DESCRIPCIÓN
+                              // Descripción
                               ConstrainedBox(
                                 constraints: const BoxConstraints(maxWidth: 680),
                                 child: const Text(
@@ -112,7 +114,7 @@ class _FaqPageState extends State<FaqPage> {
                               ),
                               const SizedBox(height: 24),
 
-                              // LISTA DE FAQ (reutilizable)
+                              // Lista de preguntas (FAQ)
                               ConstrainedBox(
                                 constraints: const BoxConstraints(maxWidth: 560),
                                 child: Column(
@@ -165,121 +167,6 @@ class _FaqPageState extends State<FaqPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/* ───────────────────────── FAQ Item reutilizable ───────────────────────── */
-
-class FaqItem extends StatefulWidget {
-  const FaqItem({
-    super.key,
-    required this.question,
-    required this.answer,
-    this.initiallyExpanded = false,
-  });
-
-  final String question;
-  final String answer;
-  final bool initiallyExpanded;
-
-  @override
-  State<FaqItem> createState() => _FaqItemState();
-}
-
-class _FaqItemState extends State<FaqItem> {
-  late bool _expanded;
-
-  @override
-  void initState() {
-    super.initState();
-    _expanded = widget.initiallyExpanded;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ThemeController.instance;
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOut,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.black26),
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () => setState(() => _expanded = !_expanded),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Encabezado pregunta con ícono a la derecha
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        widget.question,
-                        style: TextStyle(
-                          color: theme.secundario(),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: theme.secundario(),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.secundario().withOpacity(.35),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ],
-                ),
-
-                // Respuesta (expansión)
-                AnimatedCrossFade(
-                  firstChild: const SizedBox.shrink(),
-                  secondChild: Padding(
-                    padding: const EdgeInsets.only(top: 10, right: 4),
-                    child: Text(
-                      widget.answer,
-                      style: const TextStyle(height: 1.5),
-                    ),
-                  ),
-                  crossFadeState:
-                  _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-                  duration: const Duration(milliseconds: 180),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
