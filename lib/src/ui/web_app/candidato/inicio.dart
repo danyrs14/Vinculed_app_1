@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/job_card.dart';
