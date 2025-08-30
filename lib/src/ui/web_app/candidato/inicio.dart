@@ -79,6 +79,10 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
               context.go('/experiencias');
               break;
 
+            case "FAQ":
+              context.go('/faq');
+              break;
+
           }
         },
       ),
