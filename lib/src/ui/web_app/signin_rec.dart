@@ -197,7 +197,7 @@ class _RegisterPageWebRecState extends State<RegisterPageWebRec> {
 
                                 const SizedBox(height: 24),
 
-                                Row(
+                                const Row(
                                   children: const [
                                     Expanded(child: Divider(thickness: 1)),
                                     Padding(
@@ -211,7 +211,7 @@ class _RegisterPageWebRecState extends State<RegisterPageWebRec> {
                                 const SizedBox(height: 16),
 
                                 LargeButton(
-                                  onTap: () => context.go('/login'),
+                                  onTap: () => context.go('/inicio_rec'),
                                   title: 'Iniciar Sesión',
                                 ),
 

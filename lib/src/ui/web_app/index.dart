@@ -13,6 +13,7 @@ import 'package:vinculed_app_1/src/ui/web_app/candidato/vacante.dart';
 import 'package:vinculed_app_1/src/ui/web_app/dashboard.dart';
 import 'package:vinculed_app_1/src/ui/web_app/login.dart';
 import 'package:vinculed_app_1/src/ui/web_app/not_found_page.dart';
+import 'package:vinculed_app_1/src/ui/web_app/reclutador/inicio.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin_rec.dart';
 
@@ -32,6 +33,7 @@ class _AdminAppState extends State<AdminApp> {
 
     _router = GoRouter(
       routes: [
+        //aqui empiezan las pantallas del candidato
         GoRoute(
           path: '/dashboard',
           builder: (context, state) => const Dashboard(),
@@ -83,6 +85,11 @@ class _AdminAppState extends State<AdminApp> {
         GoRoute(
           path: '/faq',
           builder: (context, state) => const FaqPage(),
+        ),
+        //apartir de aqui son las pantallas del reclutador
+        GoRoute(
+          path: '/inicio_rec',
+          builder: (context, state) => const HomeRecruiterPage(),
         ),
       ],
       errorPageBuilder: (context, state) => const MaterialPage(
