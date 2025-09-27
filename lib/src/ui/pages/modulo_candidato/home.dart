@@ -46,9 +46,7 @@ class Home extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 5), // Espacio entre el texto y los siguientes elementos
-
               //Contenido a futuro
-
             ],
           ),
         ),

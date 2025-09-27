@@ -10,6 +10,7 @@ import 'package:vinculed_app_1/src/ui/web_app/candidato/inicio.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/messages.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/perfil_candidato.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/postulaciones.dart';
+import 'package:vinculed_app_1/src/ui/web_app/candidato/preferencias.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/vacante.dart';
 
 // Generales
@@ -101,6 +102,10 @@ class _AdminAppState extends State<AdminApp> {
         GoRoute(
           path: '/faq',
           builder: (context, state) => const FaqPage(),
+        ),
+        GoRoute(
+          path: '/preferences',
+          builder: (context, state) => const PreferencesPage(),
         ),
 
         // ----- Reclutador -----
