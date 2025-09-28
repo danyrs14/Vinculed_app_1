@@ -4,6 +4,7 @@ import 'package:vinculed_app_1/src/ui/pages/recpass.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart'; // Para el texto de bienvenida
+import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/lector_qr.dart';
 
 class LoginPage extends StatelessWidget {
   // Controladores para los campos de texto
@@ -93,21 +94,15 @@ class LoginPage extends StatelessWidget {
 
               SizedBox(height: 20), // Espacio entre los campos de texto y el botón
 
-              // Botón de inicio de sesión
+              // Botón de Registro de Alumno
               LargeButton(
                 title: "Registrarme como alumno",
                 primaryColor: true,
                 onTap: () {
-                  // Lógica de inicio de sesión
-                  String email = emailController.text;
-                  String password = passwordController.text;
-                  // Aquí iría tu lógica de autenticación
-                  print("Email: $email, Password: $password");
-
-                  // Navegar a la siguiente pantalla después de la autenticación
+                  // Redirigir a la página de registro de alumno
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => MenuPage()),
+                    MaterialPageRoute(builder: (context) => const LectorQRPage()),
                   );
                 },
               ),
