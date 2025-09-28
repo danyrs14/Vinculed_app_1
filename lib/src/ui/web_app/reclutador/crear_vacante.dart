@@ -5,7 +5,9 @@ import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/requisitos.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
+
 
 class CreateVacancyPage extends StatefulWidget {
   const CreateVacancyPage({super.key});
@@ -39,7 +41,7 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
     'Sistemas', 'Informatica', 'QA', 'Electronica',
   ];
 
-  // Seleccionados
+  // Seleccionados (iniciales como en la imagen)
   final List<String> _escolaresSel = ['1. Universitario sin título'];
   final List<String> _especificosSel = ['1. Ingeniero en Sistemas'];
 
@@ -91,6 +93,7 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
               context.go('/inicio_rec');
               break;
             case "Crear Vacante":
+            // ya estás aquí
               context.go('/new_vacancy');
               break;
           }
@@ -170,11 +173,11 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
                                 ),
                                 const SizedBox(height: 16),
 
-                                // Dos columnas de requisitos
+                                // Dos columnas de requisitos (USANDO EL NUEVO WIDGET)
                                 isMobile
                                     ? Column(
                                   children: [
-                                    _RequisitosColumn(
+                                    RequisitosColumn(
                                       titulo: 'REQUISITOS ESCOLARES:',
                                       seleccionados: _escolaresSel,
                                       options: _escolaresOpciones,
@@ -182,7 +185,7 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
                                       onRemove: _removeEscolar,
                                     ),
                                     const SizedBox(height: 18),
-                                    _RequisitosColumn(
+                                    RequisitosColumn(
                                       titulo: 'REQUISITOS ESPECIFICOS:',
                                       seleccionados: _especificosSel,
                                       options: _especificosOpciones,
@@ -195,7 +198,7 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
-                                      child: _RequisitosColumn(
+                                      child: RequisitosColumn(
                                         titulo: 'REQUISITOS ESCOLARES:',
                                         seleccionados: _escolaresSel,
                                         options: _escolaresOpciones,
@@ -205,7 +208,7 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
                                     ),
                                     const SizedBox(width: 18),
                                     Expanded(
-                                      child: _RequisitosColumn(
+                                      child: RequisitosColumn(
                                         titulo: 'REQUISITOS ESPECIFICOS:',
                                         seleccionados: _especificosSel,
                                         options: _especificosOpciones,
@@ -295,96 +298,6 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
     // Aquí puedes conectar con Firestore/Backend.
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Vacante publicada (demo UI).')),
-    );
-  }
-}
-
-class _RequisitosColumn extends StatelessWidget {
-  const _RequisitosColumn({
-    required this.titulo,
-    required this.seleccionados,
-    required this.options,
-    required this.onAdd,
-    required this.onRemove,
-  });
-
-  final String titulo;
-  final List<String> seleccionados;
-  final List<String> options;
-  final void Function(String) onAdd;
-  final void Function(String) onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ThemeController.instance;
-    final isMobile = MediaQuery.of(context).size.width < 900;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          titulo,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            letterSpacing: .2,
-          ),
-        ),
-        const SizedBox(height: 6),
-
-        // Bandeja gris (seleccionados)
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFB7C6CF), // gris azulado como en la imagen
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: seleccionados.isEmpty
-              ? const Text('Sin requisitos agregados',
-              style: TextStyle(color: Colors.black54))
-              : Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: seleccionados
-                .map(
-                  (e) => _chipFilled(
-                label: e,
-                onDelete: () => onRemove(e),
-              ),
-            )
-                .toList(),
-          ),
-        ),
-        const SizedBox(height: 10),
-
-        // Opciones en chips
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: options
-              .map(
-                (o) => InputChip(
-              label: Text(o),
-              onPressed: () => onAdd(o),
-              side: const BorderSide(color: Colors.black38),
-              selectedColor: theme.background(),
-            ),
-          )
-              .toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _chipFilled({required String label, required VoidCallback onDelete}) {
-    return Chip(
-      label: Text(label),
-      backgroundColor: const Color(0xFF97AAB6),
-      labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-      deleteIcon: const Icon(Icons.close, size: 18, color: Colors.white),
-      onDeleted: onDelete,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
   }
 }
