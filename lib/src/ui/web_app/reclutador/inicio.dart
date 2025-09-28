@@ -3,8 +3,10 @@ import 'package:go_router/go_router.dart';
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/candidate_card.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart';
 
 class HomeRecruiterPage extends StatefulWidget {
   const HomeRecruiterPage({super.key});
@@ -56,27 +58,17 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
 
     return Scaffold(
       backgroundColor: theme.background(),
-      appBar: EscomHeader2(
+      appBar: EscomHeader3(
         onLoginTap: () => context.go('/perfil_cand'),
         onRegisterTap: () => context.go('/signin'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
-              context.go('/dashboard');
+              context.go('/inicio_rec');
               break;
-            case "Mis Vacantes":
-            case "Postulaciones":
-              context.go('/mis_postulaciones');
-              break;
-            case "Mensajes":
-              context.go('/messages');
-              break;
-            case "Experiencias":
-              context.go('/experiencias');
-              break;
-            case "FAQ":
-              context.go('/faq');
+            case "Crear Vacante":
+              context.go('/new_vacancy');
               break;
           }
         },
