@@ -5,6 +5,7 @@ import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/faq_item.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
 
 class FaqPage extends StatefulWidget {
   const FaqPage({super.key});
@@ -57,12 +58,37 @@ class _FaqPageState extends State<FaqPage> {
 
     return Scaffold(
       backgroundColor: theme.background(),
-      appBar: EscomHeader(
-        onLoginTap: () => context.go('/login'),
+      appBar: EscomHeader2(
+        onLoginTap: () => context.go('/perfil_cand'),
         onRegisterTap: () => context.go('/signin'),
         onNotifTap: () {},
         onMenuSelected: (label) {
-          if (label == "Inicio") context.go('/dashboard');
+          switch (label) {
+            case "Inicio":
+              context.go('/inicio_cand');
+              break;
+
+            case "Postulaciones":
+              context.go('/mis_postulaciones');
+              break;
+
+            case "Mensajes":
+              context.go('/messages');
+              break;
+
+            case "Experiencias":
+              context.go('/experiencias');
+              break;
+
+            case "FAQ":
+              context.go('/faq');
+              break;
+
+            case "Preferencias":
+              context.go('/preferences');
+              break;
+
+          }
         },
       ),
       body: Stack(

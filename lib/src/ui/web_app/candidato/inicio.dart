@@ -64,7 +64,7 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
-              context.go('/dashboard');
+              context.go('/inicio_cand');
               break;
 
               case "Postulaciones":

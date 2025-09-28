@@ -65,20 +65,29 @@ class _PreferencesPageState extends State<PreferencesPage> {
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
-              context.go('/dashboard');
+              context.go('/inicio_cand');
               break;
+
             case "Postulaciones":
               context.go('/mis_postulaciones');
               break;
+
             case "Mensajes":
               context.go('/messages');
               break;
+
             case "Experiencias":
               context.go('/experiencias');
               break;
+
             case "FAQ":
               context.go('/faq');
               break;
+
+            case "Preferencias":
+              context.go('/preferences');
+              break;
+
           }
         },
       ),

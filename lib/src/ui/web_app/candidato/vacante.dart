@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 
@@ -66,12 +67,37 @@ class _JobDetailPageState extends State<JobDetailPage> {
     final isMobile = MediaQuery.of(context).size.width < 700;
 
     return Scaffold(
-      appBar: EscomHeader(
-        onLoginTap: () => context.go('/login'),
+      appBar: EscomHeader2(
+        onLoginTap: () => context.go('/perfil_cand'),
         onRegisterTap: () => context.go('/signin'),
         onNotifTap: () {},
         onMenuSelected: (label) {
-          if (label == 'Inicio') context.go('/dashboard');
+          switch (label) {
+            case "Inicio":
+              context.go('/inicio_cand');
+              break;
+
+            case "Postulaciones":
+              context.go('/mis_postulaciones');
+              break;
+
+            case "Mensajes":
+              context.go('/messages');
+              break;
+
+            case "Experiencias":
+              context.go('/experiencias');
+              break;
+
+            case "FAQ":
+              context.go('/faq');
+              break;
+
+            case "Preferencias":
+              context.go('/preferences');
+              break;
+
+          }
         },
       ),
 
