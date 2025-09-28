@@ -131,24 +131,22 @@ class _PreferencesPageState extends State<PreferencesPage> {
                                   builder: (context, c) {
                                     final isNarrow = c.maxWidth < 900;
 
-                                    final children = const [
-                                      // IMPORTANTE: si tu JobCard usa otro nombre de parámetro,
-                                      // cambia `isFavorite` por el correcto (p. ej. initialFavorite/favorite).
-                                      JobCard(
+                                    final children = [
+                                      const JobCard(
                                         item: JobItem(
                                           title: 'Becario de QA',
                                           location: 'Ciudad de México',
                                           company: 'BBVA México',
                                         ),
                                       ),
-                                      JobCard(
+                                      const JobCard(
                                         item: JobItem(
                                           title: 'Becario Scrum',
                                           location: 'Ciudad de México',
                                           company: 'IDS',
                                         ),
                                       ),
-                                      JobCard(
+                                      const JobCard(
                                         item: JobItem(
                                           title: 'Becario de TI',
                                           location: 'Ciudad de México',
