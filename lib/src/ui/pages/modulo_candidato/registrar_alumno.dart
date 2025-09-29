@@ -7,6 +7,7 @@ import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/menu.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/dropdown.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
+import 'package:vinculed_app_1/src/ui/pages/verificarEmail.dart';
 
 class RegisterStudentPage extends StatefulWidget {
   const RegisterStudentPage({Key? key}) : super(key: key);
@@ -55,22 +56,27 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
         },
         body: jsonEncode({
           'nombre': name,
-          'genero': gender,
           'email': email,
+          'rol': 'alumno',
+          'genero': gender,
+          'uid_firebase': credential.user!.uid,
         }),
       );
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        // Navegar al menú principal
+      if ((response.statusCode == 201 || response.statusCode == 200) && (credential.user != null && !credential.user!.emailVerified) ) {
+        //Enviar email de verificación
+        await credential.user!.sendEmailVerification();
+        
+        //Pagina de verificación
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => MenuPage()),
+          MaterialPageRoute(builder: (context) => verificarEmailPage()),
         );
       } else {
         _showError("Error en el backend: ${response.body}");
       }
     } on FirebaseAuthException catch (e) {
-      _showError("Error Firebase: ${e.message}");
+      _showError("Error: ${e.message}");
     } catch (e) {
       _showError("Error inesperado: $e");
     } finally {
@@ -109,9 +115,9 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
                   required: true,
                   value: "Masculino",
                   items: const [
-                    DropdownMenuItem(value: "Masculino", child: Text("Masculino")),
-                    DropdownMenuItem(value: "Femenino", child: Text("Femenino")),
-                    DropdownMenuItem(value: "Otro", child: Text("Otro")),
+                    DropdownMenuItem(value: "masculino", child: Text("Masculino")),
+                    DropdownMenuItem(value: "femenino", child: Text("Femenino")),
+                    DropdownMenuItem(value: "otro", child: Text("Otro")),
                   ],
                   onChanged: (valor) {
                     setState(() {

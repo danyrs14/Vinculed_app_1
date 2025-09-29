@@ -3,6 +3,7 @@ import 'package:page_transition/page_transition.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/login.dart';
 import 'package:vinculed_app_1/src/ui/widgets/configure.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
