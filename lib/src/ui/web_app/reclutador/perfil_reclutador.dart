@@ -75,6 +75,9 @@ class _UserProfileState extends State<UserProfile> {
             case "FAQ":
               context.go('/faq_rec');
               break;
+            case "Mensajes":
+              context.go('/msg_rec');
+              break;
           }
         },
       ),

@@ -76,6 +76,9 @@ class _MyVacanciesPageState extends State<MyVacanciesPage> {
             case "FAQ":
               context.go('/faq_rec');
               break;
+            case "Mensajes":
+              context.go('/msg_rec');
+              break;
           }
         },
       ),

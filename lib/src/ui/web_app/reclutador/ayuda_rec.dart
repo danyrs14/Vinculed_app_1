@@ -80,6 +80,9 @@ class _FaqPageRecState extends State<FaqPageRec> {
             case "FAQ":
               context.go('/faq_rec');
               break;
+            case "Mensajes":
+              context.go('/msg_rec');
+              break;
           }
         },
       ),
