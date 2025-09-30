@@ -70,6 +70,9 @@ class _MyVacanciesPageState extends State<MyVacanciesPage> {
             case "Mis Vacantes":
               context.go('/my_vacancy');
               break;
+            case "Postulaciones":
+              context.go('/postulaciones');
+              break;
           }
         },
       ),

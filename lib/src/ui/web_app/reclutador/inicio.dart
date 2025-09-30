@@ -73,6 +73,9 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
             case "Mis Vacantes":
               context.go('/my_vacancy');
               break;
+            case "Postulaciones":
+              context.go('/postulaciones');
+              break;
           }
         },
       ),
