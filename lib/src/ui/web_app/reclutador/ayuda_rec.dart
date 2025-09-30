@@ -6,15 +6,16 @@ import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/faq_item.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart';
 
-class FaqPage extends StatefulWidget {
-  const FaqPage({super.key});
+class FaqPageRec extends StatefulWidget {
+  const FaqPageRec({super.key});
 
   @override
-  State<FaqPage> createState() => _FaqPageState();
+  State<FaqPageRec> createState() => _FaqPageRecState();
 }
 
-class _FaqPageState extends State<FaqPage> {
+class _FaqPageRecState extends State<FaqPageRec> {
   final _scrollCtrl = ScrollController();
   bool _showFooter = false;
 
@@ -58,36 +59,30 @@ class _FaqPageState extends State<FaqPage> {
 
     return Scaffold(
       backgroundColor: theme.background(),
-      appBar: EscomHeader2(
-        onLoginTap: () => context.go('/perfil_cand'),
+      appBar: EscomHeader3(
+        onLoginTap: () => context.go('/perfil_rec'),
         onRegisterTap: () => context.go('/signin'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
-              context.go('/inicio_cand');
+              context.go('/inicio_rec');
               break;
-
+            case "Crear Vacante":
+              context.go('/new_vacancy');
+              break;
+            case "Mis Vacantes":
+              context.go('/my_vacancy');
+              break;
             case "Postulaciones":
-              context.go('/mis_postulaciones');
+              context.go('/postulaciones');
               break;
-
-            case "Mensajes":
-              context.go('/messages');
-              break;
-
-            case "Experiencias":
-              context.go('/experiencias');
-              break;
-
             case "FAQ":
-              context.go('/faq');
+              context.go('/faq_rec');
               break;
-
-            case "Preferencias":
-              context.go('/preferences');
+            case "Mensajes":
+              context.go('/msg_rec');
               break;
-
           }
         },
       ),

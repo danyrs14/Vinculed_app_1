@@ -8,13 +8,13 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
     this.onMenuSelected,
     this.onLoginTap,
     this.onRegisterTap,
-    this.onNotifTap,
+    this.onNotifTap, // Se llamará DESPUÉS de abrir la bandeja
   });
 
   final void Function(String label)? onMenuSelected;
   final VoidCallback? onLoginTap;
   final VoidCallback? onRegisterTap;
-  /// Si lo dejas null, el header abrirá su panel de notificaciones integrado.
+  /// Se llamará después de abrir la bandeja, para métricas o side-effects.
   final VoidCallback? onNotifTap;
 
   static const _menuItems = <String>[
@@ -46,6 +46,8 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: isMobile
           ? [
+        // Campana en móvil
+        _notifIcon(context),
         PopupMenuButton<String>(
           icon: const Icon(Icons.menu),
           onSelected: (value) => onMenuSelected?.call(value),
@@ -78,12 +80,44 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
             title: "Cerrar Sesion",
           ),
         ),
+        _notifIcon(context),
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
+  /// Botón de notificaciones con "badge" de ejemplo.
+  Widget _notifIcon(BuildContext context) {
+    // Cambia este número para simular cuántas no leídas tienes.
+    const int unreadCount = 3;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
         IconButton(
           tooltip: 'Notificaciones',
-          onPressed: onNotifTap ?? () => _showNotificationsPanel(context),
+          onPressed: () {
+            _showNotificationsPanel(context); // SIEMPRE abre
+            onNotifTap?.call(); // luego, si quieres hacer algo extra
+          },
           icon: const Icon(Icons.notifications),
         ),
-        const SizedBox(width: 8),
+        if (unreadCount > 0)
+          Positioned(
+            right: 6,
+            top: 6,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                unreadCount.toString(),
+                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -98,7 +132,7 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  /// Panel tipo "drawer" del lado derecho, como en el diseño.
+  /// Panel tipo "drawer" del lado derecho.
   void _showNotificationsPanel(BuildContext context) {
     final theme = ThemeController.instance;
     final mq = MediaQuery.of(context);
@@ -111,7 +145,7 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
       barrierDismissible: true,
       barrierLabel: 'Notificaciones',
       transitionDuration: const Duration(milliseconds: 220),
-      pageBuilder: (ctx, _, __) {
+      pageBuilder: (dialogCtx, _, __) {
         return SafeArea(
           child: Align(
             alignment: Alignment.topRight,
@@ -133,7 +167,7 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
                   ],
                 ),
                 child: _NotificationsList(
-                  onClose: () => Navigator.of(ctx).maybePop(),
+                  onClose: () => Navigator.of(dialogCtx).maybePop(),
                 ),
               ),
             ),
@@ -160,33 +194,33 @@ class _NotificationsList extends StatelessWidget {
   const _NotificationsList({required this.onClose});
   final VoidCallback onClose;
 
-  // Datos de ejemplo; sustituye por tus datos reales
+  // Notificaciones de muestra (puedes borrarlas después):
   List<_Notif> get _items => const [
     _Notif(
-      name: 'Andres Flores',
-      message: 'Ha checado tu perfil',
-      minutesAgo: 0,
+      name: 'Andrés Flores',
+      message: 'Revisó tu perfil',
+      minutesAgo: 2,
       unread: true,
     ),
     _Notif(
       name: 'Oscar Manríquez',
-      message: 'Mostró interés',
+      message: 'Mostró interés en tu candidatura',
       minutesAgo: 6,
       unread: true,
     ),
     _Notif(
-      name: 'Eduardo Perez',
-      message: 'Ha comentado tu publicación',
+      name: 'Eduardo Pérez',
+      message: 'Comentó tu publicación “Tips de entrevista”',
       minutesAgo: 15,
     ),
     _Notif(
       name: 'Ximena Castillo',
-      message: 'Publicó una experiencia',
+      message: 'Publicó una nueva experiencia',
       minutesAgo: 16,
     ),
     _Notif(
-      name: 'Pablo Lopez',
-      message: 'Se ha unido',
+      name: 'Pablo López',
+      message: 'Se ha unido a tu red',
       minutesAgo: 18,
       unread: true,
     ),
@@ -270,8 +304,8 @@ class _NotificationsList extends StatelessWidget {
                   ],
                 ),
                 onTap: () {
-                  // Aquí podrías navegar a detalle de la notificación
-                  // Navigator.of(context).pop(); // cierra el panel si quieres
+                  // Aquí podrías navegar al detalle o marcar como leída
+                  // Navigator.of(context).pop(); // si quieres cerrar
                 },
               );
             },
@@ -283,14 +317,13 @@ class _NotificationsList extends StatelessWidget {
     );
   }
 
+  /// Iniciales simples sin dependencia de `characters`.
   static String _initials(String name) {
     final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty) return '?';
-    if (parts.length == 1) return parts.first.characters.take(2).toString().toUpperCase();
-    return (parts.first.characters.first +
-        parts.last.characters.first)
-        .toString()
-        .toUpperCase();
+    if (parts.isEmpty || parts.first.isEmpty) return '?';
+    final first = parts.first[0];
+    final last = (parts.length > 1 && parts.last.isNotEmpty) ? parts.last[0] : '';
+    return (first + last).toUpperCase();
   }
 }
 

@@ -1,21 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+// Candidato
 import 'package:vinculed_app_1/src/ui/web_app/candidato/add_experiencia.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/ayuda.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/buscar_vacantes.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/experiencias.dart';
-
 import 'package:vinculed_app_1/src/ui/web_app/candidato/inicio.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/messages.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/perfil_candidato.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/postulaciones.dart';
+import 'package:vinculed_app_1/src/ui/web_app/candidato/preferencias.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/vacante.dart';
+
+// Generales
 import 'package:vinculed_app_1/src/ui/web_app/dashboard.dart';
 import 'package:vinculed_app_1/src/ui/web_app/login.dart';
 import 'package:vinculed_app_1/src/ui/web_app/not_found_page.dart';
-import 'package:vinculed_app_1/src/ui/web_app/reclutador/inicio.dart';
+import 'package:vinculed_app_1/src/ui/web_app/reclutador/ayuda_rec.dart';
+import 'package:vinculed_app_1/src/ui/web_app/reclutador/crear_vacante.dart';
+import 'package:vinculed_app_1/src/ui/web_app/reclutador/messages_rec.dart';
+import 'package:vinculed_app_1/src/ui/web_app/reclutador/mis_vacantes.dart';
+import 'package:vinculed_app_1/src/ui/web_app/reclutador/perfil_reclutador.dart';
+import 'package:vinculed_app_1/src/ui/web_app/reclutador/postulaciones.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin_rec.dart';
+
+// Reclutador
+import 'package:vinculed_app_1/src/ui/web_app/reclutador/inicio.dart';
 
 class AdminApp extends StatefulWidget {
   const AdminApp({super.key});
@@ -32,8 +44,17 @@ class _AdminAppState extends State<AdminApp> {
     super.initState();
 
     _router = GoRouter(
+      // Hace que al iniciar vaya directo al dashboard
+      initialLocation: '/dashboard',
+
+      // Opcional: si alguien entra a '/', lo redirigimos al dashboard
       routes: [
-        //aqui empiezan las pantallas del candidato
+        GoRoute(
+          path: '/',
+          redirect: (context, state) => '/dashboard',
+        ),
+
+        // ----- Generales -----
         GoRoute(
           path: '/dashboard',
           builder: (context, state) => const Dashboard(),
@@ -50,6 +71,8 @@ class _AdminAppState extends State<AdminApp> {
           path: '/signin_rec',
           builder: (context, state) => const RegisterPageWebRec(),
         ),
+
+        // ----- Candidato -----
         GoRoute(
           path: '/inicio_cand',
           builder: (context, state) => const HomeRegisteredPage(),
@@ -86,15 +109,51 @@ class _AdminAppState extends State<AdminApp> {
           path: '/faq',
           builder: (context, state) => const FaqPage(),
         ),
-        //apartir de aqui son las pantallas del reclutador
+        GoRoute(
+          path: '/preferences',
+          builder: (context, state) => const PreferencesPage(),
+        ),
+
+        // ----- Reclutador -----
         GoRoute(
           path: '/inicio_rec',
           builder: (context, state) => const HomeRecruiterPage(),
         ),
+        GoRoute(
+          path: '/new_vacancy',
+          builder: (context, state) => const CreateVacancyPage(),
+        ),
+        GoRoute(
+          path: '/my_vacancy',
+          builder: (context, state) => const MyVacanciesPage(),
+        ),
+        GoRoute(
+          path: '/postulaciones',
+          builder: (context, state) => const VacancyDetailPage(),
+        ),
+        GoRoute(
+          path: '/perfil_rec',
+          builder: (context, state) => const UserProfile(),
+        ),
+        GoRoute(
+          path: '/faq_rec',
+          builder: (context, state) => const FaqPageRec(),
+        ),
+        GoRoute(
+          path: '/msg_rec',
+          builder: (context, state) => const MessagesPageRec(),
+        ),
+
+        // (Opcional) Ruta explícita de 404 para link directo
+        GoRoute(
+          path: '/404',
+          builder: (context, state) => const NotFoundPage(),
+        ),
       ],
-      errorPageBuilder: (context, state) => const MaterialPage(
-        child: NotFoundPage(),
-      ),
+
+      // Usa errorBuilder (API reciente). Si tu versión requiere errorPageBuilder, deja el tuyo.
+      errorBuilder: (context, state) => const NotFoundPage(),
+
       debugLogDiagnostics: true,
     );
   }

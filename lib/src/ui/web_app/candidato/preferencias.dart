@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/job_card.dart';
 
-class HomeRegisteredPage extends StatefulWidget {
-  const HomeRegisteredPage({super.key});
+class PreferencesPage extends StatefulWidget {
+  const PreferencesPage({super.key});
 
   @override
-  State<HomeRegisteredPage> createState() => _HomeRegisteredPageState();
+  State<PreferencesPage> createState() => _PreferencesPageState();
 }
 
-class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
+class _PreferencesPageState extends State<PreferencesPage> {
   final _scrollCtrl = ScrollController();
   bool _showFooter = false;
 
@@ -67,11 +68,11 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
               context.go('/inicio_cand');
               break;
 
-              case "Postulaciones":
+            case "Postulaciones":
               context.go('/mis_postulaciones');
               break;
 
-              case "Mensajes":
+            case "Mensajes":
               context.go('/messages');
               break;
 
@@ -83,7 +84,7 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
               context.go('/faq');
               break;
 
-              case "Preferencias":
+            case "Preferencias":
               context.go('/preferences');
               break;
 
@@ -124,76 +125,84 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // Saludo con avatar
-                                Row(
-                                  children: [
-                                    const CircleAvatar(
-                                      radius: 28,
-                                      backgroundImage: AssetImage(
-                                        'assets/images/amlo.jpg',
-                                      ),
-                                    ),
-                                    const SizedBox(width: 14),
-                                    Expanded(
-                                      child: Text(
-                                        'Bienvenido de Nuevo -  @Usuario_Registrado',
-                                        style: TextStyle(
-                                          fontSize: isMobile ? 22 : 28,
-                                          fontWeight: FontWeight.w800,
-                                          color: const Color(0xFF22313F),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                // ---------- Título ----------
+                                Text(
+                                  'Preferencias',
+                                  style: TextStyle(
+                                    fontSize: isMobile ? 26 : 34,
+                                    fontWeight: FontWeight.w900,
+                                    color: const Color(0xFF22313F),
+                                  ),
                                 ),
                                 const SizedBox(height: 28),
 
-                                // Row con 3 JobCards de ejemplo
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: const [
-                                    Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: JobCard(
-                                          item: JobItem(
-                                            title: 'Becario de QA',
-                                            location: 'Ciudad de México',
-                                            company: 'BBVA México',
-                                          ),
+                                LayoutBuilder(
+                                  builder: (context, c) {
+                                    final isNarrow = c.maxWidth < 900;
+
+                                    final children = [
+                                      const JobCard(
+                                        item: JobItem(
+                                          title: 'Becario de QA',
+                                          location: 'Ciudad de México',
+                                          company: 'BBVA México',
                                         ),
                                       ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: JobCard(
-                                          item: JobItem(
-                                            title: 'Becario Scrum',
-                                            location: 'Ciudad de México',
-                                            company: 'IDS',
-                                          ),
+                                      const JobCard(
+                                        item: JobItem(
+                                          title: 'Becario Scrum',
+                                          location: 'Ciudad de México',
+                                          company: 'IDS',
                                         ),
                                       ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: JobCard(
-                                          item: JobItem(
-                                            title: 'Becario de TI',
-                                            location: 'Ciudad de México',
-                                            company: 'Banorte IXE',
-                                          ),
+                                      const JobCard(
+                                        item: JobItem(
+                                          title: 'Becario de TI',
+                                          location: 'Ciudad de México',
+                                          company: 'Banorte IXE',
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ];
+
+                                    if (isNarrow) {
+                                      return Column(
+                                        children: [
+                                          for (final ch in children) ...[
+                                            ch,
+                                            const SizedBox(height: 12),
+                                          ],
+                                        ],
+                                      );
+                                    }
+                                    return Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                            child: children[0],
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                            child: children[1],
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                            child: children[2],
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 ),
 
                                 const SizedBox(height: 28),
 
-                                // Botones grandes inferior (responsive)
+                                // ---------- Acciones ----------
                                 LayoutBuilder(
                                   builder: (context, c) {
                                     final stackButtons = c.maxWidth < 680;
