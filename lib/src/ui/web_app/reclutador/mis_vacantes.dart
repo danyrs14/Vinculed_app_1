@@ -73,10 +73,9 @@ class _MyVacanciesPageState extends State<MyVacanciesPage> {
             case "Postulaciones":
               context.go('/postulaciones');
               break;
-            case "Postulaciones":
-              context.go('/postulaciones');
+            case "FAQ":
+              context.go('/faq_rec');
               break;
-
           }
         },
       ),

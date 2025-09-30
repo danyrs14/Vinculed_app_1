@@ -55,7 +55,7 @@ class _UserProfileState extends State<UserProfile> {
     return Scaffold(
       backgroundColor: theme.background(),
       appBar: EscomHeader3(
-          onLoginTap: () => context.go('/perfil_rec'),
+        onLoginTap: () => context.go('/perfil_rec'),
         onRegisterTap: () => context.go('/signin'),
         onNotifTap: () {},
         onMenuSelected: (label) {
@@ -72,10 +72,9 @@ class _UserProfileState extends State<UserProfile> {
             case "Postulaciones":
               context.go('/postulaciones');
               break;
-            case "Postulaciones":
-              context.go('/postulaciones');
+            case "FAQ":
+              context.go('/faq_rec');
               break;
-
           }
         },
       ),

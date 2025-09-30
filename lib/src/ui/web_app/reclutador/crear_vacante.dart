@@ -101,10 +101,9 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
             case "Postulaciones":
               context.go('/postulaciones');
               break;
-            case "Postulaciones":
-              context.go('/postulaciones');
+            case "FAQ":
+              context.go('/faq_rec');
               break;
-
           }
         },
       ),

@@ -17,6 +17,7 @@ import 'package:vinculed_app_1/src/ui/web_app/candidato/vacante.dart';
 import 'package:vinculed_app_1/src/ui/web_app/dashboard.dart';
 import 'package:vinculed_app_1/src/ui/web_app/login.dart';
 import 'package:vinculed_app_1/src/ui/web_app/not_found_page.dart';
+import 'package:vinculed_app_1/src/ui/web_app/reclutador/ayuda_rec.dart';
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/crear_vacante.dart';
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/mis_vacantes.dart';
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/perfil_reclutador.dart';
@@ -132,6 +133,10 @@ class _AdminAppState extends State<AdminApp> {
         GoRoute(
           path: '/perfil_rec',
           builder: (context, state) => const UserProfile(),
+        ),
+        GoRoute(
+          path: '/faq_rec',
+          builder: (context, state) => const FaqPageRec(),
         ),
 
         // (Opcional) Ruta explícita de 404 para link directo
