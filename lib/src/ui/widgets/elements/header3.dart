@@ -22,8 +22,8 @@ class EscomHeader3 extends StatelessWidget implements PreferredSizeWidget {
     "Mis Vacantes",
     "Postulaciones",
     "Mensajes",
-    "Preferencias",
     "Crear Vacante",
+    "FAQ",
   ];
 
   @override
