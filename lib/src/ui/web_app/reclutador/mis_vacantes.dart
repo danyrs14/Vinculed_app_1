@@ -3,19 +3,16 @@ import 'package:go_router/go_router.dart';
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/candidate_card.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart';
 
-class HomeRecruiterPage extends StatefulWidget {
-  const HomeRecruiterPage({super.key});
+class MyVacanciesPage extends StatefulWidget {
+  const MyVacanciesPage({super.key});
 
   @override
-  State<HomeRecruiterPage> createState() => _HomeRecruiterPageState();
+  State<MyVacanciesPage> createState() => _MyVacanciesPageState();
 }
 
-class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
+class _MyVacanciesPageState extends State<MyVacanciesPage> {
   final _scrollCtrl = ScrollController();
   bool _showFooter = false;
 
@@ -100,82 +97,41 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                     ),
                     child: Center(
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1200),
+                        constraints: const BoxConstraints(maxWidth: 1100),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
                           child: ConstrainedBox(
                             constraints: BoxConstraints(
-                              minHeight: minBodyHeight > 0 ? minBodyHeight : 0,
+                              minHeight: (constraints.maxHeight -
+                                  _footerReservedSpace -
+                                  _extraBottomPadding)
+                                  .clamp(0, double.infinity),
                             ),
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                // Saludo con avatar
-                                Row(
-                                  children: [
-                                    const CircleAvatar(
-                                      radius: 26,
-                                      backgroundImage: AssetImage('assets/images/amlo.jpg'),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        'Bienvenido de Nuevo – @Reclutador_Registrado',
-                                        style: TextStyle(
-                                          fontSize: isMobile ? 22 : 28,
-                                          fontWeight: FontWeight.w800,
-                                          color: const Color(0xFF22313F),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                // Título centrado
+                                Text(
+                                  'Mis Vacantes',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: isMobile ? 26 : 32,
+                                    fontWeight: FontWeight.w800,
+                                    color: const Color(0xFF22313F),
+                                  ),
                                 ),
                                 const SizedBox(height: 28),
 
-                                // Cards de candidatos (responsive)
-                                LayoutBuilder(
-                                  builder: (context, c) {
-                                    final stack = c.maxWidth < 820;
-
-                                    final left = const Expanded(
-                                      child: const Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: const CandidateCard(
-                                          imageAsset: 'assets/images/candidate_1.jpg',
-                                          name: 'Fernando Torres Juarez',
-                                          headline: 'Becario de QA',
-                                          studentInfo: 'ESCOM, IPN · 8° Semestre',
-                                          skills: 'Backend, UI/UX, Python',
-                                        ),
-                                      ),
-                                    );
-
-                                    final right = Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: const CandidateCard(
-                                          imageAsset: 'assets/images/candidate_2.jpg',
-                                          name: 'Edgar Gomez Martinez',
-                                          headline: 'Sin Puesto aún',
-                                          studentInfo: 'ESCOM, IPN · 5° Semestre',
-                                          skills: 'Bases de Datos, Java',
-                                        ),
-                                      ),
-                                    );
-
-                                    if (stack) {
-                                      return Column(
-                                        children: [
-                                          Row(children: [left]),
-                                          const SizedBox(height: 20),
-                                          Row(children: [right]),
-                                        ],
-                                      );
-                                    }
-                                    return Row(children: [left, right]);
-                                  },
+                                // Tarjeta centrada (como en la imagen)
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 520),
+                                  child: _VacancyCard(
+                                    title: 'Becario de QA',
+                                    company: 'BBVA Mexico',
+                                    location: 'Ciudad de Mexico',
+                                    statusText: 'PUBLICADA',
+                                  ),
                                 ),
-                                const SizedBox(height: 20),
                               ],
                             ),
                           ),
@@ -188,7 +144,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
             ),
           ),
 
-          // Footer animado
+          // Footer animado (aparece al final)
           Positioned(
             left: 0,
             right: 0,
@@ -202,6 +158,91 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                 opacity: _showFooter ? 1 : 0,
                 child: EscomFooter(isMobile: isMobile),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/*──────────────────────────── Tarjeta de Vacante ───────────────────────────*/
+
+class _VacancyCard extends StatelessWidget {
+  const _VacancyCard({
+    required this.title,
+    required this.company,
+    required this.location,
+    required this.statusText,
+  });
+
+  final String title;
+  final String company;
+  final String location;
+  final String statusText;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 22),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.black54, width: 1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 18,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            company,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            location,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 14),
+
+          // Ícono centrado (círculo)
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.black54, width: 1.6),
+            ),
+            alignment: Alignment.center,
+            child: const Icon(Icons.expand_more, size: 18, color: Colors.black87),
+          ),
+
+          const SizedBox(height: 16),
+          Text(
+            statusText.toUpperCase(),
+            style: TextStyle(
+              color: theme.secundario(),
+              fontWeight: FontWeight.w800,
+              letterSpacing: .2,
             ),
           ),
         ],

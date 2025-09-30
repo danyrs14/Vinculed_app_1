@@ -93,8 +93,10 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
               context.go('/inicio_rec');
               break;
             case "Crear Vacante":
-            // ya estás aquí
               context.go('/new_vacancy');
+              break;
+            case "Mis Vacantes":
+              context.go('/my_vacancy');
               break;
           }
         },
