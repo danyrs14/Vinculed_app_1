@@ -57,7 +57,7 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
     return Scaffold(
       backgroundColor: theme.background(),
       appBar: EscomHeader3(
-        onLoginTap: () => context.go('/perfil_cand'),
+        onLoginTap: () => context.go('/perfil_rec'),
         onRegisterTap: () => context.go('/signin'),
         onNotifTap: () {},
         onMenuSelected: (label) {
@@ -74,6 +74,10 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
             case "Postulaciones":
               context.go('/postulaciones');
               break;
+            case "Postulaciones":
+              context.go('/postulaciones');
+              break;
+
           }
         },
       ),

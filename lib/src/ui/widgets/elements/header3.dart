@@ -64,7 +64,7 @@ class EscomHeader3 extends StatelessWidget implements PreferredSizeWidget {
         TextButton(
           onPressed: onLoginTap,
           child: Text(
-            "Iniciar Sesión",
+            "Mi Perfil",
             style: TextStyle(
               color: theme.secundario(),
               fontWeight: FontWeight.bold,
@@ -75,7 +75,7 @@ class EscomHeader3 extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: MiniButton(
             onTap: onRegisterTap,
-            title: "Registrarse",
+            title: "Cerrar Sesión",
           ),
         ),
         IconButton(
