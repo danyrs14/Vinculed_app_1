@@ -46,3 +46,6 @@ app.*.map.json
 /android/app/.cxx
 
 /linux/
+/linux/flutter
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugins.cmake

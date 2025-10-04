@@ -27,7 +27,7 @@ class _verificarEmailPageState extends State<verificarEmailPage> {
         setState(() {
           emailVerificado = true;
         });
-      } else {
+      } else { //Verifica cada 5 segundos
         Future.delayed(const Duration(seconds: 5), () {
           _revisarVerificacionEmail();
         });
@@ -41,7 +41,9 @@ class _verificarEmailPageState extends State<verificarEmailPage> {
   Widget build(BuildContext context) => emailVerificado
       ? MenuPage()
       : Scaffold(
+          backgroundColor: Colors.white,
           appBar: AppBar(
+            backgroundColor: Colors.blue,
             title: const Text("Verificar correo electrónico"),
             centerTitle: true,
           ),

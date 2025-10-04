@@ -58,12 +58,15 @@ class LargeButton extends StatelessWidget {
           SizedBox(
               width:
               icon != null ? 10 : 0), // Espacio entre el ícono y el texto
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 18, // Tamaño de la fuente
-              fontWeight: FontWeight.w600, // Peso de la fuente (SemiBold)
-              fontFamily: 'Poppins', // Fuente personalizada
+          Expanded(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18, // Tamaño de la fuente
+                fontWeight: FontWeight.w600, // Peso de la fuente (SemiBold)
+                fontFamily: 'Poppins', // Fuente personalizada
+              ),
             ),
           ),
         ],

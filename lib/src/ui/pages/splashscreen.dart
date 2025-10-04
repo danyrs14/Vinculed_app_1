@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/pages/login.dart';
-import 'package:vinculed_app_1/src/ui/widgets/configure.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:vinculed_app_1/src/ui/pages/transicionInicial.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -16,12 +14,12 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     Future.delayed(
-      Duration(milliseconds: 5000),
+      Duration(milliseconds: 3000),
           () => Navigator.pushReplacement(
         context,
         PageTransition(
           type: PageTransitionType.fade,
-          child: LoginPage(),
+          child: TrasicionPage(),
         ),
       ),
     );
