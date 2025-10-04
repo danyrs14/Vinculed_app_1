@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
 class Home extends StatelessWidget {
+  final usuario = FirebaseAuth.instance.currentUser!;
+
+  void _cerrarSesion() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      print("Error al cerrar sesión: $e");
+    }
+  } 
+
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
@@ -33,13 +44,18 @@ class Home extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start, // Alineación del texto
                     children: [
                       Texto(
-                        text: '@Usuario_Registrado',
+                        text: '${usuario.displayName}', // Nombre del usuario
                         fontSize: 16,
                       ),
                       Texto(
                         text:
                         'Bienvenido de Nuevo', // Mensaje
                         fontSize: 18,
+                      ),
+                      FloatingActionButton.extended(
+                        onPressed: _cerrarSesion, 
+                        label: Text("Cerrar Sesión"),
+                        icon: Icon(Icons.logout),
                       ),
                     ],
                   ),

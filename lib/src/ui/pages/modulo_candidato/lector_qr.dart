@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -25,13 +26,21 @@ class _LectorQRPageState extends State<LectorQRPage> {
   final String baseUrl = "http://10.0.2.2:3000/api/verificarqr";
 
   Future<void> _procesarCodigo(String codigo) async {
+    showDialog(
+      context: context, 
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator(valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),)),
+    );
     try {
+      //Hacer la petición al servidor
       final Uri url = Uri.parse("$baseUrl?url=$codigo");
       final response = await http.get(url);
-
+      Navigator.pop(context);
       if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final String nombre = data['nombre'] ?? 'Usuario'; 
         //redirigir al formulario
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterStudentPage()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterStudentPage(nombre: nombre)));
       } else if (response.statusCode == 400) {
         _mostrarMensaje(
           "Lo sentimos. Solo se pueden registrar alumnos de la ESCOM.",
@@ -54,6 +63,9 @@ class _LectorQRPageState extends State<LectorQRPage> {
         redirigirLogin: false,
       );
       print("Error al procesar el código QR: $e");
+      setState(() {
+        _mostrarScanner = false;
+      });
     }
   }
 
@@ -110,10 +122,18 @@ class _LectorQRPageState extends State<LectorQRPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, 
       appBar: AppBar(
-        title: const Text('Lector de código QR'),
+        title: const Text('Lector de código QR', 
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blue,
+        
       ),
       body: _mostrarScanner
           ? MobileScanner(
@@ -130,7 +150,7 @@ class _LectorQRPageState extends State<LectorQRPage> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Montserrat',
                     ),
                     textAlign: TextAlign.center,
                   ),
