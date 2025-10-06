@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/menu.dart';
 //import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/dropdown.dart';
@@ -156,105 +155,116 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
         backgroundColor: Colors.blue,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-            child: Form(
-              key: _registroFormKey,
-              child:SingleChildScrollView(
-                child: Column(
-                  children: [
-                    StyledTextFormField(
-                      controller: _nameController,
-                      title: "Nombre completo",
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'El nombre es obligatorio.';
-                        }
-                        return null;
-                      },
+        child: LayoutBuilder(
+            builder: (context, constraints){
+              return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
-                    SizedBox(height: 10),
-                 
-                    DropdownInput<String>(
-                      title: "Género",
-                      required: true,
-                      items: const [
-                        DropdownMenuItem(value: "masculino", child: Text("Masculino")),
-                        DropdownMenuItem(value: "femenino", child: Text("Femenino")),
-                        DropdownMenuItem(value: "otro", child: Text("Otro")),
-                      ],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'El género es obligatorio.';
-                        }
-                        return null;
-                      },
-                      onChanged: (valor) {
-                        setState(() {
-                          _genderController.text = valor ?? "masculino";
-                        });
-                      },
+                    child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0), // Espaciado del contenido en el eje horizontal
+                          child: Center(
+                                child: Form(
+                                  key: _registroFormKey,
+                                  child: Column(
+                                    children: [
+                                      StyledTextFormField(
+                                        controller: _nameController,
+                                        title: "Nombre completo",
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'El nombre es obligatorio.';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                      SizedBox(height: 10),
+                                  
+                                      DropdownInput<String>(
+                                        title: "Género",
+                                        required: true,
+                                        items: const [
+                                          DropdownMenuItem(value: "masculino", child: Text("Masculino")),
+                                          DropdownMenuItem(value: "femenino", child: Text("Femenino")),
+                                          DropdownMenuItem(value: "otro", child: Text("Otro")),
+                                        ],
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'El género es obligatorio.';
+                                          }
+                                          return null;
+                                        },
+                                        onChanged: (valor) {
+                                          setState(() {
+                                            _genderController.text = valor ?? "masculino";
+                                          });
+                                        },
+                                      ),
+                                      SizedBox(height: 10),
+                                      StyledTextFormField(
+                                        controller: _emailController,
+                                        title: "Correo institucional",
+                                        keyboardType: TextInputType.emailAddress,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'El correo es obligatorio.';
+                                          }
+                                          final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
+                                          if (!emailRegex.hasMatch(value)) {
+                                            return 'Ingrese un correo válido.';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                      SizedBox(height: 10),
+                                      StyledTextFormField(
+                                        controller: _passwordController,
+                                        title: "Contraseña",
+                                        obscureText: true,
+                                        isPasswordField: true, 
+                                        onChanged: _validatePassword,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'La contraseña es obligatoria.';
+                                          }
+                                          if (!_hasMinLength || !_hasLetter || !_hasNumber || !_hasSpecialChar) {
+                                            return 'La contraseña no cumple con los requisitos.';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                      SizedBox(height: 5),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text("Requisitos de la contraseña:", style: TextStyle(fontWeight: FontWeight.bold)),
+                                          SizedBox(height: 8),
+                                          _buildValidationRow("Al menos 8 caracteres", _hasMinLength),
+                                          SizedBox(height: 4),
+                                          _buildValidationRow("Al menos una letra", _hasLetter),
+                                          SizedBox(height: 4),
+                                          _buildValidationRow("Al menos un número", _hasNumber),
+                                          SizedBox(height: 4),
+                                          _buildValidationRow("Al menos un carácter especial", _hasSpecialChar),
+                                        ],
+                                      ),
+                                      SizedBox(height: 20),
+                                      LargeButton(
+                                        title: _loading ? "Registrando..." : "Registrarme",
+                                        primaryColor: true,
+                                        onTap: _loading ? null : _registerUser,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                          ),
                     ),
-                    SizedBox(height: 10),
-                    StyledTextFormField(
-                      controller: _emailController,
-                      title: "Correo institucional",
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'El correo es obligatorio.';
-                        }
-                        final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
-                        if (!emailRegex.hasMatch(value)) {
-                          return 'Ingrese un correo válido.';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 10),
-                    StyledTextFormField(
-                      controller: _passwordController,
-                      title: "Contraseña",
-                      obscureText: true,
-                      isPasswordField: true, 
-                      onChanged: _validatePassword,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'La contraseña es obligatoria.';
-                        }
-                        if (!_hasMinLength || !_hasLetter || !_hasNumber || !_hasSpecialChar) {
-                          return 'La contraseña no cumple con los requisitos.';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 5),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Requisitos de la contraseña:", style: TextStyle(fontWeight: FontWeight.bold)),
-                        SizedBox(height: 8),
-                        _buildValidationRow("Al menos 8 caracteres", _hasMinLength),
-                        SizedBox(height: 4),
-                        _buildValidationRow("Al menos una letra", _hasLetter),
-                        SizedBox(height: 4),
-                        _buildValidationRow("Al menos un número", _hasNumber),
-                        SizedBox(height: 4),
-                        _buildValidationRow("Al menos un carácter especial", _hasSpecialChar),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    LargeButton(
-                      title: _loading ? "Registrando..." : "Registrarme",
-                      primaryColor: true,
-                      onTap: _loading ? null : _registerUser,
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+              );
+            }
           ),
         ),
-      ),
-    );
+      );
   }
 }
