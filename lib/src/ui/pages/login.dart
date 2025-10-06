@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/menu.dart';
+import 'package:vinculed_app_1/src/ui/pages/provisional.dart';
 import 'package:vinculed_app_1/src/ui/pages/recpass.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
@@ -64,6 +65,20 @@ class LoginPage extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => MenuPage()),
+                  );
+                },
+              ),
+
+              SizedBox(height: 20),
+
+              LargeButton(
+                title: "Iniciar Sesión prov",
+                onTap: (){
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RoleSelectionPage(),
+                    ),
                   );
                 },
               ),
