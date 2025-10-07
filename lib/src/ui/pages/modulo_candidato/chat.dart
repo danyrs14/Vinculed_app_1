@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
 /// Pantalla de conversación (contenido completo).
@@ -273,25 +274,13 @@ class _InputBar extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: theme.background(),
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: Colors.black87, width: 1.2),
-                ),
-                child: TextField(
+              child: TextInput(
                   controller: controller,
                   minLines: 1,
                   maxLines: 4,
-                  decoration: const InputDecoration(
-                    hintText: 'Escribe aquí...',
-                    border: InputBorder.none,
-                  ),
-                  onSubmitted: (_) => onSend(),
+                title: 'Escribe un mensaje',
                 ),
               ),
-            ),
             const SizedBox(width: 10),
             GestureDetector(
               onTap: onSend,
