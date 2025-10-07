@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
-// Si ya tienes tu modelo JobData en otro archivo, impórtalo.
-// Aquí dejo uno mínimo opcional para que compile si llamas directo.
-// Elimínalo si ya importas tu propio modelo desde job_card.dart
+/// Modelo mínimo para la vacante.
+/// (Si ya tienes tu propio modelo, elimina esta clase e importa el tuyo.)
 class JobData {
   final String title;
   final String company;
-  final String? salary;     // Ej: $7500 Mensuales
-  final String? address;    // Dirección completa
+  final String? salary;       // Ej: $7,500 mensuales
+  final String? address;      // Dirección completa
   final List<String>? requirements;
   final String? description;
 
@@ -62,27 +61,12 @@ class JobDetailPage extends StatelessWidget {
               children: [
                 IconButton(
                   icon: Icon(Icons.search, color: theme.primario()), // Ícono de búsqueda
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const Busqueda(),
-                      ),
-                    );
-                  },
+                  onPressed: () {},
                 ),
                 IconButton(
                   icon: Icon(Icons.notifications_none, color: theme.primario()), // Ícono de notificaciones
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const Notificaciones(),
-                      ),
-                    );
-                  },
+                  onPressed: () {},
                 ),
-
                 IconButton(
                   icon: const CircleAvatar(
                     backgroundImage: AssetImage('assets/images/amlo.jpg'), // Foto de perfil
@@ -141,30 +125,30 @@ class JobDetailPage extends StatelessWidget {
                         ],
                       ),
 
-                      // Título
-                      Texto(text: job.title, fontSize: 22),
+                      // Título (centrado como en la imagen)
+                      Center(child: Texto(text: job.title, fontSize: 22)),
                       const SizedBox(height: 6),
 
-                      // Sueldo
-                      if (job.salary != null && job.salary!.trim().isNotEmpty) ...[
-                        Texto(text: job.salary!, fontSize: 16),
+                      // Sueldo (centrado)
+                      if ((job.salary ?? '').trim().isNotEmpty) ...[
+                        Center(child: Texto(text: job.salary!, fontSize: 16)),
                         const SizedBox(height: 6),
                       ],
 
-                      // Empresa
-                      Texto(text: job.company, fontSize: 16),
+                      // Empresa (centrado)
+                      Center(child: Texto(text: job.company, fontSize: 16)),
                       const SizedBox(height: 10),
 
-                      // Dirección
-                      if (job.address != null && job.address!.trim().isNotEmpty) ...[
-                        Texto(text: job.address!, fontSize: 14),
+                      // Dirección (centrado y con separación similar a la imagen)
+                      if ((job.address ?? '').trim().isNotEmpty) ...[
+                        Center(child: Texto(text: job.address!, fontSize: 14)),
                         const SizedBox(height: 14),
                       ],
 
                       const Divider(height: 24),
 
                       // Requisitos
-                      if (job.requirements != null && job.requirements!.isNotEmpty) ...[
+                      if ((job.requirements ?? []).isNotEmpty) ...[
                         const Texto(text: 'Requisitos:', fontSize: 16),
                         const SizedBox(height: 6),
                         ...job.requirements!.map(
@@ -177,9 +161,9 @@ class JobDetailPage extends StatelessWidget {
                         const Divider(height: 24),
                       ],
 
-                      // Descripción
-                      if (job.description != null && job.description!.trim().isNotEmpty) ...[
-                        const Texto(text: 'Descripcion:', fontSize: 16),
+                      // Descripción (con tilde, acorde a la imagen)
+                      if ((job.description ?? '').trim().isNotEmpty) ...[
+                        const Texto(text: 'Descripción:', fontSize: 16),
                         const SizedBox(height: 6),
                         Texto(text: job.description!, fontSize: 14),
                       ],
@@ -220,46 +204,6 @@ class JobDetailPage extends StatelessWidget {
           },
         ),
       ),
-    );
-  }
-}
-
-/// -------------------------
-/// Stubs para que compile si no existen aún
-/// -------------------------
-
-class Busqueda extends StatelessWidget {
-  const Busqueda({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ThemeController.instance;
-    return Scaffold(
-      backgroundColor: theme.background(),
-      appBar: AppBar(
-        title: const Text('Búsqueda'),
-        backgroundColor: theme.background(),
-        elevation: 0,
-      ),
-      body: const Center(child: Text('Pantalla de Búsqueda (stub)')),
-    );
-  }
-}
-
-class Notificaciones extends StatelessWidget {
-  const Notificaciones({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ThemeController.instance;
-    return Scaffold(
-      backgroundColor: theme.background(),
-      appBar: AppBar(
-        title: const Text('Notificaciones'),
-        backgroundColor: theme.background(),
-        elevation: 0,
-      ),
-      body: const Center(child: Text('Pantalla de Notificaciones (stub)')),
     );
   }
 }
