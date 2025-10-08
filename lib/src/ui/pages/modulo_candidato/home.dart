@@ -1,68 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements_app/job_card.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
 class Home extends StatelessWidget {
-  final usuario = FirebaseAuth.instance.currentUser!;
-
-  void _cerrarSesion() async {
-    try {
-      await FirebaseAuth.instance.signOut();
-    } catch (e) {
-      print("Error al cerrar sesión: $e");
-    }
-  } 
+  const Home({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
+
+    // Datos provisionales (puedes sustituirlos por Firestore / API).
+    const jobs = <JobData>[
+      JobData(title: 'Becario de QA', city: 'Ciudad de México', company: 'BBVA México'),
+      JobData(title: 'Becario Scrum', city: 'Ciudad de México', company: 'IDS'),
+      JobData(title: 'Becario de TI', city: 'Ciudad de México', company: 'Banorte IXE'),
+    ];
+
     return Scaffold(
       backgroundColor: theme.background(),
-      // Eliminando el appBar y el BottomNavigationBar
       body: SafeArea(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 8),
 
-              SizedBox(height: 20),
-              // Título de la pantalla
+              // Saludo + avatar
               Row(
-                mainAxisAlignment: MainAxisAlignment.start, // Centra la fila horizontalmente
-                children: [
-                  SizedBox(width: 10),
-                  // Imagen de perfil
+                children: const [
+                  SizedBox(width: 4),
                   CircleAvatar(
-                    backgroundImage: AssetImage('assets/images/amlo.jpg'), // Cambia la ruta de la imagen
-                    radius: 30, // Radio del círculo
+                    radius: 26,
+                    backgroundImage: AssetImage('assets/images/amlo.jpg'),
                   ),
-                  SizedBox(width: 10), // Espacio entre la imagen y el texto
-
-                  // Texto del nombre de usuario
+                  SizedBox(width: 10),
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start, // Alineación del texto
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Texto(
-                        text: '${usuario.displayName}', // Nombre del usuario
-                        fontSize: 16,
-                      ),
-                      Texto(
-                        text:
-                        'Bienvenido de Nuevo', // Mensaje
-                        fontSize: 18,
-                      ),
-                      FloatingActionButton.extended(
-                        onPressed: _cerrarSesion, 
-                        label: Text("Cerrar Sesión"),
-                        icon: Icon(Icons.logout),
-                      ),
+                      Texto(text: '@Usuario_Registrado', fontSize: 16),
+                      SizedBox(height: 2),
+                      Texto(text: 'Bienvenido de Nuevo', fontSize: 20),
                     ],
                   ),
                 ],
               ),
-              SizedBox(height: 5), // Espacio entre el texto y los siguientes elementos
-              //Contenido a futuro
+
+              const SizedBox(height: 16),
+
+              // Lista de vacantes
+              for (final job in jobs) ...[
+                JobCard(
+                  data: job,
+                  // Puedes inyectar tus callbacks aquí:
+                  // onApply: () => context.push('/postular/${job.id}'),
+                  // onFavoriteTap: () => ...,
+                  // onHide: () => ...,
+                ),
+                const SizedBox(height: 14),
+              ],
+              const SizedBox(height: 8),
             ],
           ),
         ),
