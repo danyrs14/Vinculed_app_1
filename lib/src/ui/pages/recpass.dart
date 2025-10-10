@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
-import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
 
 class RecuperarPasswordScreen extends StatefulWidget {
   @override
@@ -8,6 +9,7 @@ class RecuperarPasswordScreen extends StatefulWidget {
 }
 
 class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
+  final _recPassFormKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
 
   @override
@@ -16,22 +18,21 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
     super.dispose();
   }
 
-  void _recuperarContrasena() {
-    // Aquí va la lógica para recuperar contraseña
-    final email = _emailController.text.trim();
-    if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, ingresa tu correo institucional')),
-      );
+  Future <void> _recuperarContrasena() async {
+    if (!_recPassFormKey.currentState!.validate()) {
       return;
     }
     // Lógica para recuperar contraseña
-    print('Recuperar contraseña para: $email');
+    //print('Recuperar contraseña para: $email');
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: _emailController.text.trim())
+        .then((value) => _showError("Se ha enviado un correo para restablecer tu contraseña"))
+        .catchError((error) => _showError("Ocurrió un error, intenta de nuevo"));
   }
 
-  void _iniciarSesion() {
-    // Aquí va la lógica para iniciar sesión
-    print('Ir a iniciar sesión');
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
   }
 
   @override
@@ -40,52 +41,67 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            children: [
-              SizedBox(height: 16),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: Image.asset(
-                  'assets/images/anim.png', // Asegúrate de que tu imagen esté en esta ruta
-                  width: 150, // Ajusta el tamaño de la imagen
+          child: Form(
+            key: _recPassFormKey,
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Image.asset(
+                    'assets/images/anim.png', // Asegúrate de que tu imagen esté en esta ruta
+                    width: 150, // Ajusta el tamaño de la imagen
+                  ),
                 ),
-              ),
-              SizedBox(height: 24),
-              TextInput(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                title: "Correo Institucional",
-              ),
-              SizedBox(height: 16),
-              LargeButton(
-                title: "Recuperar Contraseña",
-              ),
-              SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: Divider(color: Colors.grey.shade300, thickness: 2),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(
-                      '¿Todo esta en orden?',
-                      style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                const SizedBox(height: 24),
+                StyledTextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  title: "Correo institucional", //TODO: considerar que sea cualquier correo
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, ingresa tu correo electrónico';
+                    }
+                    // Expresión regular simple para validar el formato del correo electrónico
+                    final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
+                    if (!emailRegex.hasMatch(value)) {
+                      return 'Ingresa un correo electrónico válido';
+                    }
+                    return null; // Retorna null si la validación es exitosa
+                  },
+                ),
+                const SizedBox(height: 16),
+                LargeButton(
+                  title: "Recuperar Contraseña",
+                  onTap: _recuperarContrasena,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Divider(color: Colors.grey.shade300, thickness: 2),
                     ),
-                  ),
-                  Expanded(
-                    child: Divider(color: Colors.grey.shade300, thickness: 2),
-                  ),
-                ],
-              ),
-              SizedBox(height: 12),
-              LargeButton(
-                title: "Iniciar Sesión",
-                onTap: (){
-                  Navigator.pop(context);
-                },
-              )
-            ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        '¿Todo esta en orden?',
+                        style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(color: Colors.grey.shade300, thickness: 2),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                LargeButton(
+                  title: "Iniciar Sesión",
+                  onTap: (){
+                    Navigator.pop(context);
+                  },
+                )
+              ],
+            ),
           ),
         ),
       ),

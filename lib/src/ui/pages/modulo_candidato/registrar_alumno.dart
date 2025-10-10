@@ -58,8 +58,9 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
         email: email,
         password: password,
       );
-      final idToken = await credential.user!.getIdToken();
-      await credential.user!.updateDisplayName(name);
+      final user = credential.user!;
+      final idToken = await user.getIdToken();
+      await user.updateDisplayName(name); //Actualizar el nombre del usuario en firebase
       //Enviar al backend para guardarlo en MySQL
       final response = await http.post(
         Uri.parse('http://10.0.2.2:3000/api/usuarios/registrar'),
@@ -72,21 +73,20 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
           'email': email,
           'rol': 'alumno',
           'genero': gender,
-          'uid_firebase': credential.user!.uid,
+          'uid_firebase': user.uid,
         }),
       );
 
-      if ((response.statusCode == 201 || response.statusCode == 200) && (credential.user != null && !credential.user!.emailVerified) ) {
+      if ((response.statusCode == 201 || response.statusCode == 200) && (!user.emailVerified) ) {
         //Enviar email de verificación
         await credential.user!.sendEmailVerification();
-        
         //Pagina de verificación
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => verificarEmailPage()),
         );
       } else {
-        _showError("Error en el backend: ${response.body}");
+        throw Exception("Error del servidor: ${response.body}"); 
       }
     } on FirebaseAuthException catch (e) {
       print(e.code);
@@ -103,8 +103,9 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
         default:
           _showError("Error de autenticación: ${e.message}");
       }
-    } catch (e) {
-      _showError("Error inesperado: $e");
+    } on Exception catch(e) { //
+      await FirebaseAuth.instance.currentUser?.delete(); //Eliminar el usuario de Firebase si hubo un error
+      _showError("Error inesperado: ${e.toString()}");
     } finally {
       setState(() => _loading = false);
     }
