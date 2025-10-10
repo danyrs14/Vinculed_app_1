@@ -26,6 +26,9 @@ class _LectorQRPageState extends State<LectorQRPage> {
   final String baseUrl = "http://10.0.2.2:3000/api/verificarqr";
 
   Future<void> _procesarCodigo(String codigo) async {
+    setState(() {
+      _mostrarScanner = false;
+    });
     showDialog(
       context: context, 
       barrierDismissible: false,
@@ -63,9 +66,6 @@ class _LectorQRPageState extends State<LectorQRPage> {
         redirigirLogin: false,
       );
       print("Error al procesar el código QR: $e");
-      setState(() {
-        _mostrarScanner = false;
-      });
     }
   }
 
