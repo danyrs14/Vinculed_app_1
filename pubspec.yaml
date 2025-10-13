@@ -74,6 +74,7 @@ flutter:
      - assets/icons/perfil.png
      - assets/icons/cora.png
      - assets/icons/mail.png
+     - assets/icons/configuracion.png
      - assets/images/amlo.jpg
      - assets/images/dashboard.json
      - assets/images/logen.json

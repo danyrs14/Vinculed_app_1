@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/menu.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 
 class RoleSelectionPage extends StatelessWidget {
@@ -61,7 +62,14 @@ class RoleSelectionPage extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: SimpleButton(
-                        onTap: (){},
+                        onTap: (){
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MenuPageRec(),
+                            ),
+                          );
+                        },
                         title: 'Recluta',
                       ),
                     ),
