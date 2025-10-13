@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/menu.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
 import 'package:vinculed_app_1/src/ui/pages/provisional.dart';
 import 'package:vinculed_app_1/src/ui/pages/recpass.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart'; // Para el texto de bienvenida
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/lector_qr.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/lector_qr.dart';
 
 class LoginPage extends StatelessWidget {
   // Controladores para los campos de texto

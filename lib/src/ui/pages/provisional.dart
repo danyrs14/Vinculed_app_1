@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/menu.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 
 class RoleSelectionPage extends StatelessWidget {

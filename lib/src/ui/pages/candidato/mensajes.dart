@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/chat.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/chat.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements_app/chat_preview.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 

@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/menu.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/dropdown.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';

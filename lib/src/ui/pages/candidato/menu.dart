@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/busqueda.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/experiencias.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/home.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/mensajes.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/notificaciones.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/perfil.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/postulaciones.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/busqueda.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/experiencias.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/home.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/mensajes.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/notificaciones.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/perfil.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/postulaciones.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({Key? key}) : super(key: key);

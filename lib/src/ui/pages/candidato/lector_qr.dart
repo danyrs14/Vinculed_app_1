@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/pages/login.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/registrar_alumno.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/registrar_alumno.dart';
 
 class LectorQRPage extends StatefulWidget {
   const LectorQRPage({Key? key}) : super(key: key);
