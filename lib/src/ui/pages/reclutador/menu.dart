@@ -10,6 +10,7 @@ import 'package:vinculed_app_1/src/ui/pages/candidato/postulaciones.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/home.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/mensajes.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/mis_vacantes.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/new_vacancy.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil.dart';
 
 class MenuPageRec extends StatefulWidget {
@@ -69,11 +70,11 @@ class _MenuPageRecState extends State<MenuPageRec> {
             Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.search, color: theme.primario()),
+                  icon: Icon(Icons.add, color: theme.primario()),
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => Busqueda()),
+                      MaterialPageRoute(builder: (context) => CrearVacantePage()),
                     );
                   },
                 ),
