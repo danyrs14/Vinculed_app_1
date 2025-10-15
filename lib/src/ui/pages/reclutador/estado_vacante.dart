@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/menu.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil_visible.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
@@ -95,8 +96,7 @@ class VacanteDetallePage extends StatelessWidget {
                       const SnackBar(content: Text('Eliminar')),
                     );
                   },
-              icon: const Icon(Icons.delete,
-                  color: Colors.black87),
+              icon: const Icon(Icons.delete, color: Colors.black87),
               tooltip: 'Eliminar',
             ),
           ],
@@ -287,37 +287,52 @@ class _FilaCandidatos extends StatelessWidget {
       runSpacing: 18,
       children: items
           .map(
-            (c) => SizedBox(
-          width: 140,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipOval(
-                child: Image.network(
-                  c.fotoUrl,
-                  width: 84,
-                  height: 84,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+            (c) => InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            // ⬇️ Al seleccionar un postulado, mostramos la pantalla anterior
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PerfilPostuladoPage(
+                  nombre: c.nombre,
+                  // El resto usa valores por defecto de la pantalla
+                ),
+              ),
+            );
+          },
+          child: SizedBox(
+            width: 140,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipOval(
+                  child: Image.network(
+                    c.fotoUrl,
                     width: 84,
                     height: 84,
-                    color: Colors.black12,
-                    alignment: Alignment.center,
-                    child: const Icon(Icons.person, size: 40),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 84,
+                      height: 84,
+                      color: Colors.black12,
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.person, size: 40),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                c.nombre,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12.8,
-                  fontWeight: FontWeight.w600,
-                  height: 1.25,
+                const SizedBox(height: 8),
+                Text(
+                  c.nombre,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12.8,
+                    fontWeight: FontWeight.w600,
+                    height: 1.25,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       )
