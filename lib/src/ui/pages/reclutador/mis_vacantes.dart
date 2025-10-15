@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements_app/postulacion_card.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements_app/publicacion_card.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
 class VacantesRec extends StatelessWidget {
@@ -30,7 +31,7 @@ class VacantesRec extends StatelessWidget {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 520),
                   child: // Dentro de tu pantalla con una lista:
-                  PostulacionCard.postulado(
+                  PublicacionCard.publicado(
                     title: 'Becario de QA',
                     company: 'BBVA Mexico',
                     city: 'Ciudad de Mexico',

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/menu.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
-class Notificaciones extends StatelessWidget {
+class NotificacionesRec extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
@@ -23,7 +24,7 @@ class Notificaciones extends StatelessWidget {
               height: 50,
             ),
 
-            // Íconos a la derecha (Búsqueda, Notificaciones y Perfil)
+            // Íconos a la derecha (Búsqueda, NotificacionesRec y Perfil)
             Row(
               children: [
                 IconButton(
@@ -32,7 +33,7 @@ class Notificaciones extends StatelessWidget {
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.notifications_none, color: theme.primario()), // Ícono de notificaciones
+                  icon: Icon(Icons.notifications_none, color: theme.primario()), // Ícono de NotificacionesRec
                   onPressed: () {},
                 ),
                 IconButton(
@@ -56,12 +57,12 @@ class Notificaciones extends StatelessWidget {
           children: [
             Center(
               child: Texto(
-                text: 'Notificaciones',
+                text: 'NotificacionesRec',
                 fontSize: 24,
               ),
             ),
             SizedBox(height: 10),
-                        Spacer(),
+            Spacer(),
 
             SimpleButton(
               title: "Regresar",
@@ -69,7 +70,7 @@ class Notificaciones extends StatelessWidget {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => MenuPage(),
+                    builder: (context) => MenuPageRec(),
                   ),
                 );
               },

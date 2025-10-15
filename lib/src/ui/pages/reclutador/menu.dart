@@ -11,6 +11,7 @@ import 'package:vinculed_app_1/src/ui/pages/reclutador/home.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/mensajes.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/mis_vacantes.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/new_vacancy.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/notificaciones.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil.dart';
 
 class MenuPageRec extends StatefulWidget {
@@ -83,7 +84,7 @@ class _MenuPageRecState extends State<MenuPageRec> {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => Notificaciones()),
+                      MaterialPageRoute(builder: (context) => NotificacionesRec()),
                     );
                   },
                 ),
@@ -103,7 +104,6 @@ class _MenuPageRecState extends State<MenuPageRec> {
         elevation: 0,
       ),
 
-      // ⬇️ Cuerpo convertido a PageView para permitir DESLIZAR entre pantallas
       body: PageView(
         controller: _pageController,
         physics: const PageScrollPhysics(), // swipe horizontal natural
@@ -114,7 +114,6 @@ class _MenuPageRecState extends State<MenuPageRec> {
         children: _paginas,
       ),
 
-      // ⬇️ Tu BottomNavigationBar se mantiene igual, solo conectamos al PageView
       bottomNavigationBar: Container(
         color: theme.background(),
         child: BottomNavigationBar(
