@@ -26,6 +26,7 @@ import 'package:vinculed_app_1/src/ui/web_app/reclutador/perfil_reclutador.dart'
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/postulaciones.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin_rec.dart';
+import 'package:vinculed_app_1/src/ui/web_app/recuperar_password.dart';
 
 // Reclutador
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/inicio.dart';
@@ -85,6 +86,10 @@ class _AdminAppState extends State<AdminApp> {
         GoRoute(
           path: '/signin_rec',
           builder: (context, state) => const RegisterPageWebRec(),
+        ),
+        GoRoute(
+          path: '/recover_password',
+          builder: (context, state) => const RecuperarPasswordPageWeb(),
         ),
 
         // ----- Candidato -----

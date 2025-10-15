@@ -222,7 +222,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                                   Align(
                                     alignment: Alignment.centerRight,
                                     child: TextButton(
-                                      onPressed: () => context.go('/recover-password'), // Navegación con go_router
+                                      onPressed: () => context.go('/recover_password'), // Navegación con go_router
                                       child: const Text('Se me olvidó la contraseña'),
                                     ),
                                   ),
