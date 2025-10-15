@@ -3,6 +3,8 @@ import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
+import '../../widgets/text_inputs/text_input.dart';
+
 class CrearVacantePage extends StatefulWidget {
   const CrearVacantePage({super.key});
 
@@ -128,7 +130,6 @@ class _CrearVacantePageState extends State<CrearVacantePage> {
         title: const Texto(
           text: 'Crear Vacante',
           fontSize: 22,
-          fontWeight: FontWeight.w800,
         ),
       ),
       body: SafeArea(
@@ -138,15 +139,14 @@ class _CrearVacantePageState extends State<CrearVacantePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Inputs principales
-              TextField(controller: _nombreCtrl, decoration: _input('Nombre de la Vacante')),
-              const SizedBox(height: 14),
-              TextField(
+              TextInput(controller: _nombreCtrl, title: 'Nombre de la vacante',),
+              TextInput(
                 controller: _salarioCtrl,
                 keyboardType: TextInputType.number,
-                decoration: _input('Salario'),
+                title: 'Salario',
               ),
-              const SizedBox(height: 14),
-              TextField(controller: _direccionCtrl, decoration: _input('Direccion donde se laborara')),
+              TextInput(controller: _direccionCtrl,
+                title: 'Dirección',),
               const SizedBox(height: 18),
 
               // Requisitos escolares
@@ -210,10 +210,10 @@ class _CrearVacantePageState extends State<CrearVacantePage> {
               // Descripción
               ConstrainedBox(
                 constraints: const BoxConstraints(minHeight: 140),
-                child: TextField(
+                child: TextInput(
                   controller: _descripcionCtrl,
                   maxLines: 8,
-                  decoration: _input('Añade una Descripcion'),
+                  title: 'Descripción',
                 ),
               ),
 
