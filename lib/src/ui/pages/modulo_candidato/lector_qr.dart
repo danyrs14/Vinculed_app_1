@@ -39,7 +39,7 @@ class _LectorQRPageState extends State<LectorQRPage> {
       final Uri url = Uri.parse("$baseUrl?url=$codigo");
       final response = await http.get(url);
       Navigator.pop(context);
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 304) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         final String nombre = data['nombre'] ?? 'Usuario'; 
         //redirigir al formulario

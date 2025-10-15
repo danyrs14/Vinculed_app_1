@@ -12,6 +12,7 @@ import 'package:vinculed_app_1/src/ui/web_app/candidato/perfil_candidato.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/postulaciones.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/preferencias.dart';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/vacante.dart';
+import 'package:vinculed_app_1/src/ui/web_app/candidato/lector_qr.dart';
 
 // Generales
 import 'package:vinculed_app_1/src/ui/web_app/dashboard.dart';
@@ -64,8 +65,22 @@ class _AdminAppState extends State<AdminApp> {
           builder: (context, state) => const LoginPageWeb(),
         ),
         GoRoute(
+          path: '/lector_qr',
+          builder: (context, state) => const LectorQRPageWeb(),
+        ),
+        GoRoute(
           path: '/signin',
-          builder: (context, state) => const RegisterPageWeb(),
+          builder: (context, state) {
+            // Extrae el nombre del alumno del parámetro 'extra'
+            final nombre = state.extra as String?;
+            return RegisterPageWeb(nombre: nombre);
+          },
+          redirect: (context, state) {
+            if (state.extra == null || state.extra is! String) {
+              return '/lector_qr';
+            }
+            return null;
+          },
         ),
         GoRoute(
           path: '/signin_rec',
