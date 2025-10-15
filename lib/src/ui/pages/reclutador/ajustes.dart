@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/comentarios.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/ayuda.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/preferecnias.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
 class AjustesRec extends StatelessWidget {
@@ -80,7 +82,7 @@ class AjustesRec extends StatelessWidget {
                           // Si no quieres navegar, cambia por un SnackBar.
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => const ComentariosPage(),
+                              builder: (_) => AyudaRec(),
                             ),
                           );
                         },
@@ -88,9 +90,9 @@ class AjustesRec extends StatelessWidget {
                       _SettingsItem(
                         title: 'Preferencias',
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Abrir Preferencias'),
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => PreferenciasRec(),
                             ),
                           );
                         },
