@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/menu.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
@@ -58,141 +59,148 @@ class VacanteDetallePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
 
-    return Scaffold(
-      backgroundColor: theme.background(),
-      appBar: AppBar(
-        elevation: 0,
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
         backgroundColor: theme.background(),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          color: Colors.black87,
-          onPressed: () => Navigator.of(context).maybePop(),
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: theme.background(),
+          centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            color: Colors.black87,
+            // El icono de back SÍ regresa a la pantalla anterior
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MenuPageRec()),
+            ),
+          ),
+          title: Texto(text: titulo, fontSize: 20, fontWeight: FontWeight.w700),
+          actions: [
+            IconButton(
+              onPressed: onEditar ??
+                      () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Editar vacante')),
+                    );
+                  },
+              icon: const Icon(Icons.edit_rounded, color: Colors.black87),
+              tooltip: 'Editar',
+            ),
+            IconButton(
+              onPressed: onAccionSecundaria ??
+                      () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Eliminar')),
+                    );
+                  },
+              icon: const Icon(Icons.delete,
+                  color: Colors.black87),
+              tooltip: 'Eliminar',
+            ),
+          ],
         ),
-        title: Texto(text: titulo, fontSize: 20, fontWeight: FontWeight.w700),
-        actions: [
-          IconButton(
-            onPressed: onEditar ??
-                    () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Editar vacante')),
-                  );
-                },
-            icon: const Icon(Icons.edit_rounded, color: Colors.black87),
-            tooltip: 'Editar',
-          ),
-          IconButton(
-            onPressed: onAccionSecundaria ??
-                    () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Acción secundaria')),
-                  );
-                },
-            icon: const Icon(Icons.mode_edit_outline_rounded,
-                color: Colors.black87),
-            tooltip: 'Acción',
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Encabezado (salario, empresa, dirección)
-              Center(
-                child: Column(
-                  children: [
-                    Texto(
-                      text: salario,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    const SizedBox(height: 4),
-                    Texto(
-                      text: empresa,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      direccion,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        color: Colors.black87,
-                        height: 1.35,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Encabezado (salario, empresa, dirección)
+                Center(
+                  child: Column(
+                    children: [
+                      Texto(
+                        text: salario,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 12),
-              const Divider(height: 24),
-
-              // Requisitos
-              const _SeccionTitulo('Requisitos:'),
-              const SizedBox(height: 6),
-              _TextoCuerpoList(lines: requisitosEscolares),
-              const SizedBox(height: 6),
-              _TextoCuerpoList(lines: requisitosEspecificos),
-
-              const SizedBox(height: 6),
-              const Divider(height: 28),
-
-              // Descripción
-              const _SeccionTitulo('Descripcion:'),
-              const SizedBox(height: 6),
-              _TextoCuerpo(text: descripcion),
-
-              const SizedBox(height: 12),
-              const Divider(height: 28),
-
-              // Postulados
-              Center(
-                child:
-                const Texto(text: 'Postulados', fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 12),
-              _FilaCandidatos(items: postulados),
-
-              const SizedBox(height: 12),
-              const Divider(height: 28),
-
-              // Cumplen el perfil
-              Center(
-                child: const Texto(
-                  text: 'Cumple el Perfil',
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _FilaCandidatos(items: cumplenPerfil),
-
-              const SizedBox(height: 22),
-
-              // Botón Cerrar Vacante
-              Center(
-                child: SizedBox(
-                  width: 220,
-                  height: 48,
-                  child: SimpleButton(
-                    title: 'Cerrar Vacante',
-                    onTap: onCerrarVacante ??
-                            () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Vacante cerrada'),
-                              backgroundColor: theme.primario(),
-                            ),
-                          );
-                        },
+                      const SizedBox(height: 4),
+                      Texto(
+                        text: empresa,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        direccion,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          color: Colors.black87,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 12),
+                const Divider(height: 24),
+
+                // Requisitos
+                const _SeccionTitulo('Requisitos:'),
+                const SizedBox(height: 6),
+                _TextoCuerpoList(lines: requisitosEscolares),
+                const SizedBox(height: 6),
+                _TextoCuerpoList(lines: requisitosEspecificos),
+
+                const SizedBox(height: 6),
+                const Divider(height: 28),
+
+                // Descripción
+                const _SeccionTitulo('Descripcion:'),
+                const SizedBox(height: 6),
+                _TextoCuerpo(text: descripcion),
+
+                const SizedBox(height: 12),
+                const Divider(height: 28),
+
+                // Postulados
+                Center(
+                  child:
+                  const Texto(text: 'Postulados', fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 12),
+                _FilaCandidatos(items: postulados),
+
+                const SizedBox(height: 12),
+                const Divider(height: 28),
+
+                // Cumplen el perfil
+                Center(
+                  child: const Texto(
+                    text: 'Cumple el Perfil',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _FilaCandidatos(items: cumplenPerfil),
+
+                const SizedBox(height: 22),
+
+                // Botón Cerrar Vacante
+                Center(
+                  child: SizedBox(
+                    width: 220,
+                    height: 48,
+                    child: SimpleButton(
+                      title: 'Cerrar Vacante',
+                      onTap: onCerrarVacante ??
+                              () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text('Vacante cerrada'),
+                                backgroundColor: theme.primario(),
+                              ),
+                            );
+                          },
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

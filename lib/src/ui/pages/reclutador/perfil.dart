@@ -16,62 +16,59 @@ class PerfilRec extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Column(
             children: [
-              // Encabezado SIN fondo azul y SIN "visualizaciones"
+              // Encabezado (conserva tu estilo actual)
               const _Header(),
               const SizedBox(height: 16),
 
-              // Usuario + rol
-              const Texto(text: '@Usuario_Registrado', fontSize: 18),
+              // Usuario + rol (según imagen)
+              const Texto(text: '@Reclutador_Registrado', fontSize: 18, fontWeight: FontWeight.w700),
               const SizedBox(height: 4),
-              const Texto(text: 'Alumno', fontSize: 14),
+              const Texto(text: 'Reclutador', fontSize: 14),
               const SizedBox(height: 16),
 
-              // CV box
-              const _CvBox(fileName: 'CV_User.pdf'),
-              const SizedBox(height: 18),
-
-              // Secciones (texto con título y valor, y acción al lado)
+              // Secciones con la información de la imagen
               _ProfileSection(
-                label: 'Correo Electrónico:',
+                label: 'Correo Electronico:',
                 value: 'eminemrs14@gmail.com',
                 actionIcon: Icons.edit,
                 onAction: () {},
               ),
               _ProfileSection(
-                label: 'Carrera:',
-                value: 'Ingeniería en Sistemas Computacionales',
+                label: 'Empresa:',
+                value: 'BBVA Mexico',
                 actionIcon: Icons.edit,
                 onAction: () {},
               ),
               _ProfileSection(
-                label: 'Biografía:',
+                label: 'Direccion de la Empresa :',
                 value:
-                'Busco oportunidades laborales, en el campo de la ingeniería, '
-                    'colaborando con mis conocimientos a las empresas.',
+                'Av. Miguel Othón de Mendizábal Ote. 343-\n'
+                    'Locales 2-5, Industrial Vallejo, Gustavo A.\n'
+                    'Madero, 07700 Ciudad de México, CDMX',
                 actionIcon: Icons.edit,
                 onAction: () {},
               ),
               _ProfileSection(
-                label: 'Habilidades Técnicas:',
-                value: 'Python, Java, Kotlin, Linux',
+                label: 'Numero de Telefono:',
+                value: '+52 55478963210',
                 actionIcon: Icons.add_circle_outline,
                 onAction: () {},
               ),
               _ProfileSection(
-                label: 'Habilidades Blandas:',
-                value: 'Comunicación, Trabajo en equipo',
+                label: 'Puesto en la Empresa',
+                value: 'Jefe de Recursos Humanos',
                 actionIcon: Icons.add_circle_outline,
                 onAction: () {},
               ),
               _ProfileSection(
-                label: 'Área de Especialidad:',
+                label: 'Area de Especialidad:',
                 value: 'TI, Frontend, UI/UX',
                 actionIcon: Icons.add_circle_outline,
                 onAction: () {},
               ),
               _ProfileSection(
                 label: 'Idiomas:',
-                value: 'Inglés C1, Español Nativo',
+                value: 'Ingles C1, Español Nativo',
                 actionIcon: Icons.add_circle_outline,
                 onAction: () {},
               ),
@@ -92,6 +89,8 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
+
     // Encabezado limpio: engrane arriba a la derecha, título centrado y avatar
     return Column(
       children: [
@@ -106,17 +105,20 @@ class _Header extends StatelessWidget {
             ),
           ],
         ),
-        const Texto(text: 'PerfilRec', fontSize: 22),
+        const Texto(text: 'Perfil', fontSize: 22, fontWeight: FontWeight.w700),
         const SizedBox(height: 12),
         const CircleAvatar(
           radius: 42,
-          backgroundImage: AssetImage('assets/images/amlo.jpg'), // reemplaza por tu asset
+          backgroundImage: AssetImage('assets/images/amlo.jpg'), // reemplaza por tu asset/foto
+          // Si usas red: backgroundImage: NetworkImage('https://...'),
         ),
+        const SizedBox(height: 8),
       ],
     );
   }
 }
 
+// Lo dejo por si después lo vuelves a mostrar
 class _CvBox extends StatelessWidget {
   const _CvBox({required this.fileName});
   final String fileName;
@@ -145,9 +147,7 @@ class _CvBox extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {
-              // abrir/seleccionar CV
-            },
+            onPressed: () {},
             icon: const Icon(Icons.more_vert),
           ),
         ],
@@ -186,7 +186,7 @@ class _ProfileSection extends StatelessWidget {
                   label,
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
