@@ -7,6 +7,7 @@ import 'package:vinculed_app_1/src/ui/pages/candidato/mensajes.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/notificaciones.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/perfil.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/postulaciones.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/ajustes.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/home.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/mensajes.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/mis_vacantes.dart';
@@ -33,7 +34,7 @@ class _MenuPageRecState extends State<MenuPageRec> {
       PerfilRec(),         // 0
       VacantesRec(),  // 1
       HomeRec(),           // 2
-      Experiencias(),   // 3
+      AjustesRec(),   // 3
       MensajesRec(),       // 4
     ];
     _pageController = PageController(initialPage: _paginaActual);
