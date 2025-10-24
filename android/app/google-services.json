@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "939017922505",
-    "project_id": "prueba-odasys",
-    "storage_bucket": "prueba-odasys.firebasestorage.app"
+    "project_number": "570377189463",
+    "project_id": "odatalent-578e1",
+    "storage_bucket": "odatalent-578e1.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:939017922505:android:1ea128ed3f4e34237a6a18",
+        "mobilesdk_app_id": "1:570377189463:android:ef8612a696eb273d290b12",
         "android_client_info": {
           "package_name": "com.example.vinculed_app_1"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyARNSOObpnq5pgYQnwJil4DxqpTvHcLhBM"
+          "current_key": "AIzaSyCZ37sOnSdvvkFpFIfwB3Kgz-LBclTBlzs"
         }
       ],
       "services": {
