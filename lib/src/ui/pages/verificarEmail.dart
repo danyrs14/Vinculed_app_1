@@ -11,7 +11,6 @@ class verificarEmailPage extends StatefulWidget {
 }
 
 class _verificarEmailPageState extends State<verificarEmailPage> {
-  bool emailVerificado = false;
 
   @override
   void initState() {
@@ -24,10 +23,8 @@ class _verificarEmailPageState extends State<verificarEmailPage> {
     try{
       await user?.reload();
       if (user != null && user.emailVerified) {
-        setState(() {
-          emailVerificado = true;
-        });
-      } else { //Verifica cada 5 segundos
+        return;
+      } else if (mounted) { //Verifica cada 5 segundos
         Future.delayed(const Duration(seconds: 5), () {
           _revisarVerificacionEmail();
         });
@@ -38,9 +35,8 @@ class _verificarEmailPageState extends State<verificarEmailPage> {
   }
 
   @override
-  Widget build(BuildContext context) => emailVerificado
-      ? MenuPage()
-      : Scaffold(
+  Widget build(BuildContext context) {
+    return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
             backgroundColor: Colors.blue,
@@ -86,7 +82,7 @@ class _verificarEmailPageState extends State<verificarEmailPage> {
             ),
           ),
         );
-
+  }
   
 
   void _mostrarMensaje(String mensaje) {

@@ -81,10 +81,9 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
         //Enviar email de verificación
         await credential.user!.sendEmailVerification();
         //Pagina de verificación
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => verificarEmailPage()),
-        );
+        if (mounted){
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
       } else {
         throw Exception("Error del servidor: ${response.body}"); 
       }

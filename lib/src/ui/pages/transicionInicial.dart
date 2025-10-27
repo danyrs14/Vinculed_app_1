@@ -14,7 +14,7 @@ class _TrasicionPageState extends State<TrasicionPage> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: FirebaseAuth.instance.authStateChanges(), 
+      stream: FirebaseAuth.instance.userChanges(), 
       builder: (context, snapshot){
             if (snapshot.hasError) {
               return const Text('Algo salió mal');
