@@ -23,7 +23,7 @@ class _LectorQRPageState extends State<LectorQRPage> {
   );
 
   bool _mostrarScanner = false;
-  final String baseUrl = "http://10.0.2.2:3000/api/verificarqr";
+  final String baseUrl = "https://oda-talent-back-81413836179.us-central1.run.app/api/verificarqr";
 
   Future<void> _procesarCodigo(String codigo) async {
     setState(() {

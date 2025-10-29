@@ -63,7 +63,7 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
       await user.updateDisplayName(name); //Actualizar el nombre del usuario en firebase
       //Enviar al backend para guardarlo en MySQL
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:3000/api/usuarios/registrar'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/registrar'),
         headers: {
           'Authorization': 'Bearer $idToken',
           'Content-Type': 'application/json',

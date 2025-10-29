@@ -79,7 +79,7 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
 
       // NOTA: Para web, usa 'localhost' en lugar de '10.0.2.2'
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/usuarios/registrar'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/registrar'),
         headers: {
           'Authorization': 'Bearer $idToken',
           'Content-Type': 'application/json',
