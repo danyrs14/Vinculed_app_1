@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
 import 'package:vinculed_app_1/src/ui/pages/login.dart';
 import 'package:vinculed_app_1/src/ui/pages/verificarEmail.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/menu.dart';
 
 
 class TrasicionPage extends StatefulWidget {

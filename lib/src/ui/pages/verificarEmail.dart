@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/menu.dart';
 
 
 class verificarEmailPage extends StatefulWidget {
