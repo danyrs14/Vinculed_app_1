@@ -9,6 +9,7 @@ class DropdownInput<T> extends StatelessWidget {
   final List<DropdownMenuItem<T>> items;
   final T? value;
   final void Function(T?)? onChanged;
+  final FormFieldValidator<T>? validator;
 
   const DropdownInput({
     Key? key,
@@ -19,6 +20,7 @@ class DropdownInput<T> extends StatelessWidget {
     required this.items,
     this.value,
     this.onChanged,
+    this.validator,
   }) : super(key: key);
 
   @override
@@ -32,17 +34,19 @@ class DropdownInput<T> extends StatelessWidget {
         primaryColor ? theme.secundario() : theme.secundario();
 
     return Padding(
-      padding: const EdgeInsets.all(4.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: DropdownButtonFormField<T>(
         value: value,
         items: items,
         onChanged: enabled ? onChanged : null,
+        validator: validator,
         decoration: InputDecoration(
+          isDense: false,
           labelText: required ? '$title*' : title,
           labelStyle: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w400,
-            color: required ? Colors.red : Colors.grey,
+            color: Colors.grey,
             fontFamily: 'Poppins',
           ),
           floatingLabelStyle: TextStyle(
@@ -67,7 +71,7 @@ class DropdownInput<T> extends StatelessWidget {
           fontFamily: 'Poppins',
         ),
         iconEnabledColor: getTextColor(),
-        dropdownColor: Theme.of(context).scaffoldBackgroundColor,
+        dropdownColor: Colors.white,
       ),
     );
   }

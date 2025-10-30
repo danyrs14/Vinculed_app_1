@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/busqueda.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/experiencias.dart';
@@ -23,12 +24,12 @@ class _MenuPageState extends State<MenuPage> {
   @override
   void initState() {
     super.initState();
-    _paginas = const [
-      Perfil(),         // 0
-      Postulaciones(),  // 1
+    _paginas =  [
+      const Perfil(),         // 0
+      const Postulaciones(),  // 1
       Home(),           // 2
-      Experiencias(),   // 3
-      Mensajes(),       // 4
+      const Experiencias(),   // 3
+      const Mensajes(),       // 4
     ];
     _pageController = PageController(initialPage: _paginaActual);
   }

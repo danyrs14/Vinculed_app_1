@@ -27,7 +27,10 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         return macos;
       case TargetPlatform.windows:
-        return windows;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -41,48 +44,38 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDLkPz_Vu0m_EgwV1DmIBFzfNPxW7kV4V8',
-    appId: '1:939017922505:web:f455ff65ad6cc1167a6a18',
-    messagingSenderId: '939017922505',
-    projectId: 'prueba-odasys',
-    authDomain: 'prueba-odasys.firebaseapp.com',
-    storageBucket: 'prueba-odasys.firebasestorage.app',
-    measurementId: 'G-96M3G1XZW4',
+    apiKey: 'AIzaSyDfPnmd4ROCTW69-mS9Oww6rftk5KusF38',
+    appId: '1:570377189463:web:75f6dfc4faa117fe290b12',
+    messagingSenderId: '570377189463',
+    projectId: 'odatalent-578e1',
+    authDomain: 'odatalent-578e1.firebaseapp.com',
+    storageBucket: 'odatalent-578e1.firebasestorage.app',
+    measurementId: 'G-FYHWV93G35',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyARNSOObpnq5pgYQnwJil4DxqpTvHcLhBM',
-    appId: '1:939017922505:android:1ea128ed3f4e34237a6a18',
-    messagingSenderId: '939017922505',
-    projectId: 'prueba-odasys',
-    storageBucket: 'prueba-odasys.firebasestorage.app',
+    apiKey: 'AIzaSyCZ37sOnSdvvkFpFIfwB3Kgz-LBclTBlzs',
+    appId: '1:570377189463:android:ef8612a696eb273d290b12',
+    messagingSenderId: '570377189463',
+    projectId: 'odatalent-578e1',
+    storageBucket: 'odatalent-578e1.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD5aaZM8xzfSYb86p7xciftYDA81M7Pj3s',
-    appId: '1:939017922505:ios:dc2808339c893c387a6a18',
-    messagingSenderId: '939017922505',
-    projectId: 'prueba-odasys',
-    storageBucket: 'prueba-odasys.firebasestorage.app',
+    apiKey: 'AIzaSyBHuLeCILzvlNrZLfBrgxa4f5-QZhZ6p5U',
+    appId: '1:570377189463:ios:09ca50e20185361d290b12',
+    messagingSenderId: '570377189463',
+    projectId: 'odatalent-578e1',
+    storageBucket: 'odatalent-578e1.firebasestorage.app',
     iosBundleId: 'com.example.vinculedApp1',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyD5aaZM8xzfSYb86p7xciftYDA81M7Pj3s',
-    appId: '1:939017922505:ios:dc2808339c893c387a6a18',
-    messagingSenderId: '939017922505',
-    projectId: 'prueba-odasys',
-    storageBucket: 'prueba-odasys.firebasestorage.app',
+    apiKey: 'AIzaSyBHuLeCILzvlNrZLfBrgxa4f5-QZhZ6p5U',
+    appId: '1:570377189463:ios:09ca50e20185361d290b12',
+    messagingSenderId: '570377189463',
+    projectId: 'odatalent-578e1',
+    storageBucket: 'odatalent-578e1.firebasestorage.app',
     iosBundleId: 'com.example.vinculedApp1',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDLkPz_Vu0m_EgwV1DmIBFzfNPxW7kV4V8',
-    appId: '1:939017922505:web:d871618ba83af21a7a6a18',
-    messagingSenderId: '939017922505',
-    projectId: 'prueba-odasys',
-    authDomain: 'prueba-odasys.firebaseapp.com',
-    storageBucket: 'prueba-odasys.firebasestorage.app',
-    measurementId: 'G-MERD85NBSE',
   );
 }
