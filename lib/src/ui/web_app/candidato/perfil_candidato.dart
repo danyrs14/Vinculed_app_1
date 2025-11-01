@@ -5,6 +5,7 @@ import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -16,6 +17,7 @@ class UserProfilePage extends StatefulWidget {
 class _UserProfilePageState extends State<UserProfilePage> {
   final _scrollCtrl = ScrollController();
   bool _showFooter = false;
+  final usuario = FirebaseAuth.instance.currentUser!;
 
   static const double _footerReservedSpace = EscomFooter.height;
   static const double _extraBottomPadding = 24.0;
@@ -63,12 +65,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
       backgroundColor: theme.background(),
       appBar: EscomHeader2(
         onLoginTap: () => context.go('/perfil_cand'),
-        onRegisterTap: () => context.go('/signin'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
-              context.go('/inicio_cand');
+              context.go('/inicio');
               break;
 
             case "Postulaciones":
@@ -146,17 +147,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                   padding: const EdgeInsets.symmetric(horizontal: 24),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: const [
+                                    children: [
                                       Text(
-                                        'Francisco Jaime Hernandez',
-                                        style: TextStyle(
+                                        '${usuario.displayName}',
+                                        style: const TextStyle(
                                           fontSize: 26,
                                           fontWeight: FontWeight.w800,
                                           color: Color(0xFF1F2A36),
                                         ),
                                       ),
-                                      SizedBox(height: 6),
-                                      Text(
+                                      const SizedBox(height: 6),
+                                      const Text(
                                         'Alumno',
                                         style: TextStyle(
                                           fontSize: 16,

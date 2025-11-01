@@ -73,7 +73,7 @@ class _DashboardState extends State<Dashboard> {
               context.go('/dashboard');
               break;
             case "Postulaciones":
-             context.go('/mis_postulaciones');
+            // context.go('/mis_postulaciones');
               break;
             case "Experiencias":
             // context.go('/experiencias');

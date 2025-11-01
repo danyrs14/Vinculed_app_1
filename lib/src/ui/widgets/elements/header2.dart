@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
   const EscomHeader2({
     super.key,
     this.onMenuSelected,
     this.onLoginTap,
-    this.onRegisterTap,
     this.onNotifTap, // Se llamará DESPUÉS de abrir la bandeja
   });
 
   final void Function(String label)? onMenuSelected;
   final VoidCallback? onLoginTap;
-  final VoidCallback? onRegisterTap;
   /// Se llamará después de abrir la bandeja, para métricas o side-effects.
   final VoidCallback? onNotifTap;
 
@@ -25,6 +24,14 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
     "Preferencias",
     "FAQ",
   ];
+
+  void _cerrarSesion() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      print("Error al cerrar sesión: $e");
+    }
+  } 
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -76,7 +83,7 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: MiniButton(
-            onTap: onRegisterTap,
+            onTap: _cerrarSesion,
             title: "Cerrar Sesion",
           ),
         ),

@@ -22,7 +22,8 @@ class UserDataProvider extends ChangeNotifier {
   Future<void> getIdUsuario(User user) async{
     try{
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/usuarios/${user.uid}'),
+        //Uri.parse('http://10.0.2.2:3000/api/usuarios/${user.uid}'), //movil
+        Uri.parse('http://localhost:3000/api/usuarios/${user.uid}'), //web
         headers: {
           'Authorization': 'Bearer $_idToken',
         },

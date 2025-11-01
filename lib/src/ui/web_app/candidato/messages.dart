@@ -62,12 +62,11 @@ class _MessagesPageState extends State<MessagesPage> {
       backgroundColor: theme.background(),
       appBar: EscomHeader2(
         onLoginTap: () => context.go('/perfil_cand'),
-        onRegisterTap: () => context.go('/signin'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
-              context.go('/inicio_cand');
+              context.go('/inicio');
               break;
 
             case "Postulaciones":
