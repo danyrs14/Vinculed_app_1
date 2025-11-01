@@ -5,6 +5,7 @@ import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/job_card.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeRegisteredPage extends StatefulWidget {
   const HomeRegisteredPage({super.key});
@@ -16,6 +17,7 @@ class HomeRegisteredPage extends StatefulWidget {
 class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
   final _scrollCtrl = ScrollController();
   bool _showFooter = false;
+  final usuario = FirebaseAuth.instance.currentUser!;
 
   static const double _footerReservedSpace = EscomFooter.height;
   static const double _extraBottomPadding = 24.0;
@@ -59,12 +61,11 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
       backgroundColor: theme.background(),
       appBar: EscomHeader2(
         onLoginTap: () => context.go('/perfil_cand'),
-        onRegisterTap: () => context.go('/signin'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
-              context.go('/inicio_cand');
+              context.go('/inicio');
               break;
 
               case "Postulaciones":
@@ -136,7 +137,7 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                     const SizedBox(width: 14),
                                     Expanded(
                                       child: Text(
-                                        'Bienvenido de Nuevo -  @Usuario_Registrado',
+                                        'Bienvenido de Nuevo -  ${usuario.displayName}',
                                         style: TextStyle(
                                           fontSize: isMobile ? 22 : 28,
                                           fontWeight: FontWeight.w800,

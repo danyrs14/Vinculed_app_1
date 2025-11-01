@@ -4,6 +4,10 @@ import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/login.dart';
 import 'package:vinculed_app_1/src/ui/pages/verificarEmail.dart';
 import 'package:vinculed_app_1/src/ui/pages/modulo_candidato/menu.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 
 
 class TrasicionPage extends StatefulWidget {
@@ -29,6 +33,9 @@ class _TrasicionPageState extends State<TrasicionPage> {
             if(!user.emailVerified){
               return verificarEmailPage();
             }
+            final userDataProvider = context.read<UserDataProvider>();
+            userDataProvider.updateToken(user);
+            userDataProvider.getIdUsuario(user);
             return MenuPage();
           }
       );
