@@ -85,7 +85,7 @@ class _AdminAppState extends State<AdminApp> {
         }
 
         const verifyRoute = '/verificar_email';
-        if (!isVerified) {
+        if (!isVerified ) {
           return location == verifyRoute ? null : verifyRoute;
         }
 
@@ -143,6 +143,64 @@ class _AdminAppState extends State<AdminApp> {
         GoRoute(
           path: '/inicio',
           builder: (context, state) => const InicioPage(),
+        ),
+        // -----admin --------
+        GoRoute(
+          path: '/admin',
+          // Este redirect protege TODAS las rutas hijas
+          redirect: (context, state) {
+            final role = context.read<UserDataProvider>().rol;
+
+            if (role == null) {
+              // Se manda a cargar
+              return '/inicio';
+            }
+            if (role != 'admin') {
+              return '/404';
+            }
+
+            return null; 
+          },
+          // Este padre no tiene 'builder', solo agrupa a los hijos
+          routes: [
+            GoRoute(
+              path: 'busqueda_job',
+              builder: (context, state) => const JobSearchPage(),
+            ),
+            GoRoute(
+              path: 'vacante_job',
+              builder: (context, state) => const JobDetailPage(),
+            ),
+            GoRoute(
+              path: 'perfil_cand', 
+              builder: (context, state) => const UserProfilePage(),
+            ),
+            GoRoute(
+              path: 'mis_postulaciones',
+              builder: (context, state) => const MyApplicationsPage(),
+            ),
+            GoRoute(
+              path: 'messages',
+              builder: (context, state) => const MessagesPage(),
+            ),
+            // La ruta real será '/candidato/experiencias'
+            GoRoute(
+              path: 'experiencias',
+              builder: (context, state) => const ExperiencesPage(),
+            ),
+            GoRoute(
+              path: 'experiencias_create',
+              builder: (context, state) => const CreateExperiencePage(),
+            ),
+            GoRoute(
+              path: 'faq',
+              builder: (context, state) => const FaqPage(),
+            ),
+            GoRoute(
+              path: 'preferences',
+              builder: (context, state) => const PreferencesPage(),
+            ),
+          ],
         ),
         // ----- Candidato -----
         GoRoute(
