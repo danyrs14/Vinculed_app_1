@@ -6,15 +6,18 @@ import 'dart:convert';
 class UserDataProvider extends ChangeNotifier {
 
   String? _idToken;
+  String? _nombreUsuario;
   String? _idUsuario; 
   String? _rol;
 
   String? get idToken => _idToken;
+  String? get nombreUsuario => _nombreUsuario;
   String? get idUsuario => _idUsuario;
   String? get rol => _rol;
 
   Future<void> updateToken(User user) async {
     _idToken = await user.getIdToken();
+    _nombreUsuario = user.displayName;
     // Notifica a cualquier widget que esté "escuchando" que los datos cambiaron
     notifyListeners(); 
   }
@@ -23,7 +26,7 @@ class UserDataProvider extends ChangeNotifier {
     try{
       final response = await http.get(
         //Uri.parse('http://10.0.2.2:3000/api/usuarios/${user.uid}'), //movil
-        Uri.parse('http://localhost:3000/api/usuarios/${user.uid}'), //web
+        Uri.parse('http://localhost:3000/api/usuarios/uid/${user.uid}'), //web
         headers: {
           'Authorization': 'Bearer $_idToken',
         },

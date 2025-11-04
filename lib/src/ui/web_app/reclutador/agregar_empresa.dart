@@ -5,33 +5,29 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-// Widgets personalizados (asegúrate de que las rutas de importación sean correctas)
 import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
+import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart'; // Cambiado de TextInput a TextFormField
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/dropdown.dart';
-import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
-// Asegúrate de tener una página para verificar email en tus rutas de go_router
-// import 'package:vinculed_app_1/src/ui/pages/verificarEmail.dart';
 
-class RegisterPageWeb extends StatefulWidget {
-  final String? nombre; 
-  
-  const RegisterPageWeb({super.key, this.nombre});
+class AgregarEmpresaPageWebRec extends StatefulWidget {
+  const AgregarEmpresaPageWebRec({super.key});
 
   @override
-  State<RegisterPageWeb> createState() => _RegisterPageWebState();
+  State<AgregarEmpresaPageWebRec> createState() => _AgregarEmpresaPageWebRecState();
 }
 
-class _RegisterPageWebState extends State<RegisterPageWeb> {
-  // Key para el formulario
-  final _registroFormKey = GlobalKey<FormState>();
+class _AgregarEmpresaPageWebRecState extends State<AgregarEmpresaPageWebRec> {
+  final _agregarEmpresaFormKey = GlobalKey<FormState>();
+  // Controllers
+  final _nombreCtrl = TextEditingController();
+  final _descripcionCtrl = TextEditingController();
+  final _sitioWebCtrl = TextEditingController();
 
-  // Controllers del formulario (unificados con la versión móvil)
-  final _nameController = TextEditingController();
-  final _genderController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  List<DropdownMenuItem<String>> _empresasItems = [];
+  String? _empresaSeleccionada;
 
   // Estado de carga y validación
   bool _loading = false;
@@ -40,28 +36,47 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
   bool _hasNumber = false;
   bool _hasSpecialChar = false;
 
-  // Lógica para mostrar/ocultar el footer (se mantiene)
   final ScrollController _scrollCtrl = ScrollController();
   bool _showFooter = false;
+
+  // Reservamos SIEMPRE espacio para el footer en el padding inferior
   static const double _footerReservedSpace = EscomFooter.height;
   static const double _extraBottomPadding = 24.0;
+
+  // Umbral mínimo para considerar que se llegó al final
   static const double _atEndThreshold = 4.0;
 
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
     _scrollCtrl.addListener(_onScroll);
+    // tras el primer frame, intentamos evaluar por si el contenido ya es largo
     WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
-    if (widget.nombre != null) {
-      _nameController.text = widget.nombre!;
+    await _fetchEmpresas();
+  }
+
+  void _onScroll() {
+    final pos = _scrollCtrl.position;
+    if (!pos.hasPixels || !pos.hasContentDimensions) return;
+
+    // Si no hay scroll suficiente, puedes decidir:
+    // - Mostrar footer inmediatamente (true), o
+    // - Mantenerlo oculto (false).
+    // Aquí lo mantenemos oculto si no hay scroll.
+    if (pos.maxScrollExtent <= 0) {
+      if (_showFooter) setState(() => _showFooter = false);
+      return;
+    }
+
+    final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
+    if (atBottom != _showFooter) {
+      setState(() => _showFooter = atBottom);
     }
   }
 
-  // --- Lógica de Registro (adaptada de la vista móvil) ---
-
   Future<void> _registerUser() async {
     // Validar el formulario antes de continuar
-    if (!_registroFormKey.currentState!.validate()) {
+    if (!_agregarEmpresaFormKey.currentState!.validate()) {
       return;
     }
 
@@ -70,12 +85,13 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
     try {
       final auth = FirebaseAuth.instance;
       final credential = await auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+        email: _emailCtrl.text.trim(),
+        password: _passwordCtrl.text.trim(),
       );
       final user = credential.user!;
       final idToken = await user.getIdToken();
-      await user.updateDisplayName(_nameController.text.trim());
+      _nombreCompleto ='${_nombreCtrl.text.trim()} ${_apPaternoCtrl.text.trim()} ${_apMaternoCtrl.text.trim()}';
+      await user.updateDisplayName(_nombreCompleto);
 
       // NOTA: Para web, usa 'localhost' en lugar de '10.0.2.2'
       final response = await http.post(
@@ -85,9 +101,9 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'nombre': _nameController.text.trim(),
-          'email': _emailController.text.trim(),
-          'rol': 'alumno',
+          'nombre': _nombreCompleto,
+          'email': _emailCtrl.text.trim(),
+          'rol': 'reclutador',
           'genero': _genderController.text.trim(),
           'uid_firebase': user.uid,
         }),
@@ -161,19 +177,33 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
     );
   }
 
-  // --- Lógica del Footer (sin cambios) ---
-  void _onScroll() {
-    final pos = _scrollCtrl.position;
-    if (!pos.hasPixels || !pos.hasContentDimensions) return;
+  void _cargarEmpresasItemsDeJson(List<dynamic> jsonList) {
+    final items = jsonList.map<DropdownMenuItem<String>>((e) {
+      final id = (e['id'] ?? '').toString();
+      final label = (e['nombre'] ?? id).toString();
+      return DropdownMenuItem(value: id, child: Text(label));
+    }).toList();
 
-    if (pos.maxScrollExtent <= 0) {
-      if (_showFooter) setState(() => _showFooter = false);
-      return;
-    }
+    // Opcional: añadir opción para ir a "agregar" al final
+    items.add(const DropdownMenuItem(value: 'agregar', child: Text('Agregar empresa')));
 
-    final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
-    if (atBottom != _showFooter) {
-      setState(() => _showFooter = atBottom);
+    setState(() => _empresasItems = items);
+  }
+
+  Future<void> _fetchEmpresas() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:3000/api/empresas/obtener_empresas'),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        _cargarEmpresasItemsDeJson(data);
+      } else {
+        throw Exception("Error al cargar empresas");
+      }
+    } catch (e) {
+      _showError(e.toString());
     }
   }
 
@@ -182,10 +212,13 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
     _scrollCtrl
       ..removeListener(_onScroll)
       ..dispose();
-    _nameController.dispose();
-    _genderController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
+    _nombreCtrl.dispose();
+    _apPaternoCtrl.dispose();
+    _apMaternoCtrl.dispose();
+    _empresaNombreCtrl.dispose();
+    _emailCtrl.dispose();
+    _empresaDireccionCtrl.dispose();
+    _passwordCtrl.dispose();
     super.dispose();
   }
 
@@ -197,7 +230,6 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
     return Scaffold(
       appBar: EscomHeader(
         onLoginTap: () => context.go('/login'),
-        onRegisterTap: () => context.go('/lector_qr'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
@@ -209,17 +241,24 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
       ),
       body: Stack(
         children: [
+          // SCROLL GLOBAL, reservando SIEMPRE el espacio del footer
           Positioned.fill(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final minBodyHeight =
-                    constraints.maxHeight - _footerReservedSpace - _extraBottomPadding;
+                // Al reservar siempre el espacio del footer, el final del contenido
+                // no “se mueve” cuando se muestra el footer.
+                final minBodyHeight = constraints.maxHeight
+                    - _footerReservedSpace
+                    - _extraBottomPadding;
 
                 return NotificationListener<ScrollNotification>(
+                  // redundancia útil: además del listener del controller,
+                  // capturamos notificaciones para responder más rápido
                   onNotification: (n) {
-                    if (n is ScrollUpdateNotification ||
+                    // Disparamos el cálculo cuando se actualizan métricas
+                    if (n is ScrollEndNotification ||
                         n is UserScrollNotification ||
-                        n is ScrollEndNotification) {
+                        n is ScrollUpdateNotification) {
                       _onScroll();
                     }
                     return false;
@@ -239,11 +278,12 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                             constraints: BoxConstraints(
                               minHeight: minBodyHeight > 0 ? minBodyHeight : 0,
                             ),
-                            child: Form( // Envolvemos el Column en un Form
-                              key: _registroFormKey,
+                            child: Form(
+                              key: _agregarEmpresaFormKey,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
+                                  // Lottie/Ilustración
                                   Align(
                                     alignment: Alignment.center,
                                     child: ClipRRect(
@@ -259,14 +299,30 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                                     ),
                                   ),
                                   const SizedBox(height: 28),
-
-                                  // --- Formulario unificado ---
-                                  StyledTextFormField(
-                                    controller: _nameController,
-                                    title: "Nombre completo",
+                              
+                                  // Formulario
+                                  StyledTextFormField(title: 'Nombre(s)', controller: _nombreCtrl,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'El nombre es obligatorio.';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  StyledTextFormField(title: 'Apellido Paterno', controller: _apPaternoCtrl,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'El apellido paterno es obligatorio.';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  StyledTextFormField(title: 'Apellido Materno', controller: _apMaternoCtrl,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'El apellido materno es obligatorio.';
                                       }
                                       return null;
                                     },
@@ -293,24 +349,40 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                                     },
                                   ),
                                   const SizedBox(height: 12),
-                                  StyledTextFormField(
-                                    controller: _emailController,
-                                    title: "Correo institucional",
-                                    keyboardType: TextInputType.emailAddress,
+                                  DropdownInput<String>(
+                                    title: "Empresa",
+                                    required: true,
+                                    items: _empresasItems,
+                                    value: _empresaSeleccionada,
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'El correo es obligatorio.';
-                                      }
-                                      final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
-                                      if (!emailRegex.hasMatch(value)) {
-                                        return 'Ingrese un correo válido.';
-                                      }
+                                      if (value == null || value.isEmpty) return 'La empresa es obligatoria.';
                                       return null;
+                                    },
+                                    onChanged: (valor) {
+                                      if (valor == null) return;
+                                      if (valor == 'agregar') {
+                                        // Con go_router
+                                        if (mounted) context.go('/agregar_empresa'); // ruta que definas
+                                        // Alternativa con Navigator:
+                                        // Navigator.of(context).pushNamed('/agregar-genero');
+                                        return;
+                                      }
+                                      setState(() {
+                                        _empresaSeleccionada = valor;
+                                        _empresaNombreCtrl.text = valor;
+                                      });
                                     },
                                   ),
                                   const SizedBox(height: 12),
                                   StyledTextFormField(
-                                    controller: _passwordController,
+                                    title: 'Correo Electrónico',
+                                    controller: _emailCtrl,
+                                    keyboardType: TextInputType.emailAddress,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 12),
+                                  StyledTextFormField(
+                                    controller: _passwordCtrl,
                                     title: "Contraseña",
                                     obscureText: true,
                                     isPasswordField: true,
@@ -325,16 +397,16 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                                       return null;
                                     },
                                   ),
-                                  const SizedBox(height: 10),
+                              
+                                  const SizedBox(height: 20),
 
-                                  // --- Requisitos de la contraseña ---
                                   Padding(
                                     padding: const EdgeInsets.only(left: 4.0),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text("Requisitos de la contraseña:", style: TextStyle(fontWeight: FontWeight.bold)),
-                                        SizedBox(height: 8),
+                                        const Text("Requisitos de la contraseña:", style: TextStyle(fontWeight: FontWeight.bold)),
+                                        const SizedBox(height: 8),
                                         _buildValidationRow("Al menos 8 caracteres", _hasMinLength),
                                         const SizedBox(height: 4),
                                         _buildValidationRow("Al menos una letra", _hasLetter),
@@ -345,17 +417,17 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                                       ],
                                     ),
                                   ),
-
-                                  const SizedBox(height: 20),
-
+                                  const SizedBox(height: 24), 
+                              
                                   LargeButton(
-                                    onTap: _loading ? null : _registerUser,
-                                    title: _loading ? 'Registrando...' : 'Registrarme',
+                                    onTap: _registerUser,
+                                    title: 'Registrarme',
                                   ),
+                              
                                   const SizedBox(height: 24),
-
+                              
                                   const Row(
-                                    children: [
+                                    children: const [
                                       Expanded(child: Divider(thickness: 1)),
                                       Padding(
                                         padding: EdgeInsets.symmetric(horizontal: 12.0),
@@ -364,12 +436,14 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                                       Expanded(child: Divider(thickness: 1)),
                                     ],
                                   ),
+                              
                                   const SizedBox(height: 16),
-
+                              
                                   LargeButton(
-                                    onTap: () => context.go('/login'), // Cambiado a login
-                                    title: 'Ya tengo una cuenta',
+                                    onTap: () => context.go('/inicio_rec'),
+                                    title: 'Iniciar Sesión',
                                   ),
+                              
                                   const SizedBox(height: 40),
                                 ],
                               ),
@@ -383,6 +457,8 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
               },
             ),
           ),
+
+          // FOOTER (aparece inmediatamente al llegar al final)
           Positioned(
             left: 0,
             right: 0,
@@ -401,5 +477,9 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
         ],
       ),
     );
+  }
+
+  void _onRegister() {
+    // TODO: validación/envío de formulario
   }
 }

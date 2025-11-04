@@ -60,7 +60,12 @@ class _AdminAppState extends State<AdminApp> {
       refreshListenable: _authNotifier,
 
       redirect: (BuildContext context, GoRouterState state) {
-        
+        if (_authNotifier.isInitializing) {
+          // Aún no sabemos el estado de auth, no hagas nada.
+          // Esto evita el salto al /dashboard en F5.
+          return null; 
+        }
+
         final User? user = _authNotifier.user;
         final bool isLoggedIn = user != null;
         final bool isVerified = user?.emailVerified ?? false;
@@ -141,66 +146,107 @@ class _AdminAppState extends State<AdminApp> {
         ),
         // ----- Candidato -----
         GoRoute(
-          path: '/busqueda_job',
-          builder: (context, state) => const JobSearchPage(),
-        ),
-        GoRoute(
-          path: '/vacante_job',
-          builder: (context, state) => const JobDetailPage(),
-        ),
-        GoRoute(
-          path: '/perfil_cand',
-          builder: (context, state) => const UserProfilePage(),
-        ),
-        GoRoute(
-          path: '/mis_postulaciones',
-          builder: (context, state) => const MyApplicationsPage(),
-        ),
-        GoRoute(
-          path: '/messages',
-          builder: (context, state) => const MessagesPage(),
-        ),
-        GoRoute(
-          path: '/experiencias',
-          builder: (context, state) => const ExperiencesPage(),
-        ),
-        GoRoute(
-          path: '/experiencias_create',
-          builder: (context, state) => const CreateExperiencePage(),
-        ),
-        GoRoute(
-          path: '/faq',
-          builder: (context, state) => const FaqPage(),
-        ),
-        GoRoute(
-          path: '/preferences',
-          builder: (context, state) => const PreferencesPage(),
+          path: '/alumno',
+          // Este redirect protege TODAS las rutas hijas
+          redirect: (context, state) {
+            final role = context.read<UserDataProvider>().rol;
+
+            if (role == null) {
+              // Se manda a cargar
+              return '/inicio';
+            }
+            if (role != 'alumno') {
+              return '/404';
+            }
+
+            return null; 
+          },
+          // Este padre no tiene 'builder', solo agrupa a los hijos
+          routes: [
+            GoRoute(
+              path: 'busqueda_job',
+              builder: (context, state) => const JobSearchPage(),
+            ),
+            GoRoute(
+              path: 'vacante_job',
+              builder: (context, state) => const JobDetailPage(),
+            ),
+            GoRoute(
+              path: 'perfil_cand', 
+              builder: (context, state) => const UserProfilePage(),
+            ),
+            GoRoute(
+              path: 'mis_postulaciones',
+              builder: (context, state) => const MyApplicationsPage(),
+            ),
+            GoRoute(
+              path: 'messages',
+              builder: (context, state) => const MessagesPage(),
+            ),
+            // La ruta real será '/candidato/experiencias'
+            GoRoute(
+              path: 'experiencias',
+              builder: (context, state) => const ExperiencesPage(),
+            ),
+            GoRoute(
+              path: 'experiencias_create',
+              builder: (context, state) => const CreateExperiencePage(),
+            ),
+            GoRoute(
+              path: 'faq',
+              builder: (context, state) => const FaqPage(),
+            ),
+            GoRoute(
+              path: 'preferences',
+              builder: (context, state) => const PreferencesPage(),
+            ),
+          ],
         ),
 
         // ----- Reclutador -----
         GoRoute(
-          path: '/new_vacancy',
-          builder: (context, state) => const CreateVacancyPage(),
-        ),
-        GoRoute(
-          path: '/my_vacancy',
-          builder: (context, state) => const MyVacanciesPage(),
-        ),
-        GoRoute(
-          path: '/postulaciones',
-          builder: (context, state) => const VacancyDetailPage(),
-        ),
-        GoRoute(
-          path: '/perfil_rec',
-          builder: (context, state) => const UserProfile(),
-        ),
-        GoRoute(
-          path: '/faq_rec',
-          builder: (context, state) => const FaqPageRec(),
-        ),
-        GoRoute(
-          path: '/msg_rec',
-          builder: (context, state) => const MessagesPageRec(),
+          path: '/reclutador',
+          // Este redirect protege TODAS las rutas hijas
+          redirect: (context, state) {
+            final role = context.read<UserDataProvider>().rol;
+
+            if (role == null) {
+              // Se manda a cargar
+              return '/inicio';
+            }
+            if (role != 'reclutador') {
+              return '/404';
+            }
+
+            return null; 
+          },
+          // Este padre no tiene 'builder', solo agrupa a los hijos
+          routes: [
+            GoRoute(
+              path: 'new_vacancy',
+              builder: (context, state) => const CreateVacancyPage(),
+            ),
+            GoRoute(
+              path: 'my_vacancy',
+              builder: (context, state) => const MyVacanciesPage(),
+            ),
+            GoRoute(
+              path: 'postulaciones',
+              builder: (context, state) => const VacancyDetailPage(),
+            ),
+            GoRoute(
+              path: 'perfil_rec',
+              builder: (context, state) => const UserProfile(),
+            ),
+            GoRoute(
+              path: 'faq_rec',
+              builder: (context, state) => const FaqPageRec(),
+            ),
+            GoRoute(
+              path: 'msg_rec',
+              builder: (context, state) => const MessagesPageRec(),
+            ),
+          ],
         ),
 
         // (Opcional) Ruta explícita de 404 para link directo
