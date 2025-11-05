@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
@@ -55,28 +57,27 @@ class _UserProfileState extends State<UserProfile> {
     return Scaffold(
       backgroundColor: theme.background(),
       appBar: EscomHeader3(
-        onLoginTap: () => context.go('/perfil_rec'),
-        onRegisterTap: () => context.go('/signin'),
+        onLoginTap: () => context.go('/reclutador/perfil_rec'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
-              context.go('/inicio_rec');
+              context.go('/inicio');
               break;
             case "Crear Vacante":
-              context.go('/new_vacancy');
+              context.go('/reclutador/new_vacancy');
               break;
             case "Mis Vacantes":
-              context.go('/my_vacancy');
+              context.go('/reclutador/my_vacancy');
               break;
             case "Postulaciones":
-              context.go('/postulaciones');
+              context.go('/reclutador/postulaciones');
               break;
             case "FAQ":
-              context.go('/faq_rec');
+              context.go('/reclutador/faq_rec');
               break;
             case "Mensajes":
-              context.go('/msg_rec');
+              context.go('/reclutador/msg_rec');
               break;
           }
         },
@@ -125,17 +126,17 @@ class _UserProfileState extends State<UserProfile> {
                                   padding: const EdgeInsets.symmetric(horizontal: 24),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: const [
+                                    children: [
                                       Text(
-                                        'Jorge Hernandez Ortega',
-                                        style: TextStyle(
+                                        context.select((UserDataProvider u) => u.nombreUsuario ?? 'Reclutador'),
+                                        style: const TextStyle(
                                           fontSize: 26,
                                           fontWeight: FontWeight.w800,
                                           color: Color(0xFF1F2A36),
                                         ),
                                       ),
-                                      SizedBox(height: 6),
-                                      Text(
+                                      const SizedBox(height: 6),
+                                      const Text(
                                         'Reclutador',
                                         style: TextStyle(
                                           fontSize: 16,

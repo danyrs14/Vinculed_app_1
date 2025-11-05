@@ -60,8 +60,7 @@ class _FaqPageRecState extends State<FaqPageRec> {
     return Scaffold(
       backgroundColor: theme.background(),
       appBar: EscomHeader3(
-        onLoginTap: () => context.go('/perfil_rec'),
-        onRegisterTap: () => context.go('/signin'),
+        onLoginTap: () => context.go('/reclutador/perfil_rec'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
@@ -69,19 +68,19 @@ class _FaqPageRecState extends State<FaqPageRec> {
               context.go('/inicio_rec');
               break;
             case "Crear Vacante":
-              context.go('/new_vacancy');
+              context.go('/reclutador/new_vacancy');
               break;
             case "Mis Vacantes":
-              context.go('/my_vacancy');
+              context.go('/reclutador/my_vacancy');
               break;
             case "Postulaciones":
-              context.go('/postulaciones');
+              context.go('/reclutador/postulaciones');
               break;
             case "FAQ":
-              context.go('/faq_rec');
+              context.go('/reclutador/faq_rec');
               break;
             case "Mensajes":
-              context.go('/msg_rec');
+              context.go('/reclutador/msg_rec');
               break;
           }
         },

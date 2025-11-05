@@ -5,6 +5,7 @@ import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 
 import 'package:vinculed_app_1/src/ui/web_app/candidato/inicio.dart';
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/inicio.dart';
+import 'package:vinculed_app_1/src/ui/web_app/inicio_admin.dart';
 
 class InicioPage extends StatefulWidget {
   const InicioPage({super.key});
@@ -50,6 +51,8 @@ class _InicioPageState extends State<InicioPage> {
       return const HomeRegisteredPage(); 
     } else if (rol == 'reclutador') {
       return const HomeRecruiterPage();
+    }else if(rol == 'admin'){
+      return const InicioAdminPage();
     }
     return const Scaffold(
       body: Center(child: Text("Error: Rol de usuario desconocido.")),
