@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/busqueda.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/notificaciones.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/pages/login.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/registrar_alumno.dart';
@@ -121,19 +124,19 @@ class _LectorQRPageState extends State<LectorQRPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
     return Scaffold(
       backgroundColor: Colors.white, 
       appBar: AppBar(
-        title: const Text('Lector de código QR', 
-          style: TextStyle(
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-          ),
+        backgroundColor: theme.background(),
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset('assets/images/escom.png', width: 50, height: 50),
+          ],
         ),
-        centerTitle: true,
-        backgroundColor: Colors.blue,
-        
+        elevation: 0,
       ),
       body: _mostrarScanner
           ? MobileScanner(
