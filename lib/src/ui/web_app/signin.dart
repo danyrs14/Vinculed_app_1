@@ -57,8 +57,6 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
     }
   }
 
-  // --- Lógica de Registro (adaptada de la vista móvil) ---
-
   Future<void> _registerUser() async {
     // Validar el formulario antes de continuar
     if (!_registroFormKey.currentState!.validate()) {
@@ -301,8 +299,7 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                                       if (value == null || value.isEmpty) {
                                         return 'El correo es obligatorio.';
                                       }
-                                      // Puedes ajustar la Regex según necesites
-                                      final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                                      final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
                                       if (!emailRegex.hasMatch(value)) {
                                         return 'Ingrese un correo válido.';
                                       }
@@ -355,8 +352,8 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                                   ),
                                   const SizedBox(height: 24),
 
-                                  Row(
-                                    children: const [
+                                  const Row(
+                                    children: [
                                       Expanded(child: Divider(thickness: 1)),
                                       Padding(
                                         padding: EdgeInsets.symmetric(horizontal: 12.0),

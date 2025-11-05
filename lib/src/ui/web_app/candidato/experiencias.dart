@@ -59,7 +59,7 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
     return Scaffold(
       backgroundColor: theme.background(),
       appBar: EscomHeader2(
-        onLoginTap: () => context.go('/perfil_cand'),
+        onLoginTap: () => context.go('/alumno/perfil_cand'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
@@ -68,23 +68,23 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
               break;
 
             case "Postulaciones":
-              context.go('/mis_postulaciones');
+              context.go('/alumno/mis_postulaciones');
               break;
 
             case "Mensajes":
-              context.go('/messages');
+              context.go('/alumno/messages');
               break;
 
             case "Experiencias":
-              context.go('/experiencias');
+              context.go('/alumno/experiencias');
               break;
 
             case "FAQ":
-              context.go('/faq');
+              context.go('/alumno/faq');
               break;
 
             case "Preferencias":
-              context.go('/preferences');
+              context.go('/alumno/preferences');
               break;
 
           }

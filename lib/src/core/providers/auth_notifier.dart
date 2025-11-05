@@ -6,6 +6,9 @@ class AuthNotifier extends ChangeNotifier {
   User? _user;
   User? get user => _user;
 
+  bool _isInitializing = true;
+  bool get isInitializing => _isInitializing;
+
   late final StreamSubscription<User?> _authSubscription;
 
   AuthNotifier() {
@@ -18,6 +21,7 @@ class AuthNotifier extends ChangeNotifier {
 
   void _onAuthStateChanged(User? user) {
     _user = user;
+    _isInitializing = false;
     notifyListeners(); 
   }
 

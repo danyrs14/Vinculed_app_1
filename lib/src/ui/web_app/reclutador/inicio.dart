@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
@@ -59,28 +61,27 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
     return Scaffold(
       backgroundColor: theme.background(),
       appBar: EscomHeader3(
-        onLoginTap: () => context.go('/perfil_rec'),
-        onRegisterTap: () => context.go('/signin'),
+        onLoginTap: () => context.go('/reclutador/perfil_rec'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
-              context.go('/inicio_rec');
+              context.go('/inicio');
               break;
             case "Crear Vacante":
-              context.go('/new_vacancy');
+              context.go('/reclutador/new_vacancy');
               break;
             case "Mis Vacantes":
-              context.go('/my_vacancy');
+              context.go('/reclutador/my_vacancy');
               break;
             case "Postulaciones":
-              context.go('/postulaciones');
+              context.go('/reclutador/postulaciones');
               break;
             case "FAQ":
-              context.go('/faq_rec');
+              context.go('/reclutador/faq_rec');
               break;
             case "Mensajes":
-              context.go('/msg_rec');
+              context.go('/reclutador/msg_rec ');
               break;
           }
         },
@@ -129,7 +130,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
-                                        'Bienvenido de Nuevo – @Reclutador_Registrado',
+                                        'Bienvenido de Nuevo – ${context.select((UserDataProvider model) => model.nombreUsuario ?? 'Reclutador')}',
                                         style: TextStyle(
                                           fontSize: isMobile ? 22 : 28,
                                           fontWeight: FontWeight.w800,
