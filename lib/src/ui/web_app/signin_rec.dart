@@ -85,7 +85,7 @@ class _RegisterPageWebRecState extends State<RegisterPageWebRec> {
       _nombreCompleto = '${_nombreCtrl.text.trim()} ${_apPaternoCtrl.text.trim()} ${_apMaternoCtrl.text.trim()}';
       // NOTA: Para web, usa 'localhost' en lugar de '10.0.2.2'
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/usuarios/encolar_reclutador'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/encolar_reclutador'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -131,7 +131,7 @@ class _RegisterPageWebRecState extends State<RegisterPageWebRec> {
   Future<void> _fetchEmpresas() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3000/api/empresas/obtener_empresas'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/empresas/obtener_empresas'),
       );
 
       if (response.statusCode == 200 && mounted) {

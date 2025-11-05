@@ -53,9 +53,9 @@ class InicioAdminPage extends StatefulWidget {
 }
 
 class _InicioAdminPageState extends State<InicioAdminPage> {
-  static const String apiUrl = 'http://localhost:3000/api/usuarios/reclutadores_pendientes';
-  static const String acceptUrl = 'http://localhost:3000/api/usuarios/aceptar_reclutador';
-  static const String denyUrl = 'http://localhost:3000/api/usuarios/rechazar_reclutador';
+  static const String apiUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/reclutadores_pendientes';
+  static const String acceptUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/aceptar_reclutador';
+  static const String denyUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/rechazar_reclutador';
   late Future<List<RecruiterItem>> _futureList;
 
   // Lógica para mostrar/ocultar el footer (se mantiene)
@@ -118,8 +118,11 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
     final resp = await http.get(Uri.parse(apiUrl),headers: {
           'Authorization': 'Bearer ${context.read<UserDataProvider>().idToken}',
         },);
-    if (resp.statusCode != 200) {
+    if (resp.statusCode == 500 ) {
       throw Exception('Error al obtener reclutadores: ${resp.statusCode}');
+    }
+    if (resp.statusCode == 404) {
+      return [];
     }
     final data = json.decode(resp.body);
     if (data is! List) {

@@ -31,6 +31,7 @@ import 'package:vinculed_app_1/src/ui/web_app/reclutador/postulaciones.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin_rec.dart';
 import 'package:vinculed_app_1/src/ui/web_app/recuperar_password.dart';
+import 'package:vinculed_app_1/src/ui/web_app/verificarEmailWeb.dart';
 import 'package:vinculed_app_1/src/ui/web_app/despachador_inicio.dart';
 
 // Reclutador
@@ -139,6 +140,10 @@ class _AdminAppState extends State<AdminApp> {
         GoRoute(
           path: '/recover_password',
           builder: (context, state) => const RecuperarPasswordPageWeb(),
+        ),
+        GoRoute(
+          path: '/verificar_email',
+          builder: (context, state) => const verificarEmailPage(),
         ),
         GoRoute(
           path: '/inicio',

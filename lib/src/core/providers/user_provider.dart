@@ -26,7 +26,7 @@ class UserDataProvider extends ChangeNotifier {
     try{
       final response = await http.get(
         //Uri.parse('http://10.0.2.2:3000/api/usuarios/${user.uid}'), //movil
-        Uri.parse('http://localhost:3000/api/usuarios/uid/${user.uid}'), //web
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/uid/${user.uid}'), //web
         headers: {
           'Authorization': 'Bearer $_idToken',
         },
