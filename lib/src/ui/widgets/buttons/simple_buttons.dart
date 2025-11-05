@@ -7,6 +7,8 @@ class SimpleButton extends StatelessWidget {
   final bool primaryColor;
   final IconData? icon;
   final Function? onTap;
+  final Color? backgroundColor;
+  final Color? textColor;
 
   const SimpleButton({
     Key? key,
@@ -14,18 +16,20 @@ class SimpleButton extends StatelessWidget {
     this.primaryColor = true,
     this.icon,
     this.onTap,
+    this.backgroundColor,
+    this.textColor,
   }) : super(key: key);
 
   Color getColor() {
-    return this.primaryColor
+    return backgroundColor ?? (this.primaryColor
         ? ThemeController.instance.secundario()
-        : ThemeController.instance.secundario();
+        : ThemeController.instance.secundario());
   }
 
   Color getColorText() {
-    return this.primaryColor
+    return textColor ?? (this.primaryColor
         ? ThemeController.instance.primario()
-        : ThemeController.instance.primario();
+        : ThemeController.instance.primario());
   }
 
   @override

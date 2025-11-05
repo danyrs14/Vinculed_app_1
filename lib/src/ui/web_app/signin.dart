@@ -57,8 +57,6 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
     }
   }
 
-  // --- Lógica de Registro (adaptada de la vista móvil) ---
-
   Future<void> _registerUser() async {
     // Validar el formulario antes de continuar
     if (!_registroFormKey.currentState!.validate()) {
