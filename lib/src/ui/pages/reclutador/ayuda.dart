@@ -62,7 +62,7 @@ class _FaqPageRecState extends State<FaqPageRec> {
       backgroundColor: theme.background(),
       appBar: EscomHeader3(
         onLoginTap: () => context.go('/perfil_rec'),
-        onRegisterTap: () => context.go('/signin'),
+        //onRegisterTap: () => context.go('/signin'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
