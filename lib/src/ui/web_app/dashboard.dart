@@ -25,21 +25,19 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     super.initState();
     _scrollCtrl.addListener(_onScroll);
-    // Evalúa tras el primer frame (por si ya estás al fondo)
     WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
   }
 
   void _onScroll() {
+    if (!_scrollCtrl.hasClients) return;
     final pos = _scrollCtrl.position;
     if (!pos.hasPixels || !pos.hasContentDimensions) return;
 
-    // Si no hay scroll suficiente, mantenemos el footer oculto (ajusta a true si lo quieres visible)
     if (pos.maxScrollExtent <= 0) {
       if (_showFooter) setState(() => _showFooter = false);
       return;
     }
 
-    // Mostrar footer cuando se llega al final (con un pequeño margen)
     final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
     if (atBottom != _showFooter) {
       setState(() => _showFooter = atBottom);
@@ -56,18 +54,40 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 700;
+    final width = MediaQuery.of(context).size.width;
+
+    // Breakpoints simples
+    final isMobile = width < 700;
+    final isTablet = width >= 700 && width < 1100;
+
+    // Tipografías responsivas
+    final titleStyle = TextStyle(
+      fontSize: isMobile ? 30 : (isTablet ? 38 : 44),
+      fontWeight: FontWeight.bold,
+      color: Colors.black87,
+      height: 1.1,
+    );
+
+    // Tamaños responsivos para Lottie
+    double lottieW;
+    double lottieH;
+    if (isMobile) {
+      lottieW = width.clamp(260, 420);
+      lottieH = lottieW * 0.7;
+    } else if (isTablet) {
+      lottieW = 460;
+      lottieH = 340;
+    } else {
+      lottieW = 520;
+      lottieH = 380;
+    }
 
     return Scaffold(
       appBar: EscomHeader(
         onLoginTap: () => context.go('/login'),
         onRegisterTap: () => context.go('/lector_qr'),
-        onNotifTap: () {
-          // lógica de notificaciones
-        },
+        onNotifTap: () {},
         onMenuSelected: (label) {
-          // navegación según opción seleccionada
           switch (label) {
             case "Inicio":
               context.go('/dashboard');
@@ -128,58 +148,59 @@ class _DashboardState extends State<Dashboard> {
                               minHeight: minBodyHeight > 0 ? minBodyHeight : 0,
                             ),
                             child: isNarrow
+                            // ======= LAYOUT MÓVIL/TABLET (COLUMN) =======
                                 ? Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 const SizedBox(height: 8),
-                                const Text(
+                                Text(
                                   "¡Mejores\nOportunidades nos\nesperan!",
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
+                                  style: titleStyle,
                                 ),
                                 const SizedBox(height: 20),
-                                SizedBox(
-                                  width: 220,
-                                  child: SimpleButton(
-                                    onTap: () {},
-                                    title: "Postularse",
-                                  ),
+
+                                // >>> Aquí van los botones en lugar de "Postularse" (solo móvil/tablet)
+                                _AuthActionsRowMobile(
+                                  onLogin: () => context.go('/login'),
+                                  onRegister: () => context.go('/lector_qr'),
                                 ),
+
                                 const SizedBox(height: 24),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Image.asset(
-                                    'assets/images/illustration.png',
-                                    height: 220,
-                                    fit: BoxFit.cover,
+                                // Lottie centrado
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: SizedBox(
+                                      width: lottieW,
+                                      height: lottieH,
+                                      child: Lottie.asset(
+                                        'assets/images/dashboard.json',
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 24),
                               ],
                             )
+                            // ======= LAYOUT DESKTOP (ROW) =======
                                 : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Flexible(
-                                  flex: 5,
+                                // Columna izquierda (texto + CTA)
+                                Expanded(
+                                  flex: 1,
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
+                                      Text(
                                         "¡Mejores\nOportunidades nos\nesperan!",
-                                        style: TextStyle(
-                                          fontSize: 44,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                          height: 1.1,
-                                        ),
+                                        style: titleStyle,
                                       ),
                                       const SizedBox(height: 24),
                                       SizedBox(
@@ -192,15 +213,22 @@ class _DashboardState extends State<Dashboard> {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 48),
-                                Flexible(
-                                  flex: 5,
-                                  child: Center(
-                                    child: Lottie.asset(
-                                      'assets/images/dashboard.json',
-                                      width: 400,
-                                      height: 300,
-                                      fit: BoxFit.cover,
+                                const SizedBox(width: 24),
+                                // Lottie centrado en su mitad
+                                Expanded(
+                                  flex: 1,
+                                  child: Align(
+                                    alignment: Alignment.center,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: SizedBox(
+                                        width: lottieW,
+                                        height: lottieH,
+                                        child: Lottie.asset(
+                                          'assets/images/dashboard.json',
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -234,6 +262,43 @@ class _DashboardState extends State<Dashboard> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Fila de acciones de autenticación visible en móviles.
+/// Sustituye al CTA "Postularse" en vista móvil/tablet.
+class _AuthActionsRowMobile extends StatelessWidget {
+  const _AuthActionsRowMobile({
+    required this.onLogin,
+    required this.onRegister,
+  });
+
+  final VoidCallback onLogin;
+  final VoidCallback onRegister;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (_, c) {
+        final maxW = c.maxWidth;
+        final isTight = maxW < 360;
+        return Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          runSpacing: 8,
+          children: [
+            SimpleButton(
+              onTap: onLogin,
+              title: 'Iniciar Sesión',
+            ),
+            SimpleButton(
+              onTap: onRegister,
+              title: 'Registrarse',
+            ),
+          ],
+        );
+      },
     );
   }
 }
