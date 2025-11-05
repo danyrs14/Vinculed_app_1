@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'dart:convert';
 
 //import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
@@ -147,12 +148,19 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
     return Scaffold(
       backgroundColor: Colors.white, 
       appBar: AppBar(
-        title: Text("Registro de Usuario"),
-        centerTitle: true,
-        backgroundColor: Colors.blue,
+        backgroundColor: theme.background(),
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset('assets/images/escom.png', width: 50, height: 50),
+          ],
+        ),
+        elevation: 0,
       ),
       body: SafeArea(
         child: LayoutBuilder(
@@ -168,7 +176,15 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
                                 child: Form(
                                   key: _registroFormKey,
                                   child: Column(
+
                                     children: [
+                                      Text("Registrar Alumno",
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: theme.fuente(),
+                                        ),),
+                                      SizedBox(height: 20),
                                       StyledTextFormField(
                                         controller: _nameController,
                                         title: "Nombre completo",
