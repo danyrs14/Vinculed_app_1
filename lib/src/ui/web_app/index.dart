@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:vinculed_app_1/src/core/providers/auth_notifier.dart';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 
 // Candidato
 import 'package:vinculed_app_1/src/ui/web_app/candidato/add_experiencia.dart';
@@ -27,6 +31,7 @@ import 'package:vinculed_app_1/src/ui/web_app/reclutador/postulaciones.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin_rec.dart';
 import 'package:vinculed_app_1/src/ui/web_app/recuperar_password.dart';
+import 'package:vinculed_app_1/src/ui/web_app/despachador_inicio.dart';
 
 // Reclutador
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/inicio.dart';
@@ -40,14 +45,53 @@ class AdminApp extends StatefulWidget {
 
 class _AdminAppState extends State<AdminApp> {
   late final GoRouter _router;
+  late final AuthNotifier _authNotifier;
 
   @override
   void initState() {
     super.initState();
 
+    _authNotifier = AuthNotifier();
+
     _router = GoRouter(
       // Hace que al iniciar vaya directo al dashboard
       initialLocation: '/dashboard',
+
+      refreshListenable: _authNotifier,
+
+      redirect: (BuildContext context, GoRouterState state) {
+        
+        final User? user = _authNotifier.user;
+        final bool isLoggedIn = user != null;
+        final bool isVerified = user?.emailVerified ?? false;
+
+        final String location = state.matchedLocation;
+
+        // Las que se puede acceder sin login
+        const publicRoutes = [
+          '/dashboard', '/login', '/lector_qr', '/signin', 
+          '/signin_rec', '/recover_password', '/404'
+        ];
+        
+        final isGoingToPublic = publicRoutes.contains(location);
+
+        if (!isLoggedIn) {
+          return isGoingToPublic ? null : '/dashboard';
+        }
+
+        const verifyRoute = '/verificar_email';
+        if (!isVerified) {
+          return location == verifyRoute ? null : verifyRoute;
+        }
+
+        const authRoutes = ['/login', '/lector_qr', '/signin', '/signin_rec', verifyRoute];
+        if (authRoutes.contains(location)) {
+          return '/inicio';
+        }
+        
+        // No hay redirección
+        return null;
+      },
 
       // Opcional: si alguien entra a '/', lo redirigimos al dashboard
       routes: [
@@ -91,12 +135,11 @@ class _AdminAppState extends State<AdminApp> {
           path: '/recover_password',
           builder: (context, state) => const RecuperarPasswordPageWeb(),
         ),
-
-        // ----- Candidato -----
         GoRoute(
-          path: '/inicio_cand',
-          builder: (context, state) => const HomeRegisteredPage(),
+          path: '/inicio',
+          builder: (context, state) => const InicioPage(),
         ),
+        // ----- Candidato -----
         GoRoute(
           path: '/busqueda_job',
           builder: (context, state) => const JobSearchPage(),
@@ -135,10 +178,6 @@ class _AdminAppState extends State<AdminApp> {
         ),
 
         // ----- Reclutador -----
-        GoRoute(
-          path: '/inicio_rec',
-          builder: (context, state) => const HomeRecruiterPage(),
-        ),
         GoRoute(
           path: '/new_vacancy',
           builder: (context, state) => const CreateVacancyPage(),

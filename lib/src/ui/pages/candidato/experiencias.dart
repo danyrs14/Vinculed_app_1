@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/comentarios.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
+import 'package:provider/provider.dart';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 
 class Experiencias extends StatelessWidget {
   const Experiencias({super.key});

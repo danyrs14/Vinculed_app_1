@@ -64,12 +64,11 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
       backgroundColor: theme.background(),
       appBar: EscomHeader2(
         onLoginTap: () => context.go('/perfil_cand'),
-        onRegisterTap: () => context.go('/signin'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
-              context.go('/inicio_cand');
+              context.go('/inicio');
               break;
 
             case "Postulaciones":
