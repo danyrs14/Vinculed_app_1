@@ -58,13 +58,14 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
   static const String denyUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/rechazar_reclutador';
   late Future<List<RecruiterItem>> _futureList;
 
-  // Lógica para mostrar/ocultar el footer (se mantiene)
+  // === Footer estilo "Dashboard" ===
   final ScrollController _scrollCtrl = ScrollController();
   bool _showFooter = false;
-  bool _alwaysShowFooter = false;
+
+  // Reservamos SIEMPRE espacio para que no tape contenido
   static const double _footerReservedSpace = EscomFooter.height;
-  static const double _extraBottomPadding = 24.0;
-  static const double _atEndThreshold = 4.0;
+  static const double _extraBottomPadding  = 24.0;
+  static const double _atEndThreshold      = 4.0;
 
   @override
   void initState() {
@@ -72,20 +73,15 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
     _scrollCtrl.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
     _futureList = fetchPending();
-    // Ejecutar comprobación de footer una vez que la lista se cargue la primera vez
-    _futureList.then((_) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _updateFooterAlways());
-    }).catchError((_) {
-      // Ignorar errores aquí; el FutureBuilder los manejará.
-    });
   }
 
-    // --- Lógica del Footer (sin cambios) ---
   void _onScroll() {
+    if (!_scrollCtrl.hasClients) return;
     final pos = _scrollCtrl.position;
     if (!pos.hasPixels || !pos.hasContentDimensions) return;
 
     if (pos.maxScrollExtent <= 0) {
+      // Como en tu Dashboard: si no hay scroll, oculto el footer
       if (_showFooter) setState(() => _showFooter = false);
       return;
     }
@@ -93,16 +89,6 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
     final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
     if (atBottom != _showFooter) {
       setState(() => _showFooter = atBottom);
-    }
-  }
-  void _updateFooterAlways() {
-    if (!_scrollCtrl.hasClients) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _updateFooterAlways());
-      return;
-    }
-    final noScrollNeeded = _scrollCtrl.position.maxScrollExtent <= 0;
-    if (_alwaysShowFooter != noScrollNeeded) {
-      setState(() => _alwaysShowFooter = noScrollNeeded);
     }
   }
 
@@ -115,9 +101,12 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
   }
 
   Future<List<RecruiterItem>> fetchPending() async {
-    final resp = await http.get(Uri.parse(apiUrl),headers: {
-          'Authorization': 'Bearer ${context.read<UserDataProvider>().idToken}',
-        },);
+    final resp = await http.get(
+      Uri.parse(apiUrl),
+      headers: {
+        'Authorization': 'Bearer ${context.read<UserDataProvider>().idToken}',
+      },
+    );
     if (resp.statusCode == 500 ) {
       throw Exception('Error al obtener reclutadores: ${resp.statusCode}');
     }
@@ -132,9 +121,10 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
   }
 
   Future<void> _refresh() async {
-    setState(() {_futureList = fetchPending();});
+    setState(() { _futureList = fetchPending(); });
     await _futureList;
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updateFooterAlways());
+    // Recalcular visibilidad tras redibujar
+    WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
   }
 
   Future<void> _acceptRecruiter(int idReclutador) async {
@@ -187,25 +177,14 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
   Widget _buildCard(RecruiterItem r) {
     final avatar = r.urlLogo != null
         ? ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: Image.network(
-              r.urlLogo!,
-              width: 56,
-              height: 56,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) {
-                return CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                  child: Text(
-                    r.nombre.isNotEmpty ? r.nombre[0].toUpperCase() : '?',
-                    style: TextStyle(color: Theme.of(context).colorScheme.primary),
-                  ),
-                );
-              },
-            ),
-          )
-        : CircleAvatar(
+      borderRadius: BorderRadius.circular(28),
+      child: Image.network(
+        r.urlLogo!,
+        width: 56,
+        height: 56,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) {
+          return CircleAvatar(
             radius: 28,
             backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
             child: Text(
@@ -213,6 +192,17 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
               style: TextStyle(color: Theme.of(context).colorScheme.primary),
             ),
           );
+        },
+      ),
+    )
+        : CircleAvatar(
+      radius: 28,
+      backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+      child: Text(
+        r.nombre.isNotEmpty ? r.nombre[0].toUpperCase() : '?',
+        style: TextStyle(color: Theme.of(context).colorScheme.primary),
+      ),
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -220,7 +210,7 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
 
         return Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800), // Limita el ancho máximo de las tarjetas
+            constraints: const BoxConstraints(maxWidth: 800),
             child: Card(
               margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -229,36 +219,108 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
                 padding: const EdgeInsets.all(12),
                 child: isSmallScreen
                     ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        avatar,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              avatar,
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      r.nombre,
-                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      r.empresa,
-                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.black87),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      r.correo,
-                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black54),
-                                    ),
-                                  ],
-                                ),
+                              Text(
+                                r.nombre,
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                r.empresa,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.black87),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                r.correo,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black54),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Chip(
+                          label: Text(r.estado),
+                          backgroundColor: r.estado.toLowerCase() == 'pendiente'
+                              ? Theme.of(context).colorScheme.secondary.withOpacity(0.2)
+                              : Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                          labelStyle: TextStyle(
+                            color: r.estado.toLowerCase() == 'pendiente'
+                                ? Theme.of(context).colorScheme.secondary
+                                : Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'ID: ${r.idReclutador}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black54),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Empresa: ${r.idEmpresa}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: SimpleButton(
+                            title: 'Aceptar',
+                            primaryColor: true,
+                            onTap: () => _acceptRecruiter(r.idReclutador),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: SimpleButton(
+                            title: 'Rechazar',
+                            primaryColor: false,
+                            backgroundColor: Colors.red,
+                            onTap: () => _denyRecruiter(r.idUsuario),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+                    : Row(
+                  children: [
+                    avatar,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            r.nombre,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            r.empresa,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.black87),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            r.correo,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black54),
+                          ),
+                          const SizedBox(height: 8),
                           Row(
                             children: [
                               Chip(
@@ -279,111 +341,39 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'Empresa: ${r.idEmpresa}',
+                                'Emp: ${r.idEmpresa}',
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black54),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Expanded(
-                                child: SimpleButton(
-                                  title: 'Aceptar',
-                                  primaryColor: true,
-                                  onTap: () => _acceptRecruiter(r.idReclutador),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: SimpleButton(
-                                  title: 'Rechazar',
-                                  primaryColor: false,
-                                  backgroundColor: Colors.red,
-                                  onTap: () => _denyRecruiter(r.idUsuario),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      )
-                    : Row(
-                        children: [
-                          avatar,
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  r.nombre,
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  r.empresa,
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.black87),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  r.correo,
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black54),
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Chip(
-                                      label: Text(r.estado),
-                                      backgroundColor: r.estado.toLowerCase() == 'pendiente'
-                                          ? Theme.of(context).colorScheme.secondary.withOpacity(0.2)
-                                          : Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                                      labelStyle: TextStyle(
-                                        color: r.estado.toLowerCase() == 'pendiente'
-                                            ? Theme.of(context).colorScheme.secondary
-                                            : Theme.of(context).colorScheme.primary,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      'ID: ${r.idReclutador}',
-                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black54),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Emp: ${r.idEmpresa}',
-                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black54),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            children: [
-                              SizedBox(
-                                width: 140,
-                                child: SimpleButton(
-                                  title: 'Aceptar',
-                                  primaryColor: true,
-                                  onTap: () => _acceptRecruiter(r.idReclutador),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              SizedBox(
-                                width: 140,
-                                child: SimpleButton(
-                                  title: 'Rechazar',
-                                  primaryColor: false,
-                                  backgroundColor: Colors.red,
-                                  onTap: () => _denyRecruiter(r.idUsuario),
-                                ),
                               ),
                             ],
                           ),
                         ],
                       ),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: 140,
+                          child: SimpleButton(
+                            title: 'Aceptar',
+                            primaryColor: true,
+                            onTap: () => _acceptRecruiter(r.idReclutador),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: 140,
+                          child: SimpleButton(
+                            title: 'Rechazar',
+                            primaryColor: false,
+                            backgroundColor: Colors.red,
+                            onTap: () => _denyRecruiter(r.idUsuario),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -395,8 +385,8 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
   // ...existing code...
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 700;
+    final width = MediaQuery.of(context).size.width;
+    final isMobile = width < 700;
 
     return Scaffold(
       appBar: EscomHeader3(
@@ -427,69 +417,117 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
       ),
       body: Stack(
         children: [
-          // Contenido principal con espacio inferior reservado para el footer
-          Padding(
-            padding: EdgeInsets.only(
-              bottom: (_alwaysShowFooter || _showFooter) ? _footerReservedSpace + _extraBottomPadding : 0,
-            ),
-            child: RefreshIndicator(
-              onRefresh: _refresh,
-              child: FutureBuilder<List<RecruiterItem>>(
-                future: _futureList,
-                builder: (context, snap) {
-                  if (snap.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snap.hasError) {
-                    return Center(
-                      child: Text(
-                        'Error: ${snap.error}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
-                      ),
-                    );
-                  }
-                  final list = snap.data ?? [];
-                  if (list.isEmpty) {
-                    return ListView(
-                      controller: _scrollCtrl,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [
-                        SizedBox(height: 200),
-                        Center(child: Text('No hay reclutadores pendientes')),
-                      ],
-                    );
-                  }
+          // === CONTENIDO estilo "Dashboard" ===
+          Positioned.fill(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Reservamos SIEMPRE el espacio del footer para que el final no "salte"
+                final minBodyHeight =
+                    constraints.maxHeight - _footerReservedSpace - _extraBottomPadding;
 
-                  return ListView.builder(
+                return NotificationListener<ScrollNotification>(
+                  onNotification: (n) {
+                    if (n is ScrollUpdateNotification ||
+                        n is UserScrollNotification ||
+                        n is ScrollEndNotification) {
+                      _onScroll();
+                    }
+                    return false;
+                  },
+                  child: RefreshIndicator(
+                    onRefresh: _refresh,
+                    child: SingleChildScrollView(
                       controller: _scrollCtrl,
-                      padding: const EdgeInsets.only(top: 12, bottom: 12),
-                      itemCount: list.length,
-                      itemBuilder: (context, i) => _buildCard(list[i]),
-                    );
-                  
-                },
-              ),
+                      physics: const ClampingScrollPhysics(),
+                      padding: const EdgeInsets.only(
+                        top: 12,
+                        bottom: _footerReservedSpace + _extraBottomPadding,
+                      ),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 900),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: minBodyHeight > 0 ? minBodyHeight : 0,
+                              ),
+                              child: FutureBuilder<List<RecruiterItem>>(
+                                future: _futureList,
+                                builder: (context, snap) {
+                                  if (snap.connectionState == ConnectionState.waiting) {
+                                    return Column(
+                                      children: const [
+                                        SizedBox(height: 200),
+                                        Center(child: CircularProgressIndicator()),
+                                      ],
+                                    );
+                                  }
+                                  if (snap.hasError) {
+                                    return Column(
+                                      children: [
+                                        const SizedBox(height: 200),
+                                        Center(
+                                          child: Text(
+                                            'Error: ',
+                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+                                          ),
+                                        ),
+                                        Center(
+                                          child: Text(
+                                            '${snap.error}',
+                                            textAlign: TextAlign.center,
+                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.red),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }
+
+                                  final list = snap.data ?? [];
+                                  if (list.isEmpty) {
+                                    return Column(
+                                      children: const [
+                                        SizedBox(height: 200),
+                                        Center(child: Text('No hay reclutadores pendientes')),
+                                      ],
+                                    );
+                                  }
+
+                                  // Renderizamos tarjetas en Column para usar el mismo scroll padre
+                                  return Column(
+                                    children: [
+                                      for (final r in list) _buildCard(r),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
 
-          // Footer animado (mismo comportamiento que signin.dart)
+          // === FOOTER ANIMADO (igual que Dashboard) ===
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
-            child: Builder(builder: (ctx) {
-              final showFooterNow = _alwaysShowFooter || _showFooter;
-              return AnimatedSlide(
+            child: AnimatedSlide(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              offset: _showFooter ? Offset.zero : const Offset(0, 1),
+              child: AnimatedOpacity(
                 duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOut,
-                offset: showFooterNow ? Offset.zero : const Offset(0, 1),
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 220),
-                  opacity: showFooterNow ? 1 : 0,
-                  child: EscomFooter(isMobile: isMobile),
-                ),
-              );
-            }),
+                opacity: _showFooter ? 1 : 0,
+                child: EscomFooter(isMobile: isMobile),
+              ),
+            ),
           ),
         ],
       ),

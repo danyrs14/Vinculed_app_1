@@ -329,7 +329,7 @@ class _AdminAppState extends State<AdminApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'TT 2025-B003',
+      title: 'OdaTalent',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
