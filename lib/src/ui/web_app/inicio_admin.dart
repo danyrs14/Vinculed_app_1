@@ -8,6 +8,7 @@ import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/header4.dart';
 
 // ...existing code...
 class RecruiterItem {
@@ -389,28 +390,13 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
     final isMobile = width < 700;
 
     return Scaffold(
-      appBar: EscomHeader3(
+      appBar: EscomHeader4(
         onLoginTap: () => context.go('/reclutador/perfil_rec'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
               context.go('/inicio');
-              break;
-            case "Crear Vacante":
-              context.go('/reclutador/new_vacancy');
-              break;
-            case "Mis Vacantes":
-              context.go('/my_vacancy');
-              break;
-            case "Postulaciones":
-              context.go('/reclutador/postulaciones');
-              break;
-            case "FAQ":
-              context.go('/reclutador/faq_rec');
-              break;
-            case "Mensajes":
-              context.go('/reclutador/msg_rec');
               break;
           }
         },
