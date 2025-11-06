@@ -22,7 +22,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
   final _scrollCtrl = ScrollController();
   bool _showFooter = false;
 
-  // ===== NUEVO: Estado para historial y resultados de ejemplo =====
+  // ===== Estado: historial y resultados de ejemplo =====
   final List<String> _searchHistory = <String>[
     // --- EJEMPLOS (borra al conectar backend) ---
     'Flutter Developer',
@@ -32,8 +32,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
   ];
   int _resultsCount = 0;
 
-  // Resultados MOCK para mostrar contador y lista
-  // --- EJEMPLOS (borra y reemplaza con tu data real) ---
+  // Resultados MOCK (borra y reemplaza con tu data real)
   List<Map<String, String>> _mockResults = [];
 
   static const double _footerReservedSpace = EscomFooter.height;
@@ -44,10 +43,8 @@ class _JobSearchPageState extends State<JobSearchPage> {
   void initState() {
     super.initState();
     _scrollCtrl.addListener(_handleScroll);
-    // Asegura estado correcto tras el primer layout
     WidgetsBinding.instance.addPostFrameCallback((_) => _handleScroll());
-    // Precarga unos resultados de ejemplo (puedes borrarlo)
-    _generateMockResults();
+    _generateMockResults(); // precarga ejemplos
   }
 
   void _handleScroll() {
@@ -90,23 +87,18 @@ class _JobSearchPageState extends State<JobSearchPage> {
             case "Inicio":
               context.go('/inicio');
               break;
-
             case "Postulaciones":
               context.go('/alumno/mis_postulaciones');
               break;
-
             case "Mensajes":
               context.go('/alumno/messages');
               break;
-
             case "Experiencias":
               context.go('/alumno/experiencias');
               break;
-
             case "FAQ":
               context.go('/alumno/faq');
               break;
-
             case "Preferencias":
               context.go('/alumno/preferences');
               break;
@@ -194,8 +186,8 @@ class _JobSearchPageState extends State<JobSearchPage> {
                                           child: SimpleButton(
                                             title: 'Buscar Empleo',
                                             onTap: () {
-                                              _onSearch(); // <-- NUEVO: actualiza historial/contador
-                                              context.go('/vacante_job'); // mantenemos tu navegación
+                                              _onSearch(); // ejecuta la MISMA función
+                                              // ❌ ya no navegamos: NO context.go('/vacante_job');
                                             },
                                           ),
                                         ),
@@ -206,7 +198,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
 
                                 const SizedBox(height: 24),
 
-                                // ===== NUEVO: Historial de búsqueda =====
+                                // ===== Historial de búsqueda =====
                                 if (_searchHistory.isNotEmpty) ...[
                                   const SizedBox(height: 4),
                                   Row(
@@ -247,7 +239,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
 
                                 const SizedBox(height: 28),
 
-                                // ===== NUEVO: Contador de resultados =====
+                                // ===== Contador de resultados =====
                                 Align(
                                   alignment: Alignment.centerLeft,
                                   child: Text(
@@ -261,7 +253,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
                                 ),
                                 const SizedBox(height: 12),
 
-                                // ===== NUEVO: Lista de resultados de EJEMPLO =====
+                                // ===== Lista de resultados de EJEMPLO =====
                                 if (_mockResults.isNotEmpty) ...[
                                   Container(
                                     width: double.infinity,
@@ -297,8 +289,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
                                         ),
                                         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                                         onTap: () {
-                                          // Puedes navegar a detalle si quieres
-                                          context.go('/vacante_job');
+                                          // si quieres, aquí puedes abrir un detalle en esta misma pantalla
                                         },
                                       );
                                     },
@@ -340,9 +331,6 @@ class _JobSearchPageState extends State<JobSearchPage> {
   }
 
   void _onSearch({bool fromChip = false}) {
-    // aquí puedes llamar a tu backend o navegar a resultados
-    // print('Buscar: ${_queryCtrl.text} en ${_locationCtrl.text}');
-
     final q = _queryCtrl.text.trim();
     final loc = _locationCtrl.text.trim();
 
@@ -424,7 +412,6 @@ class _JobSearchPageState extends State<JobSearchPage> {
       filtered = filtered.where((e) => (e['location'] ?? '').toLowerCase().contains(ll)).toList();
     }
 
-    // Si no hay filtros, muestra todos; si no encontró nada, deja vacío
     setState(() {
       _mockResults = filtered;
       _resultsCount = _mockResults.length;
