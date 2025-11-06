@@ -218,7 +218,7 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                         Expanded(
                                           child: SimpleButton(
                                             title: 'Buscar Vacantes',
-                                            onTap: () => context.go('/busqueda_job'),
+                                            onTap: () => context.go('/alumno/busqueda_job'),
                                           ),
                                         ),
                                         const SizedBox(width: 24),

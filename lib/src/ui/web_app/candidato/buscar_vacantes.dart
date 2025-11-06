@@ -22,6 +22,20 @@ class _JobSearchPageState extends State<JobSearchPage> {
   final _scrollCtrl = ScrollController();
   bool _showFooter = false;
 
+  // ===== NUEVO: Estado para historial y resultados de ejemplo =====
+  final List<String> _searchHistory = <String>[
+    // --- EJEMPLOS (borra al conectar backend) ---
+    'Flutter Developer',
+    'Analista de Datos',
+    'QA Tester',
+    'Backend Node.js',
+  ];
+  int _resultsCount = 0;
+
+  // Resultados MOCK para mostrar contador y lista
+  // --- EJEMPLOS (borra y reemplaza con tu data real) ---
+  List<Map<String, String>> _mockResults = [];
+
   static const double _footerReservedSpace = EscomFooter.height;
   static const double _extraBottomPadding = 24.0;
   static const double _atEndThreshold = 4.0;
@@ -32,6 +46,8 @@ class _JobSearchPageState extends State<JobSearchPage> {
     _scrollCtrl.addListener(_handleScroll);
     // Asegura estado correcto tras el primer layout
     WidgetsBinding.instance.addPostFrameCallback((_) => _handleScroll());
+    // Precarga unos resultados de ejemplo (puedes borrarlo)
+    _generateMockResults();
   }
 
   void _handleScroll() {
@@ -94,7 +110,6 @@ class _JobSearchPageState extends State<JobSearchPage> {
             case "Preferencias":
               context.go('/alumno/preferences');
               break;
-
           }
         },
       ),
@@ -178,13 +193,117 @@ class _JobSearchPageState extends State<JobSearchPage> {
                                           width: 320,
                                           child: SimpleButton(
                                             title: 'Buscar Empleo',
-                                            onTap: () => context.go('/vacante_job'),
+                                            onTap: () {
+                                              _onSearch(); // <-- NUEVO: actualiza historial/contador
+                                              context.go('/vacante_job'); // mantenemos tu navegación
+                                            },
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
+
+                                const SizedBox(height: 24),
+
+                                // ===== NUEVO: Historial de búsqueda =====
+                                if (_searchHistory.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        'Historial de búsqueda',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: _clearHistory,
+                                        child: const Text('Limpiar historial'),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: _searchHistory.map((q) {
+                                        return InputChip(
+                                          label: Text(q),
+                                          onPressed: () {
+                                            _queryCtrl.text = q;
+                                            _onSearch(fromChip: true);
+                                          },
+                                          onDeleted: () => _removeFromHistory(q),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ],
+
+                                const SizedBox(height: 28),
+
+                                // ===== NUEVO: Contador de resultados =====
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'Resultados posibles: $_resultsCount',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF22313F),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+
+                                // ===== NUEVO: Lista de resultados de EJEMPLO =====
+                                if (_mockResults.isNotEmpty) ...[
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF5F8FB),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                                    ),
+                                    child: const Text(
+                                      'Ejemplos de resultados (bórralos al conectar tu backend)',
+                                      style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  ListView.separated(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: _mockResults.length,
+                                    separatorBuilder: (_, __) => const Divider(height: 1),
+                                    itemBuilder: (context, index) {
+                                      final r = _mockResults[index];
+                                      return ListTile(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                        title: Text(
+                                          r['title'] ?? '',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          '${r['company']} • ${r['location']}',
+                                        ),
+                                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                                        onTap: () {
+                                          // Puedes navegar a detalle si quieres
+                                          context.go('/vacante_job');
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ],
 
                                 const SizedBox(height: 40),
                               ],
@@ -220,8 +339,95 @@ class _JobSearchPageState extends State<JobSearchPage> {
     );
   }
 
-  void _onSearch() {
+  void _onSearch({bool fromChip = false}) {
     // aquí puedes llamar a tu backend o navegar a resultados
     // print('Buscar: ${_queryCtrl.text} en ${_locationCtrl.text}');
+
+    final q = _queryCtrl.text.trim();
+    final loc = _locationCtrl.text.trim();
+
+    // Actualiza historial (sin duplicados, más reciente primero)
+    if (q.isNotEmpty && !fromChip) {
+      _addToHistory(q);
+    }
+
+    // Genera resultados MOCK filtrados por query/ubicación (ejemplo)
+    _generateMockResults(query: q, location: loc);
+    setState(() {
+      _resultsCount = _mockResults.length;
+    });
+  }
+
+  // ===== Helpers de historial =====
+  void _addToHistory(String query) {
+    _searchHistory.removeWhere((e) => e.toLowerCase() == query.toLowerCase());
+    _searchHistory.insert(0, query);
+    // límite opcional de historial (p.ej., 8)
+    if (_searchHistory.length > 8) {
+      _searchHistory.removeRange(8, _searchHistory.length);
+    }
+    setState(() {});
+  }
+
+  void _removeFromHistory(String query) {
+    _searchHistory.removeWhere((e) => e == query);
+    setState(() {});
+  }
+
+  void _clearHistory() {
+    _searchHistory.clear();
+    setState(() {});
+  }
+
+  // ===== MOCK de resultados (borra y reemplaza al conectar backend) =====
+  void _generateMockResults({String? query, String? location}) {
+    final samples = <Map<String, String>>[
+      {
+        'title': 'Flutter Developer JR',
+        'company': 'ESCOM Jobs',
+        'location': 'CDMX',
+      },
+      {
+        'title': 'Backend Node.js (Express)',
+        'company': 'ODAtalent',
+        'location': 'CDMX',
+      },
+      {
+        'title': 'QA Tester Manual/Automatizado',
+        'company': 'Quality Labs',
+        'location': 'Edomex',
+      },
+      {
+        'title': 'Data Analyst (SQL/Python)',
+        'company': 'DataWorks',
+        'location': 'Remoto',
+      },
+      {
+        'title': 'Frontend React',
+        'company': 'Webify',
+        'location': 'Guadalajara',
+      },
+    ];
+
+    // Filtrado sencillo por texto/ubicación (para dar sensación de dinamismo)
+    List<Map<String, String>> filtered = samples;
+    if (query != null && query.isNotEmpty) {
+      final ql = query.toLowerCase();
+      filtered = filtered
+          .where((e) =>
+      (e['title'] ?? '').toLowerCase().contains(ql) ||
+          (e['company'] ?? '').toLowerCase().contains(ql))
+          .toList();
+    }
+    if (location != null && location.isNotEmpty) {
+      final ll = location.toLowerCase();
+      filtered = filtered.where((e) => (e['location'] ?? '').toLowerCase().contains(ll)).toList();
+    }
+
+    // Si no hay filtros, muestra todos; si no encontró nada, deja vacío
+    setState(() {
+      _mockResults = filtered;
+      _resultsCount = _mockResults.length;
+    });
   }
 }
