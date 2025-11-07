@@ -158,7 +158,7 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
                                     child: SimpleButton(
                                       title: 'Crear',
                                       onTap: () {
-                                        context.go('/experiencias_create');
+                                        context.go('/alumno/experiencias_create');
                                       },
                                     ),
                                   ),
