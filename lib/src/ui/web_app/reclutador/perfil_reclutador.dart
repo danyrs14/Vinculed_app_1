@@ -204,57 +204,25 @@ class _UserProfileState extends State<UserProfile> {
     );
   }
 
-  // ───────── Contenido (datos fijos como en la imagen) ─────────
+  // ───────── Contenido (solo email y carrera, NO editables) ─────────
 
   List<_InfoItem> _leftItems() => const [
     _InfoItem(
       label: 'Correo Electronico:',
       value: 'eminemsrl4@gmail.com',
-      icon: Icons.edit_outlined,
+      icon: Icons.lock_outline, // no editable
       circle: true,
     ),
     _InfoItem(
       label: 'Carrera:',
       value: 'BBVA México',
-      icon: Icons.edit_outlined,
-      circle: true,
-    ),
-    _InfoItem(
-      label: 'Numero de Telefono',
-      value: '+52 5578962166',
-      icon: Icons.circle_outlined,
-      circle: true,
-    ),
-    _InfoItem(
-      label: 'Puesto en la Empresa',
-      value: 'Analista de Personal',
-      icon: Icons.circle_outlined,
+      icon: Icons.lock_outline, // no editable
       circle: true,
     ),
   ];
 
-  List<_InfoItem> _rightItems() => const [
-    _InfoItem(
-      label: 'Direccion de la empresa',
-      value:
-      'Av. Miguel Othón de Mendizábal Ote. 343-\nLocales 2-5, Industrial Vallejo, Gustavo A.\nMadero, 07700 Ciudad de México, CDMX',
-      icon: Icons.edit_outlined,
-      circle: true,
-      multiLine: true,
-    ),
-    _InfoItem(
-      label: 'Area de Especialidad',
-      value: 'Recursos Humanos',
-      icon: Icons.add, // ícono con círculo como en la imagen
-      circle: true,
-    ),
-    _InfoItem(
-      label: 'Idiomas:',
-      value: 'Ingles C1, Español Nativo',
-      icon: Icons.add,
-      circle: true,
-    ),
-  ];
+  // Quitamos Dirección, Teléfono, Puesto, Idiomas y Área
+  List<_InfoItem> _rightItems() => const [];
 }
 
 /* ════════════════════════ Secciones / Widgets internos ═══════════════════════ */
@@ -299,6 +267,9 @@ class _InfoColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Column(
       children: [
         for (final it in items) ...[
@@ -350,7 +321,7 @@ class _InfoRow extends StatelessWidget {
             style: const TextStyle(color: Colors.black87, height: 1.4),
           ),
         ),
-        // Acción (icono en círculo)
+        // Acción (icono en círculo) - solo visual, sin interacción
         const SizedBox(width: 10),
         Container(
           width: 24,
