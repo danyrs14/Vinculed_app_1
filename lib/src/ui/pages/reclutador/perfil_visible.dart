@@ -16,14 +16,28 @@ class PerfilPostuladoPage extends StatefulWidget {
     this.nombre = 'Fernando Torres Juarez',
     this.rol = 'Becario de QA',
     this.cvFileName = 'CV_User.pdf',
-    this.correo = 'eminemrs14@gmail.com',
-    this.carrera = 'Ingenieria en Sistemas Co mputacionales',
+    this.correo = 'eminemrs14@gmail.com', // NO editable (sin ícono)
+    this.carrera = 'Ingenieria en Sistemas Computacionales',
     this.biografia =
     'Busco oportunidades laborales, en el campo de la ingenieria, colaborando con mis conocimientos a las empresas.',
     this.habTecnicas = 'Python, Java, Kotlin, Linux',
     this.habBlandas = 'Comunicacion, Trabajo en equipo',
     this.area = 'TI, Frontend, UI/UX',
     this.idiomas = 'Ingles C1, Español Nativo',
+    // NUEVOS CAMPOS:
+    this.fechaNacimiento = '12/03/2002',
+    this.escolaridad = 'Licenciatura (en curso)',
+    this.ciudad = 'CDMX',
+    this.semestreActual = '7°',
+    this.telefono = '+52 55 1234 5678',
+    this.urlsExternas = const [
+      'https://linkedin.com/in/fernando-torres',
+      'https://github.com/fernandotj'
+    ],
+    this.cursos = const [
+      'Curso de Testing QA - Platzi (2024)',
+      'Flutter Intermedio - Udemy (2025)'
+    ],
     this.onCumplePerfil,
     this.onDescartar,
   });
@@ -31,13 +45,22 @@ class PerfilPostuladoPage extends StatefulWidget {
   final String nombre;
   final String rol;
   final String cvFileName;
-  final String correo;
+  final String correo; // NO editable
   final String carrera;
   final String biografia;
   final String habTecnicas;
   final String habBlandas;
   final String area;
   final String idiomas;
+
+  // Nuevos campos
+  final String fechaNacimiento;
+  final String escolaridad;
+  final String ciudad;
+  final String semestreActual;
+  final String telefono;
+  final List<String> urlsExternas;
+  final List<String> cursos;
 
   /// Callbacks para los botones de acción
   final VoidCallback? onCumplePerfil;
@@ -67,7 +90,6 @@ class _PerfilPostuladoPageState extends State<PerfilPostuladoPage> {
     final pos = _scrollCtrl.position;
     if (!pos.hasPixels || !pos.hasContentDimensions) return;
 
-    // Si no hay scroll, no mostramos footer pegado
     if (pos.maxScrollExtent <= 0) {
       if (_showFooter) setState(() => _showFooter = false);
       return;
@@ -153,7 +175,7 @@ class _PerfilPostuladoPageState extends State<PerfilPostuladoPage> {
                               const _HeaderPerfilPostulado(title: 'Perfil del Postulado'),
                               const SizedBox(height: 12),
 
-                              // Avatar + Nombre + Rol (sin cambios)
+                              // Avatar + Nombre + Rol
                               const CircleAvatar(
                                 radius: 48,
                                 backgroundImage: AssetImage('assets/images/amlo.jpg'),
@@ -171,52 +193,72 @@ class _PerfilPostuladoPageState extends State<PerfilPostuladoPage> {
                               _CvBox(fileName: widget.cvFileName),
 
                               const SizedBox(height: 18),
+
+                              // ======= INFO PRINCIPAL (sin íconos de editar) =======
                               _ProfileSection(
                                 label: 'Correo Electronico:',
                                 value: widget.correo,
-                                actionIcon: Icons.edit,
-                                onAction: () {},
                               ),
                               _ProfileSection(
                                 label: 'Carrera:',
                                 value: widget.carrera,
-                                actionIcon: Icons.edit,
-                                onAction: () {},
                               ),
+                              _ProfileSection(
+                                label: 'Fecha de nacimiento:',
+                                value: widget.fechaNacimiento,
+                              ),
+                              _ProfileSection(
+                                label: 'Escolaridad:',
+                                value: widget.escolaridad,
+                              ),
+                              _ProfileSection(
+                                label: 'Ciudad:',
+                                value: widget.ciudad,
+                              ),
+                              _ProfileSection(
+                                label: 'Semestre actual:',
+                                value: widget.semestreActual,
+                              ),
+                              _ProfileSection(
+                                label: 'Teléfono:',
+                                value: widget.telefono,
+                              ),
+
+                              // ======= TEXTO LARGO =======
                               _ProfileSection(
                                 label: 'Biografia:',
                                 value: widget.biografia,
-                                actionIcon: Icons.edit,
-                                onAction: () {},
                               ),
                               _ProfileSection(
                                 label: 'Habilidades Tecnicas:',
                                 value: widget.habTecnicas,
-                                actionIcon: Icons.edit,
-                                onAction: () {},
                               ),
                               _ProfileSection(
                                 label: 'Habilidades Blandas:',
                                 value: widget.habBlandas,
-                                actionIcon: Icons.edit,
-                                onAction: () {},
                               ),
                               _ProfileSection(
                                 label: 'Area de Especialidad:',
                                 value: widget.area,
-                                actionIcon: Icons.edit,
-                                onAction: () {},
                               ),
                               _ProfileSection(
                                 label: 'Idiomas:',
                                 value: widget.idiomas,
-                                actionIcon: Icons.edit,
-                                onAction: () {},
+                              ),
+
+                              // ======= LISTAS (URLS y CURSOS) =======
+                              _ProfileSection(
+                                label: 'URLs externas:',
+                                value: _joinBullets(widget.urlsExternas),
+                              ),
+                              _ProfileSection(
+                                label: 'Cursos:',
+                                value: _joinBullets(widget.cursos),
                               ),
 
                               const SizedBox(height: 12),
 
-                              // Botones de acción (sin cambios)
+                              // Botones de acción
                               Row(
                                 children: [
                                   Expanded(
@@ -224,10 +266,12 @@ class _PerfilPostuladoPageState extends State<PerfilPostuladoPage> {
                                       title: 'Cumple',
                                       onTap: widget.onCumplePerfil ??
                                               () {
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
                                               SnackBar(
                                                 content: const Text(
-                                                    'Marcado como que cumple el perfil'),
+                                                  'Marcado como que cumple el perfil',
+                                                ),
                                                 backgroundColor: theme.primario(),
                                               ),
                                             );
@@ -240,7 +284,8 @@ class _PerfilPostuladoPageState extends State<PerfilPostuladoPage> {
                                       title: 'Descartar',
                                       onTap: widget.onDescartar ??
                                               () {
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
                                               const SnackBar(
                                                 content: Text('Postulado descartado'),
                                                 backgroundColor: Colors.red,
@@ -284,6 +329,12 @@ class _PerfilPostuladoPageState extends State<PerfilPostuladoPage> {
       ),
     );
   }
+
+  // Helper para listas en formato viñetas simples
+  static String _joinBullets(List<String> items) {
+    if (items.isEmpty) return '—';
+    return items.map((e) => '• $e').join('\n');
+  }
 }
 
 /// ---------- Encabezado interno (botón atrás + título) ----------
@@ -317,7 +368,7 @@ class _HeaderPerfilPostulado extends StatelessWidget {
   }
 }
 
-/// ---------- Caja de CV (igual a tu patrón previo) ----------
+/// ---------- Caja de CV ----------
 class _CvBox extends StatelessWidget {
   const _CvBox({required this.fileName});
   final String fileName;
@@ -355,30 +406,24 @@ class _CvBox extends StatelessWidget {
   }
 }
 
-/// ---------- Sección de perfil (misma estética) ----------
+/// ---------- Sección de perfil (misma estética, sin iconos) ----------
 class _ProfileSection extends StatelessWidget {
   const _ProfileSection({
     required this.label,
     required this.value,
-    required this.actionIcon,
-    this.onAction,
   });
 
   final String label;
   final String value;
-  final IconData actionIcon;
-  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
-    final theme = ThemeController.instance;
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Título + acción a la derecha
+          // Título (sin ícono a la derecha)
           Row(
             children: [
               Expanded(
@@ -390,16 +435,11 @@ class _ProfileSection extends StatelessWidget {
                   ),
                 ),
               ),
-              IconButton(
-                onPressed: onAction,
-                icon: Icon(actionIcon, size: 20, color: theme.primario()),
-                tooltip: label,
-              ),
             ],
           ),
           // Valor
           Text(
-            value,
+            value.isEmpty ? '—' : value,
             style: const TextStyle(fontSize: 14, height: 1.35),
           ),
         ],
