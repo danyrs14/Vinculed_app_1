@@ -553,7 +553,7 @@ class _CandidatesGrid extends StatelessWidget {
                   title: 'Ver perfil',
                   onTap: () {
                     // Ajusta esta ruta a la que uses para perfil de candidato
-                    context.go('/reclutador/perfil_candidato');
+                    context.go('/reclutador/per_visible');
                   },
                 ),
               ),

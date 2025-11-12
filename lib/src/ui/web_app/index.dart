@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/auth_notifier.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil_visible.dart';
 
 // Candidato
 import 'package:vinculed_app_1/src/ui/web_app/candidato/add_experiencia.dart';
@@ -308,6 +309,10 @@ class _AdminAppState extends State<AdminApp> {
             GoRoute(
               path: 'msg_rec',
               builder: (context, state) => const MessagesPageRec(),
+            ),
+            GoRoute(
+              path: 'per_visible',
+              builder: (context, state) => const PerfilPostuladoPage(),
             ),
           ],
         ),
