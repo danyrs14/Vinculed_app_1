@@ -50,7 +50,7 @@ class _RecuperarPasswordPageWebState extends State<RecuperarPasswordPageWeb> {
 
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: _emailController.text.trim());
-      _showMessage("Se ha enviado un correo para restablecer tu contraseña. Revisa tu bandeja de entrada.", isError: false);
+      _showMessage("Si estás registrado, se te ha enviado un correo para restablecer tu contraseña. Revisa tu bandeja de entrada.", isError: false);
     } on FirebaseAuthException catch (e) {
       // Manejar errores específicos de Firebase si es necesario
       _showMessage("No se pudo enviar el correo. Verifica que el correo sea correcto y esté registrado.");
@@ -69,6 +69,7 @@ class _RecuperarPasswordPageWebState extends State<RecuperarPasswordPageWeb> {
         SnackBar(
           content: Text(msg),
           backgroundColor: isError ? Colors.redAccent : Colors.green,
+          duration: const Duration(seconds: 4),
         ),
       );
     }
@@ -154,7 +155,7 @@ class _RecuperarPasswordPageWebState extends State<RecuperarPasswordPageWeb> {
                                     if (value == null || value.isEmpty) {
                                       return 'Por favor, ingresa tu correo electrónico';
                                     }
-                                    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                                    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
                                     if (!emailRegex.hasMatch(value)) {
                                       return 'Ingresa un correo electrónico válido';
                                     }

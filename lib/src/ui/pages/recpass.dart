@@ -25,13 +25,13 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
     // Lógica para recuperar contraseña
     //print('Recuperar contraseña para: $email');
     await FirebaseAuth.instance.sendPasswordResetEmail(email: _emailController.text.trim())
-        .then((value) => _showError("Se ha enviado un correo para restablecer tu contraseña"))
+        .then((value) => _showError("Si estás registrado, se te ha enviado un correo para restablecer tu contraseña. Revisa tu bandeja de entrada."))
         .catchError((error) => _showError("Ocurrió un error, intenta de nuevo"));
   }
 
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
+      SnackBar(content: Text(msg), duration: const Duration(seconds: 4),),
     );
   }
 
@@ -57,13 +57,13 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                 StyledTextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  title: "Correo institucional", //TODO: considerar que sea cualquier correo
+                  title: "Correo electrónico",
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Por favor, ingresa tu correo electrónico';
                     }
                     // Expresión regular simple para validar el formato del correo electrónico
-                    final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
+                    final emailRegex = RegExp(r'/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/');
                     if (!emailRegex.hasMatch(value)) {
                       return 'Ingresa un correo electrónico válido';
                     }

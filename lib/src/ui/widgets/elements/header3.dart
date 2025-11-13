@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 
 class EscomHeader3 extends StatelessWidget implements PreferredSizeWidget {
   const EscomHeader3({
@@ -25,9 +27,10 @@ class EscomHeader3 extends StatelessWidget implements PreferredSizeWidget {
     "FAQ",
   ];
 
-  void _cerrarSesion() async {
+  Future<void> _cerrarSesion(BuildContext context) async {
     try {
       await FirebaseAuth.instance.signOut();
+      context.read<UserDataProvider>().clearData();
     } catch (e) {
       print("Error al cerrar sesión: $e");
     }
@@ -83,7 +86,7 @@ class EscomHeader3 extends StatelessWidget implements PreferredSizeWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: MiniButton(
-            onTap: _cerrarSesion,
+            onTap: () => _cerrarSesion(context),
             title: "Cerrar Sesión",
           ),
         ),

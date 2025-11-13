@@ -121,7 +121,6 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
 
         final reader = QRCodeReader();
         final result = reader.decode(bitmap);
-        print(result.text);
 
         _procesarCodigo(result.text);
 

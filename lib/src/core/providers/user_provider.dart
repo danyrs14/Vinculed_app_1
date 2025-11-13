@@ -7,16 +7,18 @@ class UserDataProvider extends ChangeNotifier {
 
   String? _idToken;
   String? _nombreUsuario;
-  String? _idUsuario; 
+  int? _idUsuario; 
   String? _rol;
+  int? _idRol;
 
   String? get idToken => _idToken;
   String? get nombreUsuario => _nombreUsuario;
-  String? get idUsuario => _idUsuario;
+  int? get idUsuario => _idUsuario;
   String? get rol => _rol;
+  int? get idRol => _idRol;
 
   Future<void> updateToken(User user) async {
-    _idToken = await user.getIdToken();
+    _idToken = await user.getIdToken(true);
     _nombreUsuario = user.displayName;
     // Notifica a cualquier widget que esté "escuchando" que los datos cambiaron
     notifyListeners(); 
@@ -32,8 +34,9 @@ class UserDataProvider extends ChangeNotifier {
         },
       );
       final responseDecoded = jsonDecode(response.body);
-      _idUsuario = responseDecoded['id'].toString();
+      _idUsuario = responseDecoded['id'];
       _rol = responseDecoded['rol'];
+      _idRol = responseDecoded['id_rol'];
       notifyListeners();
     }catch(e){
       print('Error al obtener el id_usuario: $e');
@@ -44,8 +47,10 @@ class UserDataProvider extends ChangeNotifier {
   // 6. Método para limpiar los datos al cerrar sesión
   void clearData() {
     _idToken = null;
+    _nombreUsuario = null;
     _idUsuario = null;
     _rol = null;
+    _idRol = null;
     notifyListeners();
   }
 }
