@@ -152,7 +152,7 @@ class UrlsSection extends StatelessWidget {
                         setState(() => saving = true);
                         try {
                           final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('http://localhost:3000/api/alumnos/url_externa/eliminar');
+                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/url_externa/eliminar');
                           final payload = jsonEncode({
                             'id_url': item.idUrl,
                             'id_alumno': item.idAlumno,
@@ -196,7 +196,7 @@ class UrlsSection extends StatelessWidget {
                         setState(() => saving = true);
                         try {
                           final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('http://localhost:3000/api/alumnos/url_externa/actualizar');
+                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/url_externa/actualizar');
                           final payload = jsonEncode({
                             'id_alumno': item.idAlumno,
                             'id_url': item.idUrl,
@@ -297,7 +297,7 @@ class UrlsSection extends StatelessWidget {
                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No hay id_alumno')));
                             return;
                           }
-                          final uri = Uri.parse('http://localhost:3000/api/alumnos/url_externa/agregar');
+                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/url_externa/agregar');
                           final payload = jsonEncode({
                             'id_alumno': idAlumno,
                             'tipo': tipoSel,

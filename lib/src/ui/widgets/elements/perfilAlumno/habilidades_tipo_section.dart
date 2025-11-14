@@ -80,7 +80,7 @@ class HabilidadesTipoSection extends StatelessWidget {
                     }).toList();
                     try {
                       final res = await http.put(
-                        Uri.parse('http://localhost:3000/api/alumnos/perfil/actualizar_habilidades'),
+                        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_habilidades'),
                         headers: {
                           'Content-Type': 'application/json',
                           if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',

@@ -55,7 +55,7 @@ class HabilidadesMultiDropdown extends StatefulWidget {
 }
 
 class _HabilidadesMultiDropdownState extends State<HabilidadesMultiDropdown> {
-  static const _endpoint = 'http://localhost:3000/api/habilidades/disponibles';
+  static const _endpoint = 'https://oda-talent-back-81413836179.us-central1.run.app/api/habilidades/disponibles';
 
   final Set<int> _selectedIds = {};
   List<HabilidadOption> _options = [];

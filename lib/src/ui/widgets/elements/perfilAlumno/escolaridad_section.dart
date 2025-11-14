@@ -265,7 +265,7 @@ class EscolaridadSection extends StatelessWidget {
                         setState(() => saving = true);
                         try {
                           final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('http://localhost:3000/api/alumnos/escolaridad/eliminar');
+                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/escolaridad/eliminar');
                           final body = jsonEncode({
                             'id_escolaridad': item.idEscolaridad,
                             'id_alumno': item.idAlumno,
@@ -318,7 +318,7 @@ class EscolaridadSection extends StatelessWidget {
                         setState(() => saving = true);
                         try {
                           final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('http://localhost:3000/api/alumnos/escolaridad/actualizar');
+                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/escolaridad/actualizar');
                           final body = jsonEncode({
                             'id_escolaridad': item.idEscolaridad,
                             'id_alumno': item.idAlumno,
@@ -520,7 +520,7 @@ class EscolaridadSection extends StatelessWidget {
                             );
                             return;
                           }
-                          final uri = Uri.parse('http://localhost:3000/api/alumnos/escolaridad/agregar');
+                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/escolaridad/agregar');
                           final body = jsonEncode({
                             'id_alumno': idAlumno,
                             'nivel': nivelValue,

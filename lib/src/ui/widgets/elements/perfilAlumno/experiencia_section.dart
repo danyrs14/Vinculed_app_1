@@ -243,7 +243,7 @@ class ExperienciaSection extends StatelessWidget {
                         setState(() => saving = true);
                         try {
                           final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('http://localhost:3000/api/alumnos/experiencia/eliminar');
+                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/experiencia/eliminar');
                           final payload = jsonEncode({
                             'id_experiencia': item.idExperiencia,
                             'id_alumno': item.idAlumno,
@@ -300,7 +300,7 @@ class ExperienciaSection extends StatelessWidget {
                         setState(() => saving = true);
                         try {
                           final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('http://localhost:3000/api/alumnos/experiencia/actualizar');
+                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/experiencia/actualizar');
                           final habs = selectedHabOptions.isEmpty
                               ? <Map<String, dynamic>>[]
                               : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();
@@ -478,7 +478,7 @@ class ExperienciaSection extends StatelessWidget {
                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se encontró id_alumno')));
                             return;
                           }
-                          final uri = Uri.parse('http://localhost:3000/api/alumnos/experiencia/agregar');
+                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/experiencia/agregar');
                           final habs = selectedHabOptions.isEmpty
                               ? <Map<String, dynamic>>[]
                               : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();

@@ -76,7 +76,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       _error = null;
     });
     final provider = context.read<UserDataProvider>();
-    final uri = Uri.parse('http://localhost:3000/api/alumnos/perfil?id_alumno=$idAlumno');
+    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil?id_alumno=$idAlumno');
     try {
       final resp = await http.get(uri, headers: {
         if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
@@ -208,7 +208,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Future<void> _sendCvUrlToBackend(int idAlumno, String url) async {
     final provider = context.read<UserDataProvider>();
-    final uri = Uri.parse('http://localhost:3000/api/alumnos/perfil/subir_cv');
+    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/subir_cv');
     final resp = await http.put(
       uri,
       headers: {
@@ -267,7 +267,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Future<void> _sendFotoUrlToBackend(int idAlumno, String url) async {
     final provider = context.read<UserDataProvider>();
-    final uri = Uri.parse('http://localhost:3000/api/alumnos/perfil/actualizar_foto');
+    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_foto');
     final resp = await http.put(
       uri,
       headers: {
@@ -753,7 +753,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Future<void> _saveCiudadEntidad({required int idAlumno, required String ciudad, required String entidad}) async {
     final provider = context.read<UserDataProvider>();
-    final uri = Uri.parse('http://localhost:3000/api/alumnos/perfil/actualizar_ciudad_entidad');
+    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_ciudad_entidad');
     final resp = await http.put(
       uri,
       headers: {
@@ -769,7 +769,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Future<void> _saveTelefono({required int idAlumno, required String telefono}) async {
     final provider = context.read<UserDataProvider>();
-    final uri = Uri.parse('http://localhost:3000/api/alumnos/perfil/actualizar_telefono');
+    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_telefono');
     final resp = await http.put(
       uri,
       headers: {
@@ -785,7 +785,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Future<void> _saveSemestre({required int idAlumno, required String semestre}) async {
     final provider = context.read<UserDataProvider>();
-    final uri = Uri.parse('http://localhost:3000/api/alumnos/perfil/actualizar_semestre');
+    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_semestre');
     final resp = await http.put(
       uri,
       headers: {
@@ -801,7 +801,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Future<void> _saveDescripcion({required int idAlumno, required String descripcion}) async {
     final provider = context.read<UserDataProvider>();
-    final uri = Uri.parse('http://localhost:3000/api/alumnos/perfil/actualizar_descripcion');
+    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_descripcion');
     final resp = await http.put(
       uri,
       headers: {
@@ -817,7 +817,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Future<void> _saveFechaNacimiento({required int idAlumno, required String fecha}) async {
     final provider = context.read<UserDataProvider>();
-    final uri = Uri.parse('http://localhost:3000/api/alumnos/perfil/actualizar_fecha_nacimiento');
+    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_fecha_nacimiento');
     final resp = await http.put(
       uri,
       headers: {

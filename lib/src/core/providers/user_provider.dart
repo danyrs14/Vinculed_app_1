@@ -32,8 +32,8 @@ class UserDataProvider extends ChangeNotifier {
   Future<void> getIdUsuario(User user) async{
     try{
       final response = await http.get(
-        Uri.parse('http://localhost:3000/api/usuarios/uid/${user.uid}'), //movil
-        //Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/uid/${user.uid}'), //web
+        //Uri.parse('http://localhost:3000/api/usuarios/uid/${user.uid}'), //movil
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/uid/${user.uid}'), //web
         headers: {
           'Authorization': 'Bearer $_idToken',
         },
@@ -53,7 +53,7 @@ class UserDataProvider extends ChangeNotifier {
     if (_habilidadesCargadas) return;
     try {
       final resp = await http.get(
-        Uri.parse('http://localhost:3000/api/habilidades/disponibles'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/habilidades/disponibles'),
         headers: {
           'Content-Type': 'application/json',
           if (_idToken != null) 'Authorization': 'Bearer $_idToken',
