@@ -10,6 +10,7 @@ class StyledTextFormField extends StatefulWidget {
   final Icon? icon;
   final Function(String)? onChanged;
   final bool isPasswordField;
+  final int? maxLines;
 
   const StyledTextFormField({
     Key? key,
@@ -21,6 +22,7 @@ class StyledTextFormField extends StatefulWidget {
     this.icon,
     this.onChanged,
     this.isPasswordField = false,
+    this.maxLines,
   }) : super(key: key);
 
   @override
@@ -48,6 +50,7 @@ class _StyledTextFormFieldState extends State<StyledTextFormField> {
         obscureText: _isObscured,
         cursorColor: theme.secundario(),
         keyboardType: widget.keyboardType,
+        maxLines: widget.maxLines ?? 1,
         validator: widget.validator, 
         onChanged: widget.onChanged,
         style: TextStyle(
@@ -86,14 +89,14 @@ class _StyledTextFormFieldState extends State<StyledTextFormField> {
           ),
           // Borde cuando hay un error de validación
           errorBorder: OutlineInputBorder(
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: Colors.red,
               width: 1.5,
             ),
           ),
           // Borde cuando hay un error y el campo tiene el foco
           focusedErrorBorder: OutlineInputBorder(
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: Colors.red,
               width: 2.0,
             ),
