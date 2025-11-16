@@ -166,7 +166,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
         'accion': accion,
       });
       final res = await http.post(
-        Uri.parse('http://localhost:3000/api/experiencias_alumnos/reaccionar'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/reaccionar'),
         headers: headers,
         body: body,
       );
@@ -272,7 +272,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
         'comentario': text,
       });
       final res = await http.post(
-        Uri.parse('http://localhost:3000/api/experiencias_alumnos/comentar'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentar'),
         headers: headers,
         body: body,
       );
@@ -315,7 +315,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
     try {
       final userProv = Provider.of<UserDataProvider>(context, listen: false);
       final headers = await userProv.getAuthHeaders();
-      final url = Uri.parse('http://localhost:3000/api/experiencias_alumnos/comentarios').replace(queryParameters: {
+      final url = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentarios').replace(queryParameters: {
         'id_alumno': '${widget.idAlumno}',
         'id_publicacion': '${widget.idPublicacion}',
       });
@@ -345,7 +345,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
     try {
       final userProv = Provider.of<UserDataProvider>(context, listen: false);
       final headers = await userProv.getAuthHeaders();
-      final url = Uri.parse('http://localhost:3000/api/experiencias_alumnos/comentarios/respuestas').replace(queryParameters: {
+      final url = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentarios/respuestas').replace(queryParameters: {
         'id_comentario_padre': '$idComentario',
         'id_alumno': '${widget.idAlumno}',
       });
@@ -464,7 +464,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
         'comentario': text,
         'id_comentario_padre': parentId,
       });
-      final res = await http.post(Uri.parse('http://localhost:3000/api/experiencias_alumnos/comentar'), headers: headers, body: body);
+      final res = await http.post(Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentar'), headers: headers, body: body);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         _RemoteCommentReply parsed;
         try {

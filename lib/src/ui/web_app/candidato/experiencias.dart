@@ -91,7 +91,7 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
       if (_selectedRoleIds.isNotEmpty) {
         params['id_roltrabajo'] = _selectedRoleIds.join(',');
       }
-      final url = Uri.parse('http://localhost:3000/api/experiencias_alumnos/ver')
+      final url = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/ver')
           .replace(queryParameters: params);
       final res = await http.get(url, headers: headers);
       if (res.statusCode >= 200 && res.statusCode < 300) {

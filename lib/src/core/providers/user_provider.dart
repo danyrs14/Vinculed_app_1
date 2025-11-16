@@ -45,8 +45,8 @@ class UserDataProvider extends ChangeNotifier {
       final headers = await getAuthHeaders();
 
       final response = await http.get(
-        Uri.parse('http://localhost:3000/api/usuarios/uid/${user.uid}'), //movil
-        //Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/uid/${user.uid}'), //web
+        //Uri.parse('http://localhost:3000/api/usuarios/uid/${user.uid}'), //movil
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/uid/${user.uid}'), //web
         headers: headers,
       );
       final responseDecoded = jsonDecode(response.body);

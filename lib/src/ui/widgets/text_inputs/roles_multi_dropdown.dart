@@ -48,7 +48,7 @@ class RolesMultiDropdown extends StatefulWidget {
 }
 
 class _RolesMultiDropdownState extends State<RolesMultiDropdown> {
-  static const _endpoint = 'http://localhost:3000/api/roles_trabajo/ver';
+  static const _endpoint = 'https://oda-talent-back-81413836179.us-central1.run.app/api/roles_trabajo/ver';
 
   final Set<int> _selectedIds = {};
   List<RoleOption> _options = [];

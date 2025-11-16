@@ -59,7 +59,7 @@ class ReportContentDialogState extends State<ReportContentDialog> {
         'descripcion': descripcion.isEmpty ? null : descripcion,
       });
       final res = await http.post(
-        Uri.parse('http://localhost:3000/api/experiencias_alumnos/reportar_contenido'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/reportar_contenido'),
         headers: headers,
         body: body,
       );

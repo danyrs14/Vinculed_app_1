@@ -338,7 +338,7 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
         'roles_relacionados': _selectedRoles.map((r) => {'id_roltrabajo': r.id}).toList(),
       });
       final resp = await http.post(
-        Uri.parse('http://localhost:3000/api/experiencias_alumnos/crear_experiencia'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/crear_experiencia'),
         headers: headers,
         body: body,
       );
