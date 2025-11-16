@@ -215,12 +215,10 @@ class CursosSection extends StatelessWidget {
                             'id_curso': item.idCurso,
                             'id_alumno': item.idAlumno,
                           });
+                          final headers = await provider.getAuthHeaders();
                           final resp = await http.delete(
                             uri,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-                            },
+                            headers: headers,
                             body: payload,
                           );
                           if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -274,12 +272,10 @@ class CursosSection extends StatelessWidget {
                             'fecha_inicio': inicioCtrl.text.trim(),
                             'fecha_fin': finCtrl.text.trim(),
                           });
+                          final headers = await provider.getAuthHeaders();
                           final resp = await http.put(
                             uri,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-                            },
+                            headers: headers,
                             body: body,
                           );
                           if (resp.statusCode == 200) {
@@ -423,12 +419,10 @@ class CursosSection extends StatelessWidget {
                             'fecha_fin': finCtrl.text.trim(),
                           };
 
+                          final headers = await provider.getAuthHeaders();
                           final resp = await http.post(
                             uri,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-                            },
+                            headers: headers,
                             body: jsonEncode(payload),
                           );
                           if (resp.statusCode >= 200 && resp.statusCode < 300) {

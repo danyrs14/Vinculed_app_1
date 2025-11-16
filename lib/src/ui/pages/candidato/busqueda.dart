@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
@@ -5,6 +6,10 @@ import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
+
+import 'package:provider/provider.dart';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:vinculed_app_1/src/core/providers/auth_notifier.dart';
 
 class Busqueda extends StatefulWidget {
   @override
@@ -15,6 +20,7 @@ class _BusquedaState extends State<Busqueda> {
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _locationController = TextEditingController(); // NUEVO
+  User? usuario;
 
   // ===== Estado: historial, contador y resultados MOCK =====
   final List<String> _searchHistory = <String>[
@@ -32,6 +38,7 @@ class _BusquedaState extends State<Busqueda> {
   @override
   void initState() {
     super.initState();
+    usuario = context.read<AuthNotifier>().user;
     _generateMockResults(); // precarga ejemplos
   }
 
@@ -77,9 +84,10 @@ class _BusquedaState extends State<Busqueda> {
                   ),
                   IconButton(
                     icon: CircleAvatar(
-                      backgroundImage: AssetImage('assets/images/amlo.jpg'),
-                      radius: 18,
-                    ),
+                        radius: 58,
+                        backgroundImage: usuario!.photoURL != null ? NetworkImage(usuario!.photoURL!) : null,
+                        child: usuario!.photoURL == null ? const Icon(Icons.person, size: 58) : null,
+                      ),
                     onPressed: () {
                       // Acción para perfil
                     },

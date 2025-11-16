@@ -211,7 +211,6 @@ class ExperienciaSection extends StatelessWidget {
                     HabilidadesMultiDropdown(
                       label: 'Habilidades desarrolladas (opcional)',
                       initialSelectedIds: initialHabIds,
-                      authToken: Provider.of<UserDataProvider>(context, listen: false).idToken,
                       onChanged: (opts) { selectedHabOptions = opts; },
                     ),
                   ],
@@ -248,12 +247,11 @@ class ExperienciaSection extends StatelessWidget {
                             'id_experiencia': item.idExperiencia,
                             'id_alumno': item.idAlumno,
                           });
+
+                          final headers = await provider.getAuthHeaders();
                           final resp = await http.delete(
                             uri,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-                            },
+                            headers: headers,
                             body: payload,
                           );
                           if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -317,12 +315,10 @@ class ExperienciaSection extends StatelessWidget {
                           final descTxt = descripcionCtrl.text.trim();
                           if (descTxt.isNotEmpty) payload['descripcion'] = descTxt;
 
+                          final headers = await provider.getAuthHeaders();
                           final resp = await http.put(
                             uri,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-                            },
+                            headers: headers,
                             body: jsonEncode(payload),
                           );
                           if (resp.statusCode == 200) {
@@ -435,7 +431,6 @@ class ExperienciaSection extends StatelessWidget {
                     HabilidadesMultiDropdown(
                       label: 'Habilidades desarrolladas (opcional)',
                       initialSelectedIds: const [],
-                      authToken: Provider.of<UserDataProvider>(context, listen: false).idToken,
                       onChanged: (opts) { selectedHabOptions = opts; },
                     ),
                   ],
@@ -494,12 +489,10 @@ class ExperienciaSection extends StatelessWidget {
                           final descTxt = descripcionCtrl.text.trim();
                           if (descTxt.isNotEmpty) payload['descripcion'] = descTxt;
 
+                          final headers = await provider.getAuthHeaders();
                           final resp = await http.post(
                             uri,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-                            },
+                            headers: headers,
                             body: jsonEncode(payload),
                           );
                           if (resp.statusCode >= 200 && resp.statusCode < 300) {

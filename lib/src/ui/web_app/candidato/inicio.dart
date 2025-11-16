@@ -128,11 +128,10 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                 // Saludo con avatar
                                 Row(
                                   children: [
-                                    const CircleAvatar(
-                                      radius: 28,
-                                      backgroundImage: AssetImage(
-                                        'assets/images/amlo.jpg',
-                                      ),
+                                    CircleAvatar(
+                                      radius: 58,
+                                      backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
+                                      child: usuario.photoURL == null ? const Icon(Icons.person, size: 58) : null,
                                     ),
                                     const SizedBox(width: 14),
                                     Expanded(

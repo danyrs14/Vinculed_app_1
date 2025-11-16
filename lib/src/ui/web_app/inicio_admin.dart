@@ -102,11 +102,10 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
   }
 
   Future<List<RecruiterItem>> fetchPending() async {
+    final headers = await context.read<UserDataProvider>().getAuthHeaders();
     final resp = await http.get(
       Uri.parse(apiUrl),
-      headers: {
-        'Authorization': 'Bearer ${context.read<UserDataProvider>().idToken}',
-      },
+      headers: headers,
     );
     if (resp.statusCode == 500 ) {
       throw Exception('Error al obtener reclutadores: ${resp.statusCode}');
@@ -131,12 +130,10 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
   Future<void> _acceptRecruiter(int idReclutador) async {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Procesando...')));
     try {
+      final headers = await context.read<UserDataProvider>().getAuthHeaders();
       final resp = await http.post(
         Uri.parse(acceptUrl),
-        headers: {
-          'Authorization': 'Bearer ${context.read<UserDataProvider>().idToken}',
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
         body: json.encode({'id_reclutador': idReclutador}),
       );
       if (resp.statusCode == 200) {
@@ -154,12 +151,10 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
   Future<void> _denyRecruiter(int idUsuario) async {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Procesando...')));
     try {
+      final headers = await context.read<UserDataProvider>().getAuthHeaders();
       final resp = await http.post(
         Uri.parse(denyUrl),
-        headers: {
-          'Authorization': 'Bearer ${context.read<UserDataProvider>().idToken}',
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
         body: json.encode({'id_usuario': idUsuario}),
       );
       if (resp.statusCode == 200) {

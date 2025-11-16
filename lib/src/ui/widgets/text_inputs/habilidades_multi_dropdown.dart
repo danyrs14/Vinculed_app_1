@@ -85,9 +85,7 @@ class _HabilidadesMultiDropdownState extends State<HabilidadesMultiDropdown> {
         return;
       }
       // Fallback: si por alguna razón no hay cache, intenta una única petición HTTP
-      final headers = <String, String>{ 'Content-Type': 'application/json' };
-      final token = userProv.idToken ?? widget.authToken;
-      if (token != null && token.isNotEmpty) { headers['Authorization'] = 'Bearer $token'; }
+      final headers = await userProv.getAuthHeaders();
       final res = await http.get(Uri.parse(_endpoint), headers: headers);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = jsonDecode(res.body) as List<dynamic>;

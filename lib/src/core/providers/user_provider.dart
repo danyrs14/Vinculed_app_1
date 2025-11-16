@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class UserDataProvider extends ChangeNotifier {
-  String? _idToken;
   String? _nombreUsuario;
   int? _idUsuario; 
   String? _rol;
@@ -14,7 +13,6 @@ class UserDataProvider extends ChangeNotifier {
   List<Map<String, dynamic>>? _habilidadesDisponibles;
   bool _habilidadesCargadas = false;
 
-  String? get idToken => _idToken;
   String? get nombreUsuario => _nombreUsuario;
   int? get idUsuario => _idUsuario;
   String? get rol => _rol;
@@ -22,8 +20,21 @@ class UserDataProvider extends ChangeNotifier {
   List<Map<String, dynamic>>? get habilidadesDisponibles => _habilidadesDisponibles;
   bool get habilidadesCargadas => _habilidadesCargadas;
 
+  Future<Map<String, String>> getAuthHeaders() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No hay usuario logueado para hacer la petición.');
+    }
+  
+    final token = await user.getIdToken(); 
+    
+    return {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+  }
+
   Future<void> updateToken(User user) async {
-    _idToken = await user.getIdToken(true);
     _nombreUsuario = user.displayName;
     // Notifica a cualquier widget que esté "escuchando" que los datos cambiaron
     notifyListeners(); 
@@ -31,12 +42,12 @@ class UserDataProvider extends ChangeNotifier {
 
   Future<void> getIdUsuario(User user) async{
     try{
+      final headers = await getAuthHeaders();
+
       final response = await http.get(
-        //Uri.parse('http://localhost:3000/api/usuarios/uid/${user.uid}'), //movil
-        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/uid/${user.uid}'), //web
-        headers: {
-          'Authorization': 'Bearer $_idToken',
-        },
+        Uri.parse('http://localhost:3000/api/usuarios/uid/${user.uid}'), //movil
+        //Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/uid/${user.uid}'), //web
+        headers: headers,
       );
       final responseDecoded = jsonDecode(response.body);
       _idUsuario = responseDecoded['id'];
@@ -52,12 +63,11 @@ class UserDataProvider extends ChangeNotifier {
   Future<void> preloadHabilidades() async {
     if (_habilidadesCargadas) return;
     try {
+      final headers = await getAuthHeaders();
+
       final resp = await http.get(
         Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/habilidades/disponibles'),
-        headers: {
-          'Content-Type': 'application/json',
-          if (_idToken != null) 'Authorization': 'Bearer $_idToken',
-        },
+        headers: headers,
       );
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
         final data = jsonDecode(resp.body) as List;
@@ -74,7 +84,6 @@ class UserDataProvider extends ChangeNotifier {
 
   // 6. Método para limpiar los datos al cerrar sesión
   void clearData() {
-    _idToken = null;
     _nombreUsuario = null;
     _idUsuario = null;
     _rol = null;

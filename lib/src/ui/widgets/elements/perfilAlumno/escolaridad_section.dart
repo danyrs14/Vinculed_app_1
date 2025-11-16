@@ -270,12 +270,10 @@ class EscolaridadSection extends StatelessWidget {
                             'id_escolaridad': item.idEscolaridad,
                             'id_alumno': item.idAlumno,
                           });
+                          final headers = await provider.getAuthHeaders();
                           final resp = await http.delete(
                             uri,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-                            },
+                            headers: headers,
                             body: body,
                           );
                           if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -330,12 +328,10 @@ class EscolaridadSection extends StatelessWidget {
                             'fecha_inicio': inicioCtrl.text.trim(),
                             'fecha_fin': finCtrl.text.trim(),
                           });
+                          final headers = await provider.getAuthHeaders();
                           final resp = await http.put(
                             uri,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-                            },
+                            headers: headers,
                             body: body,
                           );
                           if (resp.statusCode == 200) {
@@ -531,12 +527,10 @@ class EscolaridadSection extends StatelessWidget {
                             'fecha_inicio': inicioCtrl.text.trim(),
                             'fecha_fin': finCtrl.text.trim(),
                           });
+                          final headers = await provider.getAuthHeaders();
                           final resp = await http.post(
                             uri,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-                            },
+                            headers: headers,
                             body: body,
                           );
                           if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -573,7 +567,7 @@ class EscolaridadSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(
-            width: 190,
+            width: 182,
             child: Text('Escolaridad:', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
           const SizedBox(width: 8),

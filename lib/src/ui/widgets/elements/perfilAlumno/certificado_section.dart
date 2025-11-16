@@ -228,7 +228,6 @@ class CertificadosSection extends StatelessWidget {
                       label: 'Habilidades desarrolladas (opcional)'
                           ,
                       initialSelectedIds: initialHabIds,
-                      authToken: Provider.of<UserDataProvider>(context, listen: false).idToken,
                       onChanged: (opts) {
                         selectedHabOptions = opts;
                       },
@@ -267,12 +266,10 @@ class CertificadosSection extends StatelessWidget {
                             'id_certificado': item.idCertificado,
                             'id_alumno': item.idAlumno,
                           });
+                          final headers = await context.read<UserDataProvider>().getAuthHeaders();
                           final resp = await http.delete(
                             uri,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-                            },
+                            headers: headers,
                             body: payload,
                           );
                           if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -338,12 +335,10 @@ class CertificadosSection extends StatelessWidget {
                           final urlTxt = urlCtrl.text.trim();
                           if (urlTxt.isNotEmpty) payload['url_certificado'] = urlTxt;
 
+                          final headers = await context.read<UserDataProvider>().getAuthHeaders();
                           final resp = await http.put(
                             uri,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-                            },
+                            headers: headers,
                             body: jsonEncode(payload),
                           );
                           if (resp.statusCode == 200) {
@@ -463,7 +458,6 @@ class CertificadosSection extends StatelessWidget {
                     HabilidadesMultiDropdown(
                       label: 'Habilidades desarrolladas (opcional)',
                       initialSelectedIds: const [],
-                      authToken: Provider.of<UserDataProvider>(context, listen: false).idToken,
                       onChanged: (opts) { selectedHabOptions = opts; },
                     ),
                   ],
@@ -524,12 +518,10 @@ class CertificadosSection extends StatelessWidget {
                           final urlTxt = urlCtrl.text.trim();
                           if (urlTxt.isNotEmpty) payload['url_certificado'] = urlTxt;
 
+                          final headers = await context.read<UserDataProvider>().getAuthHeaders();
                           final resp = await http.post(
                             uri,
-                            headers: {
-                              'Content-Type': 'application/json',
-                              if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-                            },
+                            headers: headers,
                             body: jsonEncode(payload),
                           );
                           if (resp.statusCode >= 200 && resp.statusCode < 300) {

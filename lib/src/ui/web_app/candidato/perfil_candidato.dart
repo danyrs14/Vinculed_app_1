@@ -44,6 +44,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   static const double _extraBottomPadding = 24.0;
   static const double _atEndThreshold = 4.0;
 
+
   // Estado de carga
   bool _loading = false;
   String? _error;
@@ -78,10 +79,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     final provider = context.read<UserDataProvider>();
     final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil?id_alumno=$idAlumno');
     try {
-      final resp = await http.get(uri, headers: {
-        if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-        'Content-Type': 'application/json',
-      });
+      final headers = await provider.getAuthHeaders();
+      final resp = await http.get(uri, headers:headers);
       if (resp.statusCode != 200) {
         setState(() {
           _error = 'Error ${resp.statusCode} al cargar perfil';
@@ -209,12 +208,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Future<void> _sendCvUrlToBackend(int idAlumno, String url) async {
     final provider = context.read<UserDataProvider>();
     final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/subir_cv');
+    final headers = await provider.getAuthHeaders();
     final resp = await http.put(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-        if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-      },
+      headers: headers,
       //body: jsonEncode({'id_alumno': idAlumno, 'url_cv': url}),
       body: jsonEncode({'url_cv': url}),
     );
@@ -268,12 +265,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Future<void> _sendFotoUrlToBackend(int idAlumno, String url) async {
     final provider = context.read<UserDataProvider>();
     final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_foto');
+    final headers = await provider.getAuthHeaders();
     final resp = await http.put(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-        if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-      },
+      headers: headers,
       body: jsonEncode({'id_alumno':idAlumno,'url_foto': url}),
     );
     if (resp.statusCode < 200 || resp.statusCode >= 300) {
@@ -454,10 +449,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
                               ),
                               const SizedBox(height: 6),
                               const Text('Alumno', style: TextStyle(fontSize: 16, color: Colors.black87)),
+                              const SizedBox(height: 6),
                               const Row(
                                 children: [
                                   Icon(Icons.info_outline_rounded, color: Colors.redAccent, size: 16),
-                                  Text('Completa tu perfil para poder postularte a vacantes y así los reclutadores se fijen en tí. Al menos llena los siguientes datos: Descripción, Ciudad, Entidad, Semestre Actual y agrega una habilidad.', style: TextStyle(fontSize: 14, color: Colors.redAccent)),
+                                  SizedBox(width: 6),
+                                  Expanded(child: Text('Completa tu perfil para poder postularte a vacantes y así los reclutadores se fijen en tí. Al menos llena los siguientes datos: Descripción, Ciudad, Entidad, Semestre Actual y agrega una habilidad.', style: TextStyle(fontSize: 14, color: Colors.redAccent))),
                                 ],
                               )
                             ],
@@ -591,7 +588,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                         Expanded(
                                           child: EscolaridadSection(
                                             items: perfil.escolaridad,
-                                            emptyText: 'Agrega donde has estudiado',
+                                            emptyText: 'Agrega dónde has estudiado',
                                             onUpdated: () => _fetchPerfil(perfil.idAlumno),
                                           ),
                                         ),
@@ -754,12 +751,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Future<void> _saveCiudadEntidad({required int idAlumno, required String ciudad, required String entidad}) async {
     final provider = context.read<UserDataProvider>();
     final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_ciudad_entidad');
+    final headers = await provider.getAuthHeaders();
     final resp = await http.put(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-        if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-      },
+      headers: headers,
       body: jsonEncode({'id_alumno': idAlumno, 'ciudad': ciudad, 'entidad': entidad}),
     );
     if (resp.statusCode < 200 || resp.statusCode >= 300) {
@@ -770,12 +765,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Future<void> _saveTelefono({required int idAlumno, required String telefono}) async {
     final provider = context.read<UserDataProvider>();
     final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_telefono');
+    final headers = await provider.getAuthHeaders();
     final resp = await http.put(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-        if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-      },
+      headers: headers,
       body: jsonEncode({'id_alumno': idAlumno, 'telefono': telefono}),
     );
     if (resp.statusCode < 200 || resp.statusCode >= 300) {
@@ -786,12 +779,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Future<void> _saveSemestre({required int idAlumno, required String semestre}) async {
     final provider = context.read<UserDataProvider>();
     final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_semestre');
+    final headers = await provider.getAuthHeaders();
     final resp = await http.put(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-        if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-      },
+      headers: headers,
       body: jsonEncode({'id_alumno': idAlumno, 'semestre_actual': semestre}),
     );
     if (resp.statusCode < 200 || resp.statusCode >= 300) {
@@ -802,12 +793,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Future<void> _saveDescripcion({required int idAlumno, required String descripcion}) async {
     final provider = context.read<UserDataProvider>();
     final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_descripcion');
+    final headers = await provider.getAuthHeaders();
     final resp = await http.put(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-        if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-      },
+      headers: headers,
       body: jsonEncode({'id_alumno': idAlumno, 'descripcion': descripcion}),
     );
     if (resp.statusCode < 200 || resp.statusCode >= 300) {
@@ -818,12 +807,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Future<void> _saveFechaNacimiento({required int idAlumno, required String fecha}) async {
     final provider = context.read<UserDataProvider>();
     final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_fecha_nacimiento');
+    final headers = await provider.getAuthHeaders();
     final resp = await http.put(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-        if (provider.idToken != null) 'Authorization': 'Bearer ${provider.idToken}',
-      },
+      headers: headers,
       body: jsonEncode({'id_alumno': idAlumno, 'fecha_nacimiento': fecha}),
     );
     if (resp.statusCode < 200 || resp.statusCode >= 300) {

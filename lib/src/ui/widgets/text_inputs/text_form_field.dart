@@ -11,6 +11,7 @@ class StyledTextFormField extends StatefulWidget {
   final Function(String)? onChanged;
   final bool isPasswordField;
   final int? maxLines;
+  final int? maxLength;
 
   const StyledTextFormField({
     Key? key,
@@ -23,6 +24,7 @@ class StyledTextFormField extends StatefulWidget {
     this.onChanged,
     this.isPasswordField = false,
     this.maxLines,
+    this.maxLength,
   }) : super(key: key);
 
   @override
@@ -51,6 +53,7 @@ class _StyledTextFormFieldState extends State<StyledTextFormField> {
         cursorColor: theme.secundario(),
         keyboardType: widget.keyboardType,
         maxLines: widget.maxLines ?? 1,
+        maxLength: widget.maxLength,
         validator: widget.validator, 
         onChanged: widget.onChanged,
         style: TextStyle(
