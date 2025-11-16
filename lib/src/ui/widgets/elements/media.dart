@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MediaContent extends StatelessWidget {
   final String url; // can be a full URL or a Firebase Storage path
@@ -12,17 +15,36 @@ class MediaContent extends StatelessWidget {
     return u.endsWith('.jpg') || u.endsWith('.jpeg') || u.endsWith('.png') || u.endsWith('.gif') || u.endsWith('.webp');
   }
 
-  bool _isLottiePath(String s) => s.toLowerCase().endsWith('.json');
-  bool _isVideoPath(String s) => s.toLowerCase().endsWith('.mp4');
+  bool _canEmbedYoutube() {
+    if (kIsWeb) return true; // en web usa iframe
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+      case TargetPlatform.iOS:
+        return true; // móviles soportados
+      default:
+        return false; // desktop: usar fallback externo
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final isHttp = url.startsWith('http://') || url.startsWith('https://');
-    final isImage = _isImagePath(url);
-    final isLottie = _isLottiePath(url);
-    final isVideo = _isVideoPath(url);
 
     Widget buildFromResolved(String resolved) {
+      // Detectar YouTube y tipos por la URL final
+      final ytId = YoutubePlayerController.convertUrlToId(resolved);
+      if (ytId != null) {
+        return _YouTubePlayerInline(
+          videoId: ytId,
+          originalUrl: resolved,
+          canEmbed: _canEmbedYoutube(),
+        );
+      }
+      final lower = resolved.toLowerCase();
+      final isVideo = lower.endsWith('.mp4');
+      final isLottie = lower.endsWith('.json');
+      final isImage = _isImagePath(resolved);
+
       if (isVideo) {
         return _VideoPlayerWidget(url: resolved);
       }
@@ -121,9 +143,106 @@ class MediaContent extends StatelessWidget {
   }
 }
 
+class _YouTubePlayerInline extends StatefulWidget {
+  final String videoId;
+  final String originalUrl;
+  final bool canEmbed;
+  const _YouTubePlayerInline({required this.videoId, required this.originalUrl, required this.canEmbed});
+
+  @override
+  State<_YouTubePlayerInline> createState() => _YouTubePlayerInlineState();
+}
+
+class _YouTubePlayerInlineState extends State<_YouTubePlayerInline> {
+  YoutubePlayerController? _controller;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.canEmbed) {
+      try {
+        _controller = YoutubePlayerController.fromVideoId(
+          videoId: widget.videoId,
+          params: const YoutubePlayerParams(
+            showFullscreenButton: true,
+          ),
+        );
+      } catch (_) {
+        _failed = true;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.close();
+    super.dispose();
+  }
+
+  Future<void> _openExternally() async {
+    final uri = Uri.parse(widget.originalUrl.isNotEmpty
+        ? widget.originalUrl
+        : 'https://www.youtube.com/watch?v=${widget.videoId}');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.canEmbed || _failed || _controller == null) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.black12.withOpacity(.06),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.black12),
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            const Icon(Icons.ondemand_video, color: Colors.black54),
+            const SizedBox(width: 8),
+            const Expanded(child: Text('El video se abrirá en YouTube.')),
+            TextButton.icon(
+              onPressed: _openExternally,
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Abrir'),
+            )
+          ],
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Builder(
+          builder: (context) {
+            try {
+              return YoutubePlayer(controller: _controller!);
+            } catch (_) {
+              // Fallback si el widget lanza excepción por plataforma no soportada
+              return Center(
+                child: TextButton.icon(
+                  onPressed: _openExternally,
+                  icon: const Icon(Icons.open_in_new),
+                  label: const Text('Abrir en YouTube'),
+                ),
+              );
+            }
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class _VideoPlayerWidget extends StatefulWidget {
   final String url;
   const _VideoPlayerWidget({required this.url});
+
   @override
   State<_VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
 }

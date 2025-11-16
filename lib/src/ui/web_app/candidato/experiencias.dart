@@ -203,6 +203,7 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
           commentCountText: comentarios > 0 ? '$comentarios Comentarios' : null,
           totalComments: comentarios,
           maxWidth: 720,
+          mediaUrl: e['url_multimedia'] as String?,
         ),
         const SizedBox(height: 20),
       ],

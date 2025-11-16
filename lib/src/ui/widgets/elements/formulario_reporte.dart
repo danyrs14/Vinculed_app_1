@@ -102,7 +102,7 @@ class ReportContentDialogState extends State<ReportContentDialog> {
               DropdownInput<String>(
                 value: _tipoContenido,
                 items: const [
-                  DropdownMenuItem(value: 'Publicacion', child: Text('Publicación')),
+                  DropdownMenuItem(value: 'Publicacion', child: Text('Publicación (Experiencia)')),
                   DropdownMenuItem(value: 'Comentario', child: Text('Comentario')),
                   DropdownMenuItem(value: 'Vacante', child: Text('Vacante')),
                 ],
