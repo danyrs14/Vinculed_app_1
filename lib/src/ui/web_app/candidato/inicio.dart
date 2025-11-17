@@ -4,8 +4,12 @@ import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/job_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:vinculed_app_1/src/ui/web_app/candidato/vacante.dart'; // detalle
 
 class HomeRegisteredPage extends StatefulWidget {
   const HomeRegisteredPage({super.key});
@@ -18,6 +22,12 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
   final _scrollCtrl = ScrollController();
   bool _showFooter = false;
   final usuario = FirebaseAuth.instance.currentUser!;
+
+  // --- Estado de vacantes dinámicas ---
+  List<Map<String, dynamic>> _vacantes = [];
+  bool _loadingVac = false;
+  String? _errorVac;
+  bool _initialFetchDone = false;
 
   static const double _footerReservedSpace = EscomFooter.height;
   static const double _extraBottomPadding = 24.0;
@@ -51,11 +61,181 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
     super.dispose();
   }
 
+  Future<void> _fetchVacantesHome(int idRol) async {
+    if (_loadingVac) return;
+    setState(() {
+      _loadingVac = true;
+      _errorVac = null;
+    });
+    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/vacantes/buscar').replace(queryParameters: {
+      'ordenar_por': 'fecha_publicacion_desc',
+      'page': '1',
+      'limit': '3',
+      'id_alumno': idRol.toString(),
+    });
+    try {
+      final userProv = context.read<UserDataProvider>();
+      final headers = await userProv.getAuthHeaders();
+      final res = await http.get(uri, headers: headers);
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        throw Exception('HTTP ${res.statusCode}');
+      }
+      final body = jsonDecode(res.body);
+      if (body is! Map) throw Exception('Formato inesperado');
+      final map = Map<String, dynamic>.from(body);
+      final items = (map['vacantes'] as List?) ?? const [];
+      setState(() {
+        _vacantes = items
+            .whereType<Map>()
+            .map((m) => Map<String, dynamic>.from(m))
+            .toList();
+      });
+    } catch (e) {
+      setState(() {
+        _errorVac = 'No se pudieron cargar las vacantes: $e';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _loadingVac = false);
+      }
+    }
+  }
+
+  Widget _buildVacanteCard(Map<String, dynamic>? v) {
+    final theme = ThemeController.instance;
+    if (v == null) {
+      return Container(
+        padding: const EdgeInsets.fromLTRB(18, 22, 18, 16),
+        decoration: BoxDecoration(
+          color: theme.background(),
+          border: Border.all(color: theme.secundario(), width: 1.4),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(child: Text('Sin datos')),
+      );
+    }
+    final titulo = v['titulo'] ?? v['nombre'] ?? 'Vacante';
+    final empresa = v['empresa'] ?? v['nombre_empresa'] ?? 'Empresa';
+    final ciudad = v['ciudad'] ?? '';
+    final entidad = v['entidad'] ?? '';
+    final location = [ciudad, entidad]
+        .where((e) => e != null && e.toString().isNotEmpty)
+        .join(', ');
+    final anyId = v['id_vacante'] ?? v['id'];
+    final idVac = anyId is int ? anyId : int.tryParse(anyId?.toString() ?? '');
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 22, 18, 16),
+      decoration: BoxDecoration(
+        color: theme.background(),
+        border: Border.all(color: theme.secundario(), width: 1.4),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Text(titulo.toString(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+          const SizedBox(height: 6),
+          Text(location.isEmpty ? 'Sin ubicación' : location, style: const TextStyle(color: Colors.black54), textAlign: TextAlign.center),
+          const SizedBox(height: 10),
+          Text(empresa.toString(), style: const TextStyle(fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 40,
+            child: SimpleButton(
+              title: 'Ver detalles',
+              onTap: idVac == null ? null : () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => JobDetailPage(idVacante: idVac),
+                  ),
+                );
+              },
+              primaryColor: true,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        //borderRadius: BorderRadius.circular(16),
+        //border: Border.all(color: Colors.blue.shade50),
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.blue.withOpacity(0.05),
+        //     blurRadius: 15,
+        //     offset: const Offset(0, 5),
+        //   ),
+        // ],
+      ),
+      child: Column(
+        children: [
+          // "Dibujito" hecho con Iconos y Contenedores
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Icon(Icons.rocket_launch_rounded, size: 50, color: Colors.blue.shade300),
+              Positioned(
+                top: 20,
+                right: 20,
+                child: Icon(Icons.star_rounded, size: 20, color: Colors.yellow.shade700),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            "¡Pronto despegaremos!",
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1F2A36),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          const SizedBox(
+            width: 400,
+            child: Text(
+              "Por el momento no hay nuevas vacantes publicadas, pero estamos preparando las mejores oportunidades para ti. ¡Vuelve pronto!",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black54,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
     final w = MediaQuery.of(context).size.width;
     final isMobile = w < 700;
+
+    final userProv = context.watch<UserDataProvider>();
+    final idRol = userProv.idRol;
+    if (!_initialFetchDone && idRol != null) {
+      _initialFetchDone = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _fetchVacantesHome(idRol));
+    }
 
     return Scaffold(
       backgroundColor: theme.background(),
@@ -64,30 +244,12 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
-            case "Inicio":
-              context.go('/inicio');
-              break;
-
-              case "Postulaciones":
-              context.go('/alumno/mis_postulaciones');
-              break;
-
-              case "Mensajes":
-              context.go('/alumno/messages');
-              break;
-
-            case "Experiencias":
-              context.go('/alumno/experiencias');
-              break;
-
-            case "FAQ":
-              context.go('/alumno/faq');
-              break;
-
-              case "Preferencias":
-              context.go('/alumno/preferences');
-              break;
-
+            case "Inicio": context.go('/inicio'); break;
+            case "Postulaciones": context.go('/alumno/mis_postulaciones'); break;
+            case "Mensajes": context.go('/alumno/messages'); break;
+            case "Experiencias": context.go('/alumno/experiencias'); break;
+            case "FAQ": context.go('/alumno/faq'); break;
+            case "Preferencias": context.go('/alumno/preferences'); break;
           }
         },
       ),
@@ -148,48 +310,49 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                 ),
                                 const SizedBox(height: 28),
 
-                                // Row con 3 JobCards de ejemplo
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: const [
-                                    Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: JobCard(
-                                          item: JobItem(
-                                            title: 'Becario de QA',
-                                            location: 'Ciudad de México',
-                                            company: 'BBVA México',
-                                          ),
-                                        ),
-                                      ),
+                                // --- LÓGICA MODIFICADA AQUÍ ---
+                                if (_loadingVac)
+                                  const Center(child: Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 40),
+                                    child: CircularProgressIndicator(),
+                                  ))
+                                else if (_errorVac != null)
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFF1F2),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: const Color(0xFFFCA5A5)),
                                     ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: JobCard(
-                                          item: JobItem(
-                                            title: 'Becario Scrum',
-                                            location: 'Ciudad de México',
-                                            company: 'IDS',
-                                          ),
+                                    child: Text(_errorVac!, style: const TextStyle(color: Colors.red)),
+                                  )
+                                else if (_vacantes.isEmpty)
+                                  // SI LA LISTA ESTÁ VACÍA, MOSTRAMOS EL MENSAJE OPTIMISTA
+                                  _buildEmptyState()
+                                else
+                                  // SI HAY DATOS, MOSTRAMOS LA FILA (Aun rellenando hasta 3 para mantener el layout grid)
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: List.generate(3, (index) {
+                                      // Obtenemos vacante o null si el índice excede la lista
+                                      Map<String, dynamic>? v = index < _vacantes.length ? _vacantes[index] : null;
+                                      
+                                      // Si v es null (porque hay 1 o 2 vacantes, pero pedimos 3 espacios),
+                                      // podemos mostrar una tarjeta invisible (Spacer) o una tarjeta "Coming soon".
+                                      // Para que se vea bien alineado a la izquierda, si es null usamos un Spacer o Container invisible.
+                                      if (v == null) {
+                                         return const Expanded(child: SizedBox()); 
+                                      }
+
+                                      return Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                          child: _buildVacanteCard(v),
                                         ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 8.0),
-                                        child: JobCard(
-                                          item: JobItem(
-                                            title: 'Becario de TI',
-                                            location: 'Ciudad de México',
-                                            company: 'Banorte IXE',
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                      );
+                                    }),
+                                  ),
+                                // ------------------------------
 
                                 const SizedBox(height: 28),
 
@@ -243,7 +406,7 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
             ),
           ),
 
-          // Footer animado (aparece al final)
+          // Footer animado
           Positioned(
             left: 0,
             right: 0,

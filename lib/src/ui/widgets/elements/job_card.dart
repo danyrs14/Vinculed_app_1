@@ -70,17 +70,7 @@ class _JobCardState extends State<JobCard> {
           // Acciones
           Row(
             children: [
-              IconButton(
-                onPressed: () {
-                  setState(() => isSaved = !isSaved);
-                  if (widget.onSave != null) widget.onSave!();
-                },
-                icon: Icon(
-                  isSaved ? Icons.favorite : Icons.favorite_border,
-                  color: isSaved ? theme.secundario() : Colors.black54,
-                ),
-                tooltip: 'Guardar',
-              ),
+              
               const Spacer(),
               SizedBox(
                 height: 36,
@@ -90,11 +80,7 @@ class _JobCardState extends State<JobCard> {
                 ),
               ),
               const Spacer(),
-              IconButton(
-                onPressed: widget.onHide,
-                icon: const Icon(Icons.visibility_off_outlined),
-                tooltip: 'Ocultar',
-              ),
+              
             ],
           ),
         ],
