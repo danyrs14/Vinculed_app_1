@@ -33,6 +33,9 @@ class RolesMultiDropdown extends StatefulWidget {
   final bool enabled;
   final String? authToken;
   final String? errorText;
+  // Nuevo: callbacks para notificar apertura/cierre del modal
+  final VoidCallback? onOpen;
+  final VoidCallback? onClose;
 
   const RolesMultiDropdown({
     super.key,
@@ -43,6 +46,8 @@ class RolesMultiDropdown extends StatefulWidget {
     this.enabled = true,
     this.authToken,
     this.errorText,
+    this.onOpen,
+    this.onClose,
   });
 
   @override
@@ -114,27 +119,34 @@ class _RolesMultiDropdownState extends State<RolesMultiDropdown> {
   Future<void> _openSelector() async {
     await _ensureLoaded();
     if (!mounted) return;
+    // Notificar apertura del modal (para ocultar elementos problemáticos debajo)
+    widget.onOpen?.call();
     final selected = Set<int>.from(_selectedIds);
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) => _RolesSelectorDialog(
-        options: _options,
-        initialSelected: selected,
-        onConfirm: (ids) {
-          _selectedIds
-            ..clear()
-            ..addAll(ids);
-          final chosen =
-              _options.where((o) => _selectedIds.contains(o.id)).toList();
-          widget.onChanged(chosen);
-          setState(() {});
-          Navigator.of(ctx).pop();
-        },
-        errorText: _error,
-        loading: _loading,
-      ),
-    );
+    try {
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: true,
+        builder: (ctx) => _RolesSelectorDialog(
+          options: _options,
+          initialSelected: selected,
+          onConfirm: (ids) {
+            _selectedIds
+              ..clear()
+              ..addAll(ids);
+            final chosen =
+                _options.where((o) => _selectedIds.contains(o.id)).toList();
+            widget.onChanged(chosen);
+            setState(() {});
+            Navigator.of(ctx).pop();
+          },
+          errorText: _error,
+          loading: _loading,
+        ),
+      );
+    } finally {
+      // Notificar cierre del modal, sin importar cómo se cerró
+      widget.onClose?.call();
+    }
   }
 
   @override
