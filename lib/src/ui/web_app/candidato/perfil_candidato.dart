@@ -5,7 +5,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:html' as html; // para abrir nueva pestaña en Web
+//import 'dart:html' as html; // para abrir nueva pestaña en Web
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
@@ -233,10 +234,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
         final ref = fs.FirebaseStorage.instance.ref().child(storedPathOrUrl);
         viewUrl = await ref.getDownloadURL();
       }
-      if (kIsWeb) {
-        html.window.open(viewUrl, '_blank');
+      final Uri uri = Uri.parse(viewUrl);
+      if (await canLaunchUrl(uri)) {
+        // externalApplication fuerza abrir en una nueva pestaña/navegador
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Visualización solo disponible en Web')));
+        throw 'No se pudo lanzar la URL: $viewUrl';
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No se pudo abrir el CV: $e')));
@@ -280,10 +283,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
     try {
       final ref = fs.FirebaseStorage.instance.ref().child('foto_perfil/${usuario.uid}/avatar.jpg');
       final url = await ref.getDownloadURL();
-      if (kIsWeb) {
-        html.window.open(url, '_blank');
+      final Uri uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Visualización solo disponible en Web')));
+        throw 'No se pudo lanzar la URL de la foto';
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No se pudo abrir la foto: $e')));

@@ -13,12 +13,18 @@ class UserDataProvider extends ChangeNotifier {
   List<Map<String, dynamic>>? _habilidadesDisponibles;
   bool _habilidadesCargadas = false;
 
+  // Cache de roles disponibles para evitar múltiples consultas
+  List<Map<String, dynamic>>? _rolesDisponibles;
+  bool _rolesCargados = false;
+
   String? get nombreUsuario => _nombreUsuario;
   int? get idUsuario => _idUsuario;
   String? get rol => _rol;
   int? get idRol => _idRol;
   List<Map<String, dynamic>>? get habilidadesDisponibles => _habilidadesDisponibles;
   bool get habilidadesCargadas => _habilidadesCargadas;
+  List<Map<String, dynamic>>? get rolesDisponibles => _rolesDisponibles;
+  bool get rolesCargados => _rolesCargados;
 
   Future<Map<String, String>> getAuthHeaders() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -45,8 +51,8 @@ class UserDataProvider extends ChangeNotifier {
       final headers = await getAuthHeaders();
 
       final response = await http.get(
-        //Uri.parse('http://localhost:3000/api/usuarios/uid/${user.uid}'), //movil
-        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/uid/${user.uid}'), //web
+        Uri.parse('http://localhost:3000/api/usuarios/uid/${user.uid}'), //movil
+        //Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/uid/${user.uid}'), //web
         headers: headers,
       );
       final responseDecoded = jsonDecode(response.body);
@@ -82,6 +88,28 @@ class UserDataProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> preloadRoles() async {
+    if (_rolesCargados) return;
+    try {
+      final headers = await getAuthHeaders();
+
+      final resp = await http.get(
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/roles_trabajo/ver'),
+        headers: headers,
+      );
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        final data = jsonDecode(resp.body) as List;
+        _rolesDisponibles = data.cast<Map<String, dynamic>>();
+        _rolesCargados = true;
+        notifyListeners();
+      } else {
+        print('Error ${resp.statusCode} al precargar roles');
+      }
+    } catch (e) {
+      print('Excepción al precargar roles: $e');
+    }
+  }
+
   // 6. Método para limpiar los datos al cerrar sesión
   void clearData() {
     _nombreUsuario = null;
@@ -90,6 +118,8 @@ class UserDataProvider extends ChangeNotifier {
     _idRol = null;
     _habilidadesDisponibles = null;
     _habilidadesCargadas = false;
+    _rolesDisponibles = null;
+    _rolesCargados = false;
     notifyListeners();
   }
 }

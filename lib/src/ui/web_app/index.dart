@@ -175,7 +175,10 @@ class _AdminAppState extends State<AdminApp> {
             ),
             GoRoute(
               path: 'vacante_job',
-              builder: (context, state) => const JobDetailPage(),
+              builder: (context, state) {
+                final String id = state.pathParameters['id']!;
+                return JobDetailPage(idVacante: int.parse(id));
+    },
             ),
             GoRoute(
               path: 'perfil_cand', 
@@ -232,8 +235,11 @@ class _AdminAppState extends State<AdminApp> {
               builder: (context, state) => const JobSearchPage(),
             ),
             GoRoute(
-              path: 'vacante_job',
-              builder: (context, state) => const JobDetailPage(),
+              path: 'vacante_job/:id',
+              builder: (context, state) {
+                final String id = state.pathParameters['id']!;
+                return JobDetailPage(idVacante: int.parse(id));
+              },
             ),
             GoRoute(
               path: 'perfil_cand', 

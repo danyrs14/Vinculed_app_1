@@ -123,7 +123,7 @@ class _RegisterPageWebRecState extends State<RegisterPageWebRec> {
       return DropdownMenuItem(value: id, child: Text(label));
     }).toList();
 
-    //items.add(const DropdownMenuItem(value: 'agregar', child: Text('Agregar empresa')));
+    items.add(const DropdownMenuItem(value: 'agregar', child: Text('Agregar empresa')));
 
     setState(() {_empresasItems = items; _isLoading = false;});
   }

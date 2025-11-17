@@ -10,6 +10,7 @@ class DropdownInput<T> extends StatelessWidget {
   final T? value;
   final void Function(T?)? onChanged;
   final FormFieldValidator<T>? validator;
+  final Icon? icon; // nuevo icono visual
 
   const DropdownInput({
     Key? key,
@@ -21,52 +22,59 @@ class DropdownInput<T> extends StatelessWidget {
     this.value,
     this.onChanged,
     this.validator,
+    this.icon,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
 
-    Color getTextColor() =>
-        primaryColor ? theme.fuente() : theme.fuente();
-
-    Color getBorderColor() =>
-        primaryColor ? theme.secundario() : theme.secundario();
+    Color getTextColor() => primaryColor ? theme.fuente() : theme.fuente();
+    Color getBorderColor() => primaryColor ? theme.secundario() : theme.secundario();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
       child: DropdownButtonFormField<T>(
         value: value,
         items: items,
         onChanged: enabled ? onChanged : null,
         validator: validator,
         decoration: InputDecoration(
-          isDense: false,
-          labelText: required ? '$title*' : title,
-          labelStyle: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w400,
-            color: Colors.grey,
-            fontFamily: 'Poppins',
-          ),
-          floatingLabelStyle: TextStyle(
-            color: getTextColor(),
-            fontFamily: 'Poppins',
-          ),
-          border: const OutlineInputBorder(),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: getBorderColor()),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: getBorderColor(), width: 1.5),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 18.0,
-            horizontal: 18.0,
-          ),
+          isDense: true,
+            labelText: required ? '$title*' : title,
+            labelStyle: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Colors.grey,
+              fontFamily: 'Poppins',
+            ),
+            floatingLabelStyle: TextStyle(
+              color: getTextColor(),
+              fontFamily: 'Poppins',
+            ),
+            border: const OutlineInputBorder(),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: getBorderColor()),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: getBorderColor(), width: 1.4),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 14.0,
+              horizontal: 12.0,
+            ),
+            prefixIcon: icon != null
+                ? IconTheme(
+                    data: IconThemeData(
+                      color: theme.fuente(),
+                      size: 20,
+                    ),
+                    child: icon!,
+                  )
+                : null,
         ),
         style: TextStyle(
-          fontSize: 18,
+          fontSize: 14,
           color: getTextColor(),
           fontFamily: 'Poppins',
         ),
