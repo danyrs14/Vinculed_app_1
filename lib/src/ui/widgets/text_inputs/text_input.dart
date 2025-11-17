@@ -69,7 +69,7 @@ class TextInput extends StatelessWidget {
             enabled: enabled,
             textAlign: textAlign,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 14,
               fontWeight: FontWeight.w400,
               color: getTextColor(),
               fontFamily: 'Poppins',
@@ -80,7 +80,7 @@ class TextInput extends StatelessWidget {
             decoration: InputDecoration(
               labelText: required ? '$title*' : title,
               labelStyle: TextStyle(
-                fontSize: 18,
+                fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: required ? Colors.red : Colors.grey,
                 fontFamily: 'Poppins',

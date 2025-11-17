@@ -70,13 +70,23 @@ class _RolesMultiDropdownState extends State<RolesMultiDropdown> {
       _error = '';
     });
     try {
-      final headers =await context.read<UserDataProvider>().getAuthHeaders();
+      final userProv = Provider.of<UserDataProvider>(context, listen: false);
+      if (!userProv.rolesCargados) {
+        // Pre-cargar una sola vez (usa idToken internamente)
+        await userProv.preloadRoles();
+      }
+      final cached = userProv.rolesDisponibles;
+      if (cached != null && cached.isNotEmpty) {
+        _options = cached.map((e) => RoleOption.fromJson(e)).toList();
+        setState(() { _loading = false; });
+        return;
+      }
+      // Fallback: si por alguna razón no hay cache, intenta una única petición HTTP
+      final headers = await userProv.getAuthHeaders();
       final res = await http.get(Uri.parse(_endpoint), headers: headers);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = jsonDecode(res.body) as List<dynamic>;
-        _options = data
-            .map((e) => RoleOption.fromJson(e as Map<String, dynamic>))
-            .toList();
+        _options = data.map((e) => RoleOption.fromJson(e as Map<String, dynamic>)).toList();
       } else {
         _error = 'Error ${res.statusCode}';
       }
@@ -134,11 +144,11 @@ class _RolesMultiDropdownState extends State<RolesMultiDropdown> {
     final borderColor = hasError ? Colors.red : theme.secundario();
     final red = Colors.red;
     final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
+      //borderRadius: BorderRadius.circular(8),
       borderSide: BorderSide(color: borderColor),
     );
     final errorBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
+      //borderRadius: BorderRadius.circular(8),
       borderSide: BorderSide(color: red, width: 1.6),
     );
 
@@ -149,20 +159,26 @@ class _RolesMultiDropdownState extends State<RolesMultiDropdown> {
         isEmpty: _selectedIds.isEmpty,
         decoration: InputDecoration(
           labelText: widget.label,
+          labelStyle: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Colors.grey,
+              fontFamily: 'Poppins',
+            ),
           hintText: widget.hintText,
           errorText: widget.errorText,
           border: border,
           enabledBorder: border,
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
+            //borderRadius: BorderRadius.circular(4),
             borderSide: BorderSide(color: borderColor, width: 1.6),
           ),
           errorBorder: errorBorder,
           focusedErrorBorder: errorBorder,
           enabled: widget.enabled,
-          suffixIcon: Icon(Icons.arrow_drop_down, color: borderColor),
+          suffixIcon: Icon(Icons.arrow_drop_down),
           contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         ),
         child: Wrap(
           spacing: 8,
