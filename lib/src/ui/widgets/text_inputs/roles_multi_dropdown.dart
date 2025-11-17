@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
+import 'package:provider/provider.dart';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 
 class RoleOption {
   final int id;
@@ -68,11 +70,7 @@ class _RolesMultiDropdownState extends State<RolesMultiDropdown> {
       _error = '';
     });
     try {
-      final headers = <String, String>{'Content-Type': 'application/json'};
-      final token = widget.authToken;
-      if (token != null && token.isNotEmpty) {
-        headers['Authorization'] = 'Bearer $token';
-      }
+      final headers =await context.read<UserDataProvider>().getAuthHeaders();
       final res = await http.get(Uri.parse(_endpoint), headers: headers);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = jsonDecode(res.body) as List<dynamic>;
