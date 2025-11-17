@@ -68,13 +68,13 @@ class _JobDetailPageState extends State<JobDetailPage> {
 
       if (estaPostulado) {
         // --- CANCELAR POSTULACIÓN (DELETE) ---
-        final uri = Uri.parse('http://localhost:3000/api/alumnos/cancelar_postulacion');
+        final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/cancelar_postulacion');
         // Nota: http.delete soporta body, pero algunos proxies lo bloquean. 
         // Asumimos que tu backend lo soporta como solicitaste.
         res = await http.delete(uri, headers: headers, body: body);
       } else {
         // --- POSTULARSE (POST) ---
-        final uri = Uri.parse('http://localhost:3000/api/alumnos/postularse');
+        final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/postularse');
         res = await http.post(uri, headers: headers, body: body);
       }
 
@@ -117,7 +117,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
     try {
       final userProv = context.read<UserDataProvider>();
       final headers = await userProv.getAuthHeaders();
-      final uri = Uri.parse('http://localhost:3000/api/vacantes/detalles')
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/vacantes/detalles')
           .replace(queryParameters: {'id_vacante': widget.idVacante.toString(), 'id_alumno': userProv.idRol.toString()});
       
       final res = await http.get(uri, headers: headers);

@@ -40,7 +40,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
   List<_HistoryItem> _history = [];
 
   // ===== Estado para resultados reales y paginación =====
-  final String _baseUrl = 'http://localhost:3000/api/vacantes/buscar';
+  final String _baseUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/vacantes/buscar';
   int _page = 1;
   final int _limit = 10;
   String _ordenarPor = 'fecha_publicacion_desc';
@@ -592,7 +592,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
       final idRol = userProv.idRol;
       if (idRol == null) return;
       final headers = await userProv.getAuthHeaders();
-      final uri = Uri.parse('http://localhost:3000/api/alumnos/limpiar_historial');
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/limpiar_historial');
       final res = await http.delete(
         uri,
         headers: headers,
@@ -610,7 +610,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
       final idRol = userProv.idRol;
       if (idRol == null) return;
       final headers = await userProv.getAuthHeaders();
-      final uri = Uri.parse('http://localhost:3000/api/alumnos/borrar_busqueda');
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/borrar_busqueda');
       final res = await http.delete(
         uri,
         headers: headers,
@@ -628,7 +628,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
       final idRol = userProv.idRol;
       if (idRol == null) return;
       final headers = await userProv.getAuthHeaders();
-      final uri = Uri.parse('http://localhost:3000/api/alumnos/historial_busquedas')
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/historial_busquedas')
           .replace(queryParameters: {'id_alumno': idRol.toString(), 'limit': '10'});
       final res = await http.get(uri, headers: headers);
       if (res.statusCode >= 200 && res.statusCode < 300) {
