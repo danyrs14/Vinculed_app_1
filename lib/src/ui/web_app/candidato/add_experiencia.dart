@@ -28,6 +28,7 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
 
   bool _showFooter = false;
   YoutubePlayerController? _ytController;
+  bool _hideYoutube = false; // cuando el modal está abierto
 
   static const double _footerReservedSpace = EscomFooter.height;
   static const double _extraBottomPadding = 24.0;
@@ -189,6 +190,8 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
                                   onChanged: (roles) {
                                     setState(() => _selectedRoles = roles);
                                   },
+                                  onOpen: () => setState(() => _hideYoutube = true),
+                                  onClose: () => setState(() => _hideYoutube = false),
                                 ),
                               ),
                               const SizedBox(height: 14),
@@ -222,11 +225,15 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
                               ),
                               if (_ytController != null) ...[
                                 const SizedBox(height: 12),
-                                ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 560, minHeight: 200),
-                                  child: AspectRatio(
-                                    aspectRatio: 16/9,
-                                    child: YoutubePlayer(controller: _ytController!),
+                                // Envuelto en widget que permite ocultarlo cuando el modal está abierto
+                                Offstage(
+                                  offstage: _hideYoutube,
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(maxWidth: 560, minHeight: 200),
+                                    child: AspectRatio(
+                                      aspectRatio: 16/9,
+                                      child: YoutubePlayer(controller: _ytController!),
+                                    ),
                                   ),
                                 ),
                               ],
