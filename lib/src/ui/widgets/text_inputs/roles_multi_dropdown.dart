@@ -33,9 +33,10 @@ class RolesMultiDropdown extends StatefulWidget {
   final bool enabled;
   final String? authToken;
   final String? errorText;
-  // Nuevo: callbacks para notificar apertura/cierre del modal
   final VoidCallback? onOpen;
   final VoidCallback? onClose;
+  // Nuevo: modo de selección única (por defecto multi)
+  final bool singleSelection;
 
   const RolesMultiDropdown({
     super.key,
@@ -48,6 +49,7 @@ class RolesMultiDropdown extends StatefulWidget {
     this.errorText,
     this.onOpen,
     this.onClose,
+    this.singleSelection = false,
   });
 
   @override
@@ -119,7 +121,6 @@ class _RolesMultiDropdownState extends State<RolesMultiDropdown> {
   Future<void> _openSelector() async {
     await _ensureLoaded();
     if (!mounted) return;
-    // Notificar apertura del modal (para ocultar elementos problemáticos debajo)
     widget.onOpen?.call();
     final selected = Set<int>.from(_selectedIds);
     try {
@@ -132,7 +133,7 @@ class _RolesMultiDropdownState extends State<RolesMultiDropdown> {
           onConfirm: (ids) {
             _selectedIds
               ..clear()
-              ..addAll(ids);
+              ..addAll(widget.singleSelection && ids.isNotEmpty ? {ids.first} : ids);
             final chosen =
                 _options.where((o) => _selectedIds.contains(o.id)).toList();
             widget.onChanged(chosen);
@@ -141,10 +142,10 @@ class _RolesMultiDropdownState extends State<RolesMultiDropdown> {
           },
           errorText: _error,
           loading: _loading,
+          singleSelection: widget.singleSelection,
         ),
       );
     } finally {
-      // Notificar cierre del modal, sin importar cómo se cerró
       widget.onClose?.call();
     }
   }
@@ -243,6 +244,7 @@ class _RolesSelectorDialog extends StatefulWidget {
   final ValueChanged<Set<int>> onConfirm;
   final String errorText;
   final bool loading;
+  final bool singleSelection; // nuevo
 
   const _RolesSelectorDialog({
     required this.options,
@@ -250,6 +252,7 @@ class _RolesSelectorDialog extends StatefulWidget {
     required this.onConfirm,
     required this.errorText,
     required this.loading,
+    required this.singleSelection,
   });
 
   @override
@@ -410,10 +413,15 @@ class _RolesSelectorDialogState extends State<_RolesSelectorDialog> {
                                 value: checked,
                                 onChanged: (v) {
                                   setState(() {
-                                    if (v == true) {
-                                      _selected.add(r.id);
+                                    if (widget.singleSelection) {
+                                      _selected.clear();
+                                      if (v == true) _selected.add(r.id);
                                     } else {
-                                      _selected.remove(r.id);
+                                      if (v == true) {
+                                        _selected.add(r.id);
+                                      } else {
+                                        _selected.remove(r.id);
+                                      }
                                     }
                                   });
                                 },

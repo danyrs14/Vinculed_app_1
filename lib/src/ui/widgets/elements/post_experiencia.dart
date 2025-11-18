@@ -60,6 +60,8 @@ class ExperiencePost extends StatefulWidget {
     // Layout
     this.maxWidth = 520,
     this.padding = const EdgeInsets.all(16),
+    // Control de superposición de iframes (YouTube) cuando hay modales
+    this.hideMediaOverlays = false,
   });
 
   final String authorName;
@@ -100,6 +102,8 @@ class ExperiencePost extends StatefulWidget {
 
   final double maxWidth;
   final EdgeInsets padding;
+  // Ocultar temporalmente contenido embebido (evitar que capture clicks sobre diálogos)
+  final bool hideMediaOverlays;
 
   @override
   State<ExperiencePost> createState() => _ExperiencePostState();
@@ -135,6 +139,9 @@ class _ExperiencePostState extends State<ExperiencePost> {
   int? _replyingTo; // id del comentario/respuesta al que se está respondiendo
   final TextEditingController _replyCtrl = TextEditingController();
   bool _sendingReply = false;
+
+  // Nueva variable para controlar la apertura de diálogos (ej. reporte)
+  bool _modalOpen = false; // para ocultar media durante diálogos locales (reporte)
 
   @override
   void initState() {
@@ -541,19 +548,24 @@ class _ExperiencePostState extends State<ExperiencePost> {
   }
 
   Future<void> _openReportDialog() async {
-    final result = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => ReportContentDialog(
-        idAlumno: widget.idAlumno,
-        idContenido: widget.idPublicacion,
-        tipoContenidoInicial: 'Publicacion',
-      ),
-    );
-    if (result == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Reporte enviado correctamente. Lo revisaremos.')),
+    setState(() { _modalOpen = true; });
+    try {
+      final result = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => ReportContentDialog(
+          idAlumno: widget.idAlumno,
+          idContenido: widget.idPublicacion,
+          tipoContenidoInicial: 'Publicacion',
+        ),
       );
+      if (result == true && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Reporte enviado correctamente. Lo revisaremos.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() { _modalOpen = false; });
     }
   }
 
@@ -561,6 +573,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
     final accent = theme.primario(); // color de acento
+    final suppressMedia = widget.hideMediaOverlays || _modalOpen;
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: widget.maxWidth),
@@ -620,7 +633,26 @@ class _ExperiencePostState extends State<ExperiencePost> {
             // ── Media (opcional)
             if ((widget.mediaUrl ?? '').isNotEmpty) ...[
               const SizedBox(height: 12),
-              MediaContent(url: widget.mediaUrl!),
+              if (suppressMedia)
+                Container(
+                  height: 200,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.black12.withOpacity(.06),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.black12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.ondemand_video, color: Colors.black54),
+                      SizedBox(width: 8),
+                      Text('Contenido multimedia temporalmente deshabilitado'),
+                    ],
+                  ),
+                )
+              else
+                MediaContent(url: widget.mediaUrl!),
             ],
 
             const SizedBox(height: 12),

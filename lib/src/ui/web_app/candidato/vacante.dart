@@ -205,7 +205,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
             case "Mensajes": context.go('/alumno/messages'); break;
             case "Experiencias": context.go('/alumno/experiencias'); break;
             case "FAQ": context.go('/alumno/faq'); break;
-            case "Preferencias": context.go('/alumno/preferences'); break;
+            case "Explorar Puestos en TI": context.go('/alumno/preferences'); break;
           }
         },
       ),

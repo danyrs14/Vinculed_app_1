@@ -86,6 +86,13 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
     try {
       final resp = await http.get(uri, headers: headers);
       if (!mounted) return;
+      if(resp.statusCode == 404){
+        setState(() {
+          _postulaciones = [];
+          _loading = false;
+        });
+        return ;
+      }
       if (resp.statusCode != 200) {
         setState(() {
           _error = 'Error ${resp.statusCode} al obtener datos';
@@ -160,10 +167,102 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
       );
     }
     if (_postulaciones.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 40),
+      final theme = ThemeController.instance;
+      final accent = theme.secundario();
+      final isActivas = _currentTab == 'Activas';
+      final titulo = isActivas ? 'Aún no has aplicado a vacantes activas' : 'No tienes vacantes expiradas';
+      final detalle = isActivas
+          ? 'Explora puestos y encuentra una vacante que se adapte a tu perfil.'
+          : 'Las vacantes que expiran aparecerán aquí para tu historial.';
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 12),
         child: Center(
-          child: Text('Sin postulaciones en esta categoría', style: TextStyle(fontWeight: FontWeight.w600)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: accent.withOpacity(.25), width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(.06),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: accent.withOpacity(.10),
+                      border: Border.all(color: accent.withOpacity(.30), width: 1.2),
+                    ),
+                    child: Icon(
+                      isActivas ? Icons.work_outline : Icons.history_rounded,
+                      size: 42,
+                      color: accent,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    titulo,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: theme.fuente(),
+                      letterSpacing: .3,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    detalle,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.4,
+                      color: theme.fuente().withOpacity(.85),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  if (isActivas)
+                    ElevatedButton.icon(
+                      onPressed: () => context.go('/alumno/busqueda_job'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accent,
+                        foregroundColor: theme.primario(),
+                        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      icon: const Icon(Icons.search_rounded),
+                      label: const Text('Buscar vacantes'),
+                    ),
+                  if (!isActivas)
+                    Text(
+                      'Tip: Cuando una vacante cierre, podrás revisarla aquí.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                        color: theme.fuente().withOpacity(.6),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -204,16 +303,19 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
 
   Widget _tabButton(String label, bool isMobile) {
     final selected = _currentTab == label;
+    final theme = ThemeController.instance;
+    final accent = theme.secundario();
+    final baseBg = theme.primario();
     return ElevatedButton(
       onPressed: () => _changeTab(label),
       style: ElevatedButton.styleFrom(
         elevation: selected ? 2 : 0,
-        backgroundColor: selected ? Colors.blue : Colors.white,
-        foregroundColor: selected ? Colors.white : Colors.blue,
+        backgroundColor: selected ? accent : baseBg,
+        foregroundColor: selected ? theme.primario() : accent,
         padding: EdgeInsets.symmetric(horizontal: isMobile ? 18 : 28, vertical: 14),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: Colors.blue, width: 1.2),
+          side: BorderSide(color: accent, width: 1.2),
         ),
         textStyle: TextStyle(
           fontSize: isMobile ? 14 : 16,
@@ -256,7 +358,7 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
               context.go('/alumno/faq');
               break;
 
-            case "Preferencias":
+            case "Explorar Puestos en TI":
               context.go('/alumno/preferences');
               break;
 

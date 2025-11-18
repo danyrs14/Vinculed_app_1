@@ -22,7 +22,7 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
     "Postulaciones",
     "Experiencias",
     "Mensajes",
-    "Preferencias",
+    "Explorar Puestos en TI",
     "FAQ",
   ];
 
