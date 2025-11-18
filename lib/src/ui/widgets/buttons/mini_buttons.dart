@@ -6,6 +6,8 @@ class MiniButton extends StatelessWidget {
   final bool primaryColor;
   final IconData? icon;
   final Function? onTap;
+  // New: compact style for tight spaces (e.g., mobile headers)
+  final bool dense;
 
   const MiniButton({
     Key? key,
@@ -13,6 +15,7 @@ class MiniButton extends StatelessWidget {
     this.primaryColor = true,
     this.icon,
     this.onTap,
+    this.dense = false,
   }) : super(key: key);
 
   Color getColor() {
@@ -39,35 +42,34 @@ class MiniButton extends StatelessWidget {
         backgroundColor: getColor(), // Fondo del botón
         foregroundColor: getColorText(), // Color del texto
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8), // Bordes redondeados
+          borderRadius: BorderRadius.circular(dense ? 6 : 8), // Bordes
         ),
         padding: EdgeInsets.symmetric(
-            horizontal: 21.0, vertical: 13.0), // Padding del botón
-        minimumSize: Size(0,
-            0), // Permite que el tamaño mínimo sea dinámico según el contenido
-        tapTargetSize:
-        MaterialTapTargetSize.shrinkWrap, // Ajusta el tamaño al contenido
+          horizontal: dense ? 12.0 : 21.0,
+          vertical: dense ? 8.0 : 13.0,
+        ), // Padding del botón
+        minimumSize: const Size(0, 0),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       child: Row(
-        mainAxisSize:
-        MainAxisSize.min, // Ajusta el Row al tamaño mínimo necesario
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (icon != null) ...[
             Icon(
               icon,
-              color: getColorText(), // Usa el color del texto para el ícono
-              size: 20,
+              color: getColorText(),
+              size: dense ? 18 : 20,
             ),
-            SizedBox(width: 8), // Espacio entre el ícono y el texto
+            const SizedBox(width: 6),
           ],
           Text(
             title,
             style: TextStyle(
-              color: getColorText(), // Color del texto
-              fontSize: 13, // Tamaño de la fuente del texto
-              fontWeight: FontWeight.w600, // Peso de la fuente (SemiBold)
-              fontFamily: 'Poppins', // Fuente personalizada
+              color: getColorText(),
+              fontSize: dense ? 12 : 13,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
             ),
           ),
         ],

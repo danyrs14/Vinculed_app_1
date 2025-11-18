@@ -63,6 +63,14 @@ class EscomHeader4 extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: MiniButton(
+            onTap: () => _cerrarSesion(context),
+            title: "Cerrar Sesión",
+            dense: true,
+          ),
+        ),
         PopupMenuButton<String>(
           icon: const Icon(Icons.menu),
           onSelected: (value) => onMenuSelected?.call(value),
@@ -93,6 +101,7 @@ class EscomHeader4 extends StatelessWidget implements PreferredSizeWidget {
           child: MiniButton(
             onTap: () => _cerrarSesion(context),
             title: "Cerrar Sesión",
+            dense: false,
           ),
         ),
         // Campana con badge
