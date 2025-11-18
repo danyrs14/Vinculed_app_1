@@ -175,11 +175,6 @@ class _JobSearchPageState extends State<JobSearchPage> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const CircleAvatar(
-                                      radius: 22,
-                                      backgroundImage: AssetImage('assets/images/amlo.jpg'),
-                                    ),
-                                    const SizedBox(width: 12),
                                     Text(
                                       'Buscar Vacantes',
                                       style: TextStyle(

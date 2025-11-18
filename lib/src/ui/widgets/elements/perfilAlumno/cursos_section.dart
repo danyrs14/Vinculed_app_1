@@ -32,17 +32,18 @@ class CursoItem {
 }
 
 class CursosSection extends StatelessWidget {
-  const CursosSection({super.key, required this.items, required this.emptyText, required this.onUpdated});
+  const CursosSection({super.key, required this.items, required this.emptyText, required this.onUpdated, this.readOnly = false});
   final List<CursoItem> items;
   final String emptyText;
   final VoidCallback onUpdated;
+  final bool readOnly;
 
   String _display(CursoItem c) => '${c.nombre}\n${c.institucion}. ${c.fechaInicio.substring(0, 10)} - ${c.fechaFin.substring(0, 10)}';
 
   Future<void> _pickDate(BuildContext context, TextEditingController controller) async {
     DateTime initial = DateTime.now();
     final txt = controller.text.trim();
-    if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(txt)) {
+    if (RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(txt)) {
       try {
         initial = DateTime.parse(txt);
       } catch (_) {}
@@ -58,7 +59,8 @@ class CursosSection extends StatelessWidget {
     }
   }
 
-  String _fmtDate(DateTime d) => '${d.year.toString().padLeft(4,'0')}-${d.month.toString().padLeft(2,'0')}-${d.day.toString().padLeft(2,'0')}';
+  String _fmtDate(DateTime d) => '${d.year.toString().padLeft(4,'0')}-${d.month.toString().padLeft(2,'0')}-${d.day.toString().padLeft(2,'0')}'
+  ;
 
   void _openEditSelection(BuildContext context) async {
     if (items.isEmpty) {
@@ -108,6 +110,95 @@ class CursosSection extends StatelessWidget {
     if (idx != null) _openEditForm(context, items[idx]);
   }
 
+  void _openViewSelection(BuildContext context) async {
+    if (items.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Visualizar Cursos'),
+          content: const Text('No hay elementos en "Cursos" todavía.'),
+          actions: [
+            SimpleButton(
+              title: 'Cerrar',
+              backgroundColor: Colors.blueGrey,
+              textColor: Colors.white,
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    final idx = await showDialog<int>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Selecciona un curso'),
+        content: SizedBox(
+          width: 460,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: items.length,
+            itemBuilder: (ctx, i) => ListTile(
+              title: Text(_display(items[i])),
+              onTap: () => Navigator.pop(ctx, i),
+            ),
+          ),
+        ),
+        actions: [
+          SimpleButton(
+            title: 'Cerrar',
+            backgroundColor: Colors.blueGrey,
+            textColor: Colors.white,
+            onTap: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+    if (idx != null) _openViewDetails(context, items[idx]);
+  }
+
+  void _openViewDetails(BuildContext context, CursoItem c) {
+    Widget row(String k, String v) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 130, child: Text('$k:', style: const TextStyle(fontWeight: FontWeight.w700))),
+          const SizedBox(width: 8),
+          Expanded(child: Text(v.isEmpty ? '-' : v)),
+        ],
+      ),
+    );
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Detalle de Curso'),
+        content: SizedBox(
+          width: 500,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              row('Nombre', c.nombre),
+              row('Institución', c.institucion),
+              row('Inicio', c.fechaInicio.substring(0,10)),
+              row('Fin', c.fechaFin.substring(0,10)),
+            ],
+          ),
+        ),
+        actions: [
+          SimpleButton(
+            title: 'Cerrar',
+            backgroundColor: Colors.blueGrey,
+            textColor: Colors.white,
+            onTap: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _openEditForm(BuildContext context, CursoItem item) {
     final formKey = GlobalKey<FormState>();
     final nombreCtrl = TextEditingController(text: item.nombre);
@@ -150,7 +241,7 @@ class CursosSection extends StatelessWidget {
                             controller: inicioCtrl,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) return 'Requerido';
-                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(v)) return 'Formato inválido';
+                              if (!RegExp(r'^\\d{4}-\\d{2}-\\d{2}').hasMatch(v)) return 'Formato inválido';
                               return null;
                             },
                           ),
@@ -172,7 +263,7 @@ class CursosSection extends StatelessWidget {
                             controller: finCtrl,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) return 'Requerido';
-                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(v)) return 'Formato inválido';
+                              if (!RegExp(r'^\\d{4}-\\d{2}-\\d{2}').hasMatch(v)) return 'Formato inválido';
                               return null;
                             },
                           ),
@@ -359,7 +450,7 @@ class CursosSection extends StatelessWidget {
                             controller: inicioCtrl,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) return 'Requerida';
-                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(v)) return 'Formato inválido';
+                              if (!RegExp(r'^\\d{4}-\\d{2}-\\d{2}').hasMatch(v)) return 'Formato inválido';
                               return null;
                             },
                           ),
@@ -381,7 +472,7 @@ class CursosSection extends StatelessWidget {
                             controller: finCtrl,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) return 'Requerida';
-                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(v)) return 'Formato inválido';
+                              if (!RegExp(r'^\\d{4}-\\d{2}-\\d{2}').hasMatch(v)) return 'Formato inválido';
                               return null;
                             },
                           ),
@@ -497,17 +588,25 @@ class CursosSection extends StatelessWidget {
             child: Text(emptyText, style: const TextStyle(color: Colors.black54)),
           ),
           const SizedBox(width: 8),
-          IconButton(
-            tooltip: 'Editar',
-            icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
-            onPressed: () => _openEditSelection(context),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            tooltip: 'Agregar',
-            icon: const Icon(Icons.add, size: 18, color: Colors.black54),
-            onPressed: () => _openAddForm(context),
-          ),
+          if (readOnly)
+            IconButton(
+              tooltip: 'Visualizar',
+              icon: const Icon(Icons.visibility_outlined, size: 18, color: Colors.black54),
+              onPressed: () => _openViewSelection(context),
+            )
+          else ...[
+            IconButton(
+              tooltip: 'Editar',
+              icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
+              onPressed: () => _openEditSelection(context),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              tooltip: 'Agregar',
+              icon: const Icon(Icons.add, size: 18, color: Colors.black54),
+              onPressed: () => _openAddForm(context),
+            ),
+          ],
         ],
       );
     }
@@ -531,17 +630,25 @@ class CursosSection extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        IconButton(
-          tooltip: 'Editar lista',
-          icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
-          onPressed: () => _openEditSelection(context),
-        ),
-        const SizedBox(width: 8),
-        IconButton(
-          tooltip: 'Agregar',
-          icon: const Icon(Icons.add, size: 18, color: Colors.black54),
-          onPressed: () => _openAddForm(context),
-        ),
+        if (readOnly)
+          IconButton(
+            tooltip: 'Visualizar',
+            icon: const Icon(Icons.visibility_outlined, size: 18, color: Colors.black54),
+            onPressed: () => _openViewSelection(context),
+          )
+        else ...[
+          IconButton(
+            tooltip: 'Editar lista',
+            icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
+            onPressed: () => _openEditSelection(context),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            tooltip: 'Agregar',
+            icon: const Icon(Icons.add, size: 18, color: Colors.black54),
+            onPressed: () => _openAddForm(context),
+          ),
+        ],
       ],
     );
   }

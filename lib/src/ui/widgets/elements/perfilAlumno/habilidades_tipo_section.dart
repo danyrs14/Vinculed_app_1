@@ -19,6 +19,7 @@ class HabilidadesTipoSection extends StatelessWidget {
     required this.idAlumno,
     required this.emptyText,
     required this.onUpdated,
+    this.readOnly = false,
   });
   final String title;
   final String tipoDisplay; // 'Técnicas' | 'Blandas' | 'Idiomas'
@@ -26,6 +27,7 @@ class HabilidadesTipoSection extends StatelessWidget {
   final int idAlumno;
   final String emptyText;
   final VoidCallback onUpdated;
+  final bool readOnly;
 
   Future<void> _openEditDialog(BuildContext context) async {
     final provider = context.read<UserDataProvider>();
@@ -133,6 +135,40 @@ class HabilidadesTipoSection extends StatelessWidget {
     );
   }
 
+  void _openViewDialog(BuildContext context) {
+    final texts = items.map((e) => e.habilidad).toList();
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Visualizar $title'),
+        content: SizedBox(
+          width: 480,
+          child: texts.isEmpty
+              ? const Text('No hay elementos para visualizar.')
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final t in texts)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Text(t),
+                      ),
+                  ],
+                ),
+        ),
+        actions: [
+          SimpleButton(
+            title: 'Cerrar',
+            backgroundColor: Colors.blueGrey,
+            textColor: Colors.white,
+            onTap: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final texts = items.map((e) => e.habilidad).toList();
@@ -153,11 +189,18 @@ class HabilidadesTipoSection extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          IconButton(
-            tooltip: 'Editar',
-            icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
-            onPressed: () => _openEditDialog(context),
-          ),
+          if (readOnly)
+            IconButton(
+              tooltip: 'Visualizar',
+              icon: const Icon(Icons.visibility_outlined, size: 18, color: Colors.black54),
+              onPressed: () => _openViewDialog(context),
+            )
+          else
+            IconButton(
+              tooltip: 'Editar',
+              icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
+              onPressed: () => _openEditDialog(context),
+            ),
           const SizedBox(width: 8),
         ],
       );
@@ -183,11 +226,18 @@ class HabilidadesTipoSection extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        IconButton(
-          tooltip: 'Editar lista',
-          icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
-          onPressed: () => _openEditDialog(context),
-        ),
+        if (readOnly)
+          IconButton(
+            tooltip: 'Visualizar',
+            icon: const Icon(Icons.visibility_outlined, size: 18, color: Colors.black54),
+            onPressed: () => _openViewDialog(context),
+          )
+        else
+          IconButton(
+            tooltip: 'Editar lista',
+            icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
+            onPressed: () => _openEditDialog(context),
+          ),
         const SizedBox(width: 8),
       ],
     );

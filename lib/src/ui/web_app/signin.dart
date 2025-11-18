@@ -135,7 +135,7 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
       _hasMinLength = value.length >= 8;
       _hasLetter = RegExp(r'[A-Za-z]').hasMatch(value);
       _hasNumber = RegExp(r'\d').hasMatch(value);
-      _hasSpecialChar = RegExp(r'[+@$!%*?&.,;:_\-]').hasMatch(value);
+      _hasSpecialChar = RegExp(r'[@$!%*?&.,;:_\-]').hasMatch(value);
     });
   }
 

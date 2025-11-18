@@ -27,6 +27,7 @@ import 'package:vinculed_app_1/src/ui/web_app/reclutador/ayuda_rec.dart';
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/crear_vacante.dart';
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/messages_rec.dart';
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/mis_vacantes.dart';
+import 'package:vinculed_app_1/src/ui/web_app/reclutador/perfil_candidato.dart';
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/perfil_reclutador.dart';
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/postulaciones.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin.dart';
@@ -322,8 +323,11 @@ class _AdminAppState extends State<AdminApp> {
               builder: (context, state) => const MessagesPageRec(),
             ),
             GoRoute(
-              path: 'per_visible',
-              builder: (context, state) => const PerfilPostuladoPage(),
+              path: 'perfil_candidato/:id_alumno',
+              builder: (context, state) {
+                final idAlumno = state.pathParameters['id_alumno']!;
+                return RecruiterCandidateProfilePage(idAlumno: int.parse(idAlumno));
+              },
             ),
           ],
         ),
