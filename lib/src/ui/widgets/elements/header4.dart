@@ -53,6 +53,16 @@ class EscomHeader4 extends StatelessWidget implements PreferredSizeWidget {
           ? [
         // Campana en móvil
         _notifIcon(context),
+        TextButton(
+          onPressed: onLoginTap,
+          child: Text(
+            "Reportes",
+            style: TextStyle(
+              color: theme.secundario(),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
         PopupMenuButton<String>(
           icon: const Icon(Icons.menu),
           onSelected: (value) => onMenuSelected?.call(value),

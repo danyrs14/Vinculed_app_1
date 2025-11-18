@@ -29,7 +29,7 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
   String? _error;
   List<Map<String, dynamic>> _postulaciones = [];
 
-  // int get _alumnoId => 2; // TODO: obtener id real (idRol) desde controlador/autenticación
+  
   static const _baseUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/postulaciones';
 
   @override

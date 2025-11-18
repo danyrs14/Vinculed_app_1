@@ -242,126 +242,140 @@ class CertificadosSection extends StatelessWidget {
                 ),
               ),
             ),
-            actions: [
-              
-              SimpleButton(
-                title: saving ? 'Eliminando...' : 'Eliminar',
-                icon: Icons.delete_outline,
-                backgroundColor: Colors.redAccent,
-                textColor: Colors.white,
-                onTap: saving
-                    ? null
-                    : () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            title: const Text('Confirmar eliminación'),
-                            content: const Text('¿Eliminar este certificado? Esta acción no se puede deshacer.'),
-                            actions: [
-                              SimpleButton(onTap: () => Navigator.pop(_, true), title: ('Eliminar'), backgroundColor: Colors.redAccent,icon: Icons.delete_outline, textColor: Colors.white,),
-                              SimpleButton(onTap: () => Navigator.pop(_, false), title: ('Cancelar'), backgroundColor: Colors.blueGrey,icon: Icons.close_outlined, textColor: Colors.white,),
-                            ],
-                          ),
-                        );
-                        if (confirm != true) return;
-                        setState(() => saving = true);
-                        try {
-                          final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/certificado/eliminar');
-                          final payload = jsonEncode({
-                            'id_certificado': item.idCertificado,
-                            'id_alumno': item.idAlumno,
-                          });
-                          final headers = await context.read<UserDataProvider>().getAuthHeaders();
-                          final resp = await http.delete(
-                            uri,
-                            headers: headers,
-                            body: payload,
+            actions: (() {
+              final isMobile = MediaQuery.of(ctx).size.width < 700;
+              final buttons = <Widget>[
+                SimpleButton(
+                  title: saving ? 'Eliminando...' : 'Eliminar',
+                  icon: Icons.delete_outline,
+                  backgroundColor: Colors.redAccent,
+                  textColor: Colors.white,
+                  onTap: saving
+                      ? null
+                      : () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text('Confirmar eliminación'),
+                              content: const Text('¿Eliminar este certificado? Esta acción no se puede deshacer.'),
+                              actions: [
+                                SimpleButton(onTap: () => Navigator.pop(_, true), title: ('Eliminar'), backgroundColor: Colors.redAccent,icon: Icons.delete_outline, textColor: Colors.white,),
+                                SimpleButton(onTap: () => Navigator.pop(_, false), title: ('Cancelar'), backgroundColor: Colors.blueGrey,icon: Icons.close_outlined, textColor: Colors.white,),
+                              ],
+                            ),
                           );
-                          if (resp.statusCode >= 200 && resp.statusCode < 300) {
-                            Navigator.pop(dialogCtx);
-                            onUpdated();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Certificado eliminado')));
-                          } else {
+                          if (confirm != true) return;
+                          setState(() => saving = true);
+                          try {
+                            final provider = Provider.of<UserDataProvider>(context, listen: false);
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/certificado/eliminar');
+                            final payload = jsonEncode({
+                              'id_certificado': item.idCertificado,
+                              'id_alumno': item.idAlumno,
+                            });
+                            final headers = await provider.getAuthHeaders();
+                            final resp = await http.delete(
+                              uri,
+                              headers: headers,
+                              body: payload,
+                            );
+                            if (resp.statusCode >= 200 && resp.statusCode < 300) {
+                              Navigator.pop(dialogCtx);
+                              onUpdated();
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Certificado eliminado')));
+                            } else {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al eliminar')));
+                            }
+                          } catch (e) {
                             setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al eliminar')));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
                           }
-                        } catch (e) {
-                          setState(() => saving = false);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
-                        }
-                      },
-              ),
-              SimpleButton(
-                title: 'Cancelar',
-                icon: Icons.close_outlined,
-                backgroundColor: Colors.blueGrey,
-                textColor: Colors.white,
-                onTap: () => Navigator.pop(dialogCtx),
-              ),
-              SimpleButton(
-                title: saving ? 'Guardando...' : 'Guardar',
-                icon: Icons.save_outlined,
-                onTap: saving
-                    ? null
-                    : () async {
-                        if (!formKey.currentState!.validate()) return;
-                        // Validaciones extra entre fechas
-                        if (caducidadCtrl.text.trim().isNotEmpty) {
-                          final exp = DateTime.tryParse(expedicionCtrl.text.trim());
-                          final cad = DateTime.tryParse(caducidadCtrl.text.trim());
-                          if (exp == null || cad == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fechas inválidas')));
-                            return;
+                        },
+                ),
+                SimpleButton(
+                  title: 'Cancelar',
+                  icon: Icons.close_outlined,
+                  backgroundColor: Colors.blueGrey,
+                  textColor: Colors.white,
+                  onTap: () => Navigator.pop(dialogCtx),
+                ),
+                SimpleButton(
+                  title: saving ? 'Guardando...' : 'Guardar',
+                  icon: Icons.save_outlined,
+                  onTap: saving
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          if (caducidadCtrl.text.trim().isNotEmpty) {
+                            final exp = DateTime.tryParse(expedicionCtrl.text.trim());
+                            final cad = DateTime.tryParse(caducidadCtrl.text.trim());
+                            if (exp == null || cad == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fechas inválidas')));
+                              return;
+                            }
+                            if (cad.isBefore(exp)) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Caducidad no puede ser antes de expedición')));
+                              return;
+                            }
                           }
-                          if (cad.isBefore(exp)) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Caducidad no puede ser antes de expedición')));
-                            return;
-                          }
-                        }
-                        setState(() => saving = true);
-                        try {
-                          final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/certificado/actualizar');
-                          final habs = selectedHabOptions.isEmpty
-                              ? <Map<String, dynamic>>[]
-                              : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();
-                          final Map<String, dynamic> payload = {
-                            'id_certificado': item.idCertificado,
-                            'id_alumno': item.idAlumno,
-                            'nombre': nombreCtrl.text.trim(),
-                            'institucion': institucionCtrl.text.trim(),
-                            'fecha_expedicion': expedicionCtrl.text.trim(),
-                            'habilidades_desarrolladas': habs,
-                          };
-                          final cadTxt = caducidadCtrl.text.trim();
-                          if (cadTxt.isNotEmpty) payload['fecha_caducidad'] = cadTxt;
-                          final cred = credencialCtrl.text.trim();
-                          if (cred.isNotEmpty) payload['id_credencial'] = cred;
-                          final urlTxt = urlCtrl.text.trim();
-                          if (urlTxt.isNotEmpty) payload['url_certificado'] = urlTxt;
+                          setState(() => saving = true);
+                          try {
+                            final provider = Provider.of<UserDataProvider>(context, listen: false);
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/certificado/actualizar');
+                            final habs = selectedHabOptions.isEmpty
+                                ? <Map<String, dynamic>>[]
+                                : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();
+                            final Map<String, dynamic> payload = {
+                              'id_certificado': item.idCertificado,
+                              'id_alumno': item.idAlumno,
+                              'nombre': nombreCtrl.text.trim(),
+                              'institucion': institucionCtrl.text.trim(),
+                              'fecha_expedicion': expedicionCtrl.text.trim(),
+                              'habilidades_desarrolladas': habs,
+                            };
+                            final cadTxt = caducidadCtrl.text.trim();
+                            if (cadTxt.isNotEmpty) payload['fecha_caducidad'] = cadTxt;
+                            final cred = credencialCtrl.text.trim();
+                            if (cred.isNotEmpty) payload['id_credencial'] = cred;
+                            final urlTxt = urlCtrl.text.trim();
+                            if (urlTxt.isNotEmpty) payload['url_certificado'] = urlTxt;
 
-                          final headers = await context.read<UserDataProvider>().getAuthHeaders();
-                          final resp = await http.put(
-                            uri,
-                            headers: headers,
-                            body: jsonEncode(payload),
-                          );
-                          if (resp.statusCode == 200) {
-                            Navigator.pop(dialogCtx);
-                            onUpdated();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Certificado actualizado')));
-                          } else {
+                            final headers = await provider.getAuthHeaders();
+                            final resp = await http.put(
+                              uri,
+                              headers: headers,
+                              body: jsonEncode(payload),
+                            );
+                            if (resp.statusCode == 200) {
+                              Navigator.pop(dialogCtx);
+                              onUpdated();
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Certificado actualizado')));
+                            } else {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al actualizar')));
+                            }
+                          } catch (e) {
                             setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al actualizar')));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
                           }
-                        } catch (e) {
-                          setState(() => saving = false);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
-                        }
-                      },
-              ),
-            ],
+                        },
+                ),
+              ];
+              if (isMobile) {
+                return [
+                  Center(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: buttons,
+                    ),
+                  ),
+                ];
+              }
+              return buttons;
+            })(),
           ),
         );
       },
@@ -476,81 +490,97 @@ class CertificadosSection extends StatelessWidget {
                 ),
               ),
             ),
-            actions: [
-              SimpleButton(
-                title: 'Cancelar',
-                icon: Icons.close_outlined,
-                backgroundColor: Colors.blueGrey,
-                textColor: Colors.white,
-                onTap: () => Navigator.pop(dialogCtx),
-              ),
-              SimpleButton(
-                title: saving ? 'Guardando...' : 'Agregar',
-                icon: Icons.add,
-                onTap: saving
-                    ? null
-                    : () async {
-                        if (!formKey.currentState!.validate()) return;
-                        if (caducidadCtrl.text.trim().isNotEmpty) {
-                          final exp = DateTime.tryParse(expedicionCtrl.text.trim());
-                          final cad = DateTime.tryParse(caducidadCtrl.text.trim());
-                          if (exp == null || cad == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fechas inválidas')));
-                            return;
+            actions: (() {
+              final isMobile = MediaQuery.of(ctx).size.width < 700;
+              final buttons = <Widget>[
+                SimpleButton(
+                  title: 'Cancelar',
+                  icon: Icons.close_outlined,
+                  backgroundColor: Colors.blueGrey,
+                  textColor: Colors.white,
+                  onTap: () => Navigator.pop(dialogCtx),
+                ),
+                SimpleButton(
+                  title: saving ? 'Guardando...' : 'Agregar',
+                  icon: Icons.add,
+                  onTap: saving
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          if (caducidadCtrl.text.trim().isNotEmpty) {
+                            final exp = DateTime.tryParse(expedicionCtrl.text.trim());
+                            final cad = DateTime.tryParse(caducidadCtrl.text.trim());
+                            if (exp == null || cad == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fechas inválidas')));
+                              return;
+                            }
+                            if (cad.isBefore(exp)) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Caducidad antes de expedición')));
+                              return;
+                            }
                           }
-                          if (cad.isBefore(exp)) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Caducidad antes de expedición')));
-                            return;
-                          }
-                        }
-                        setState(() => saving = true);
-                        try {
-                          final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final idAlumno = provider.idRol;
-                          if (idAlumno == null) {
-                            setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se encontró id_alumno')));
-                            return;
-                          }
-                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/certificado/agregar');
-                          final habs = selectedHabOptions.isEmpty
-                              ? <Map<String, dynamic>>[]
-                              : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();
-                          final Map<String, dynamic> payload = {
-                            'id_alumno': idAlumno,
-                            'nombre': nombreCtrl.text.trim(),
-                            'institucion': institucionCtrl.text.trim(),
-                            'fecha_expedicion': expedicionCtrl.text.trim(),
-                            'habilidades_desarrolladas': habs,
-                          };
-                          final cadTxt = caducidadCtrl.text.trim();
-                          if (cadTxt.isNotEmpty) payload['fecha_caducidad'] = cadTxt;
-                          final idc = idCredCtrl.text.trim();
-                          if (idc.isNotEmpty) payload['id_credencial'] = idc;
-                          final urlTxt = urlCtrl.text.trim();
-                          if (urlTxt.isNotEmpty) payload['url_certificado'] = urlTxt;
+                          setState(() => saving = true);
+                          try {
+                            final provider = Provider.of<UserDataProvider>(context, listen: false);
+                            final idAlumno = provider.idRol;
+                            if (idAlumno == null) {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se encontró id_alumno')));
+                              return;
+                            }
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/certificado/agregar');
+                            final habs = selectedHabOptions.isEmpty
+                                ? <Map<String, dynamic>>[]
+                                : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();
+                            final Map<String, dynamic> payload = {
+                              'id_alumno': idAlumno,
+                              'nombre': nombreCtrl.text.trim(),
+                              'institucion': institucionCtrl.text.trim(),
+                              'fecha_expedicion': expedicionCtrl.text.trim(),
+                              'habilidades_desarrolladas': habs,
+                            };
+                            final cadTxt = caducidadCtrl.text.trim();
+                            if (cadTxt.isNotEmpty) payload['fecha_caducidad'] = cadTxt;
+                            final idc = idCredCtrl.text.trim();
+                            if (idc.isNotEmpty) payload['id_credencial'] = idc;
+                            final urlTxt = urlCtrl.text.trim();
+                            if (urlTxt.isNotEmpty) payload['url_certificado'] = urlTxt;
 
-                          final headers = await context.read<UserDataProvider>().getAuthHeaders();
-                          final resp = await http.post(
-                            uri,
-                            headers: headers,
-                            body: jsonEncode(payload),
-                          );
-                          if (resp.statusCode >= 200 && resp.statusCode < 300) {
-                            Navigator.pop(dialogCtx);
-                            onUpdated();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Certificado agregado')));
-                          } else {
+                            final headers = await provider.getAuthHeaders();
+                            final resp = await http.post(
+                              uri,
+                              headers: headers,
+                              body: jsonEncode(payload),
+                            );
+                            if (resp.statusCode >= 200 && resp.statusCode < 300) {
+                              Navigator.pop(dialogCtx);
+                              onUpdated();
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Certificado agregado')));
+                            } else {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al agregar')));
+                            }
+                          } catch (e) {
                             setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al agregar')));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
                           }
-                        } catch (e) {
-                          setState(() => saving = false);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
-                        }
-                      },
-              ),
-            ],
+                        },
+                ),
+              ];
+              if (isMobile) {
+                return [
+                  Center(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: buttons,
+                    ),
+                  ),
+                ];
+              }
+              return buttons;
+            })(),
           ),
         );
       },

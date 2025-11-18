@@ -81,7 +81,7 @@ class _AgregarEmpresaPageWebState extends State<AgregarEmpresaPageWeb> {
       final sitio = _sitioWebCtrl.text.trim();
       if (sitio.isNotEmpty) body['sitio_web'] = sitio;
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/empresas/agregar_empresa'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/empresas/agregar_empresa'),
         headers: {
           'Content-Type': 'application/json',
         },
