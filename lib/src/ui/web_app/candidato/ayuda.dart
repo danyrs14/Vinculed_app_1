@@ -59,7 +59,7 @@ class _FaqPageState extends State<FaqPage> {
     return Scaffold(
       backgroundColor: theme.background(),
       appBar: EscomHeader2(
-        onLoginTap: () => context.go('/alumno/perfil_cand '),
+        onLoginTap: () => context.go('/alumno/perfil_cand'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
@@ -83,7 +83,7 @@ class _FaqPageState extends State<FaqPage> {
               context.go('/alumno/faq');
               break;
 
-            case "Preferencias":
+            case "Explorar Puestos en TI":
               context.go('/alumno/preferences');
               break;
 

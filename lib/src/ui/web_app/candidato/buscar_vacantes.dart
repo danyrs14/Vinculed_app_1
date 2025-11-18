@@ -130,7 +130,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
             case "FAQ":
               context.go('/alumno/faq');
               break;
-            case "Preferencias":
+            case "Explorar Puestos en TI":
               context.go('/alumno/preferences');
               break;
           }

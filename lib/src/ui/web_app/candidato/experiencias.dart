@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:vinculed_app_1/src/core/providers/auth_notifier.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -41,6 +40,8 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
 
   // Filtro por roles seleccionados
   List<int> _selectedRoleIds = [];
+
+  bool _anyModalOpen = false; // ocultar media en posts cuando un modal está abierto
 
   @override
   void initState() {
@@ -161,7 +162,8 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
     return '${d.year}-${_two(d.month)}-${_two(d.day)} ${_two(d.hour)}:${_two(d.minute)}';
   }
 
-  Widget _buildPost(Map<String, dynamic> e, bool isMobile) {
+  // Eliminado _buildPost; ahora usamos _buildPostWithHide para poder ocultar media con modales
+  Widget _buildPostWithHide(Map<String, dynamic> e, bool isMobile) {
     final autor = (e['nombre'] ?? '').toString();
     final avatar = (e['url_foto_perfil'] ?? '').toString();
     final contenido = (e['contenido'] ?? '').toString();
@@ -197,13 +199,14 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
           content: titulo.isEmpty ? contenido : '$titulo\n\n$contenido',
           initialLikesCount: reacciones,
           idPublicacion: (e['id_publicacion'] as num?)?.toInt() ?? 0,
-            idAlumno: _idAlumno ?? 0,
+          idAlumno: _idAlumno ?? 0,
           initialIsLiked: isLiked,
           initialIsDisliked: isDisliked,
           commentCountText: comentarios > 0 ? '$comentarios Comentarios' : null,
           totalComments: comentarios,
           maxWidth: 720,
           mediaUrl: e['url_multimedia'] as String?,
+          hideMediaOverlays: _anyModalOpen,
         ),
         const SizedBox(height: 20),
       ],
@@ -238,7 +241,7 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
             case "FAQ":
               context.go('/alumno/faq');
               break;
-            case "Preferencias":
+            case "Explorar Puestos en TI":
               context.go('/alumno/preferences');
               break;
           }
@@ -295,6 +298,8 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
                                         hintText: '',
                                         initialSelectedIds: _selectedRoleIds,
                                         onChanged: (roles) => _applyRoleFilter(roles),
+                                        onOpen: () => setState(() => _anyModalOpen = true),
+                                        onClose: () => setState(() => _anyModalOpen = false),
                                       ),
                                     ),
                                     const SizedBox(width: 12),
@@ -327,7 +332,8 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    for (final e in _items) _buildPost(e, isMobile),
+                                    for (final e in _items)
+                                      _buildPostWithHide(e, isMobile),
                                     if (_loadingMore)
                                       const Padding(
                                         padding: EdgeInsets.only(top: 8),

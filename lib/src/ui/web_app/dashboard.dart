@@ -101,7 +101,7 @@ class _DashboardState extends State<Dashboard> {
             case "Mensajes":
             // context.go('/mensajes');
               break;
-            case "Preferencias":
+            case "Explorar Puestos en TI":
             // context.go('/preferencias');
               break;
             case "FAQ":

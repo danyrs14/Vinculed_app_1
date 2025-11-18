@@ -150,7 +150,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             case "FAQ":
               context.go('/alumno/faq');
               break;
-            case "Preferencias":
+            case "Explorar Puestos en TI":
               context.go('/alumno/preferences');
               break;
           }
