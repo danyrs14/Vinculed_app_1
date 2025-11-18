@@ -46,45 +46,54 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: isMobile
           ? [
-        PopupMenuButton<String>(
-          icon: const Icon(Icons.menu),
-          onSelected: (value) => onMenuSelected?.call(value),
-          itemBuilder: (context) => _menuItems
-              .map((e) => PopupMenuItem<String>(
-            value: e,
-            child: Text(e),
-          ))
-              .toList(),
-        ),
-      ]
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.menu),
+                onSelected: (value) => onMenuSelected?.call(value),
+                itemBuilder: (context) => _menuItems
+                    .map((e) => PopupMenuItem<String>(
+                          value: e,
+                          child: Text(e),
+                        ))
+                    .toList(),
+              ),
+              // Botón cerrar sesión también en móvil (si se usa en pantallas autenticadas)
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 8),
+              //   child: MiniButton(
+              //     onTap: () {/* Implementa cierre desde el caller si aplica */},
+              //     title: "Cerrar Sesión",
+              //     dense: true,
+              //   ),
+              // ),
+            ]
           : [
-        ..._menuItems.map(
-              (label) => _navButton(label, () => onMenuSelected?.call(label)),
-        ),
-        TextButton(
-          onPressed: onLoginTap,
-          child: Text(
-            "Iniciar Sesión",
-            style: TextStyle(
-              color: theme.secundario(),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: MiniButton(
-            onTap: onRegisterTap,
-            title: "Registrarse",
-          ),
-        ),
-        IconButton(
-          tooltip: 'Notificaciones',
-          onPressed: onNotifTap ?? () => _showNotificationsPanel(context),
-          icon: const Icon(Icons.notifications),
-        ),
-        const SizedBox(width: 8),
-      ],
+              ..._menuItems.map(
+                    (label) => _navButton(label, () => onMenuSelected?.call(label)),
+              ),
+              TextButton(
+                onPressed: onLoginTap,
+                child: Text(
+                  "Iniciar Sesión",
+                  style: TextStyle(
+                    color: theme.secundario(),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: MiniButton(
+                  onTap: onRegisterTap,
+                  title: "Registrarse",
+                ),
+              ),
+              IconButton(
+                tooltip: 'Notificaciones',
+                onPressed: onNotifTap ?? () => _showNotificationsPanel(context),
+                icon: const Icon(Icons.notifications),
+              ),
+              const SizedBox(width: 8),
+            ],
     );
   }
 

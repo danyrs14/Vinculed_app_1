@@ -147,11 +147,13 @@ class ExperienciaSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Cargo',
                       controller: cargoCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Cargo requerido' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Empresa',
                       controller: empresaCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Empresa requerida' : null,
@@ -160,6 +162,7 @@ class ExperienciaSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Fecha inicio (YYYY-MM-DD)',
                             controller: inicioCtrl,
                             validator: (v) {
@@ -181,6 +184,7 @@ class ExperienciaSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: false,
                             title: 'Fecha fin (opcional)',
                             controller: finCtrl,
                             validator: (v) {
@@ -199,6 +203,7 @@ class ExperienciaSection extends StatelessWidget {
                       ],
                     ),
                     StyledTextFormField(
+                      isRequired: false,
                       title: 'Descripción (opcional)',
                       controller: descripcionCtrl,
                       validator: (v) {
@@ -217,125 +222,139 @@ class ExperienciaSection extends StatelessWidget {
                 ),
               ),
             ),
-            actions: [
-              
-              SimpleButton(
-                title: saving ? 'Eliminando...' : 'Eliminar',
-                icon: Icons.delete_outline,
-                backgroundColor: Colors.redAccent,
-                textColor: Colors.white,
-                onTap: saving
-                    ? null
-                    : () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            title: const Text('Confirmar eliminación'),
-                            content: const Text('¿Eliminar esta experiencia? Esta acción no se puede deshacer.'),
-                            actions: [
-                              SimpleButton(onTap: () => Navigator.pop(_, true), title: ('Eliminar'), backgroundColor: Colors.redAccent,icon: Icons.delete_outline, textColor: Colors.white,),
-                              SimpleButton(onTap: () => Navigator.pop(_, false), title: ('Cancelar'), backgroundColor: Colors.blueGrey,icon: Icons.close_outlined, textColor: Colors.white,),
-                            ],
-                          ),
-                        );
-                        if (confirm != true) return;
-                        setState(() => saving = true);
-                        try {
-                          final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/experiencia/eliminar');
-                          final payload = jsonEncode({
-                            'id_experiencia': item.idExperiencia,
-                            'id_alumno': item.idAlumno,
-                          });
-
-                          final headers = await provider.getAuthHeaders();
-                          final resp = await http.delete(
-                            uri,
-                            headers: headers,
-                            body: payload,
+            actions: (() {
+              final isMobile = MediaQuery.of(ctx).size.width < 700;
+              final buttons = <Widget>[
+                SimpleButton(
+                  title: saving ? 'Eliminando...' : 'Eliminar',
+                  icon: Icons.delete_outline,
+                  backgroundColor: Colors.redAccent,
+                  textColor: Colors.white,
+                  onTap: saving
+                      ? null
+                      : () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text('Confirmar eliminación'),
+                              content: const Text('¿Eliminar esta experiencia? Esta acción no se puede deshacer.'),
+                              actions: [
+                                SimpleButton(onTap: () => Navigator.pop(_, true), title: ('Eliminar'), backgroundColor: Colors.redAccent,icon: Icons.delete_outline, textColor: Colors.white,),
+                                SimpleButton(onTap: () => Navigator.pop(_, false), title: ('Cancelar'), backgroundColor: Colors.blueGrey,icon: Icons.close_outlined, textColor: Colors.white,),
+                              ],
+                            ),
                           );
-                          if (resp.statusCode >= 200 && resp.statusCode < 300) {
-                            Navigator.pop(dialogCtx);
-                            onUpdated();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Experiencia eliminada')));
-                          } else {
-                            setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al eliminar')));
-                          }
-                        } catch (e) {
-                          setState(() => saving = false);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
-                        }
-                      },
-              ),
-              SimpleButton(
-                title: 'Cancelar',
-                icon: Icons.close_outlined,
-                backgroundColor: Colors.blueGrey,
-                textColor: Colors.white,
-                onTap: () => Navigator.pop(dialogCtx),
-              ),
-              SimpleButton(
-                title: saving ? 'Guardando...' : 'Guardar',
-                icon: Icons.save_outlined,
-                onTap: saving
-                    ? null
-                    : () async {
-                        if (!formKey.currentState!.validate()) return;
-                        // Validaciones extra orden fechas si fin existe
-                        if (finCtrl.text.trim().isNotEmpty) {
-                          final ini = DateTime.tryParse(inicioCtrl.text.trim());
-                          final fin = DateTime.tryParse(finCtrl.text.trim());
-                          if (ini == null || fin == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fechas inválidas')));
-                            return;
-                          }
-                          if (fin.isBefore(ini)) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fin antes de inicio')));
-                            return;
-                          }
-                        }
-                        setState(() => saving = true);
-                        try {
-                          final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/experiencia/actualizar');
-                          final habs = selectedHabOptions.isEmpty
-                              ? <Map<String, dynamic>>[]
-                              : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();
-                          final Map<String, dynamic> payload = {
-                            'id_experiencia': item.idExperiencia,
-                            'id_alumno': item.idAlumno,
-                            'cargo': cargoCtrl.text.trim(),
-                            'empresa': empresaCtrl.text.trim(),
-                            'fecha_inicio': inicioCtrl.text.trim(),
-                            'habilidades_desarrolladas': habs,
-                          };
-                          final finTxt = finCtrl.text.trim();
-                          if (finTxt.isNotEmpty) payload['fecha_fin'] = finTxt;
-                          final descTxt = descripcionCtrl.text.trim();
-                          if (descTxt.isNotEmpty) payload['descripcion'] = descTxt;
+                          if (confirm != true) return;
+                          setState(() => saving = true);
+                          try {
+                            final provider = Provider.of<UserDataProvider>(context, listen: false);
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/experiencia/eliminar');
+                            final payload = jsonEncode({
+                              'id_experiencia': item.idExperiencia,
+                              'id_alumno': item.idAlumno,
+                            });
 
-                          final headers = await provider.getAuthHeaders();
-                          final resp = await http.put(
-                            uri,
-                            headers: headers,
-                            body: jsonEncode(payload),
-                          );
-                          if (resp.statusCode == 200) {
-                            Navigator.pop(dialogCtx);
-                            onUpdated();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Experiencia actualizada')));
-                          } else {
+                            final headers = await provider.getAuthHeaders();
+                            final resp = await http.delete(
+                              uri,
+                              headers: headers,
+                              body: payload,
+                            );
+                            if (resp.statusCode >= 200 && resp.statusCode < 300) {
+                              Navigator.pop(dialogCtx);
+                              onUpdated();
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Experiencia eliminada')));
+                            } else {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al eliminar')));
+                            }
+                          } catch (e) {
                             setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al actualizar')));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
                           }
-                        } catch (e) {
-                          setState(() => saving = false);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
-                        }
-                      },
-              ),
-            ],
+                        },
+                ),
+                SimpleButton(
+                  title: 'Cancelar',
+                  icon: Icons.close_outlined,
+                  backgroundColor: Colors.blueGrey,
+                  textColor: Colors.white,
+                  onTap: () => Navigator.pop(dialogCtx),
+                ),
+                SimpleButton(
+                  title: saving ? 'Guardando...' : 'Guardar',
+                  icon: Icons.save_outlined,
+                  onTap: saving
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          if (finCtrl.text.trim().isNotEmpty) {
+                            final ini = DateTime.tryParse(inicioCtrl.text.trim());
+                            final fin = DateTime.tryParse(finCtrl.text.trim());
+                            if (ini == null || fin == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fechas inválidas')));
+                              return;
+                            }
+                            if (fin.isBefore(ini)) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fin antes de inicio')));
+                              return;
+                            }
+                          }
+                          setState(() => saving = true);
+                          try {
+                            final provider = Provider.of<UserDataProvider>(context, listen: false);
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/experiencia/actualizar');
+                            final habs = selectedHabOptions.isEmpty
+                                ? <Map<String, dynamic>>[]
+                                : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();
+                            final Map<String, dynamic> payload = {
+                              'id_experiencia': item.idExperiencia,
+                              'id_alumno': item.idAlumno,
+                              'cargo': cargoCtrl.text.trim(),
+                              'empresa': empresaCtrl.text.trim(),
+                              'fecha_inicio': inicioCtrl.text.trim(),
+                              'habilidades_desarrolladas': habs,
+                            };
+                            final finTxt = finCtrl.text.trim();
+                            if (finTxt.isNotEmpty) payload['fecha_fin'] = finTxt;
+                            final descTxt = descripcionCtrl.text.trim();
+                            if (descTxt.isNotEmpty) payload['descripcion'] = descTxt;
+
+                            final headers = await provider.getAuthHeaders();
+                            final resp = await http.put(
+                              uri,
+                              headers: headers,
+                              body: jsonEncode(payload),
+                            );
+                            if (resp.statusCode == 200) {
+                              Navigator.pop(dialogCtx);
+                              onUpdated();
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Experiencia actualizada')));
+                            } else {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al actualizar')));
+                            }
+                          } catch (e) {
+                            setState(() => saving = false);
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
+                          }
+                        },
+                ),
+              ];
+              if (isMobile) {
+                return [
+                  Center(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: buttons,
+                    ),
+                  ),
+                ];
+              }
+              return buttons;
+            })(),
           ),
         );
       },
@@ -367,11 +386,13 @@ class ExperienciaSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Cargo',
                       controller: cargoCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Cargo requerido' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Empresa',
                       controller: empresaCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Empresa requerida' : null,
@@ -380,6 +401,7 @@ class ExperienciaSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Fecha inicio (YYYY-MM-DD)',
                             controller: inicioCtrl,
                             validator: (v) {
@@ -401,6 +423,7 @@ class ExperienciaSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: false,
                             title: 'Fecha fin (opcional)',
                             controller: finCtrl,
                             validator: (v) {
@@ -419,6 +442,7 @@ class ExperienciaSection extends StatelessWidget {
                       ],
                     ),
                     StyledTextFormField(
+                      isRequired: false,
                       title: 'Descripción (opcional)',
                       controller: descripcionCtrl,
                       validator: (v) {
@@ -437,79 +461,95 @@ class ExperienciaSection extends StatelessWidget {
                 ),
               ),
             ),
-            actions: [
-              SimpleButton(
-                title: 'Cancelar',
-                icon: Icons.close_outlined,
-                backgroundColor: Colors.blueGrey,
-                textColor: Colors.white,
-                onTap: () => Navigator.pop(dialogCtx),
-              ),
-              SimpleButton(
-                title: saving ? 'Guardando...' : 'Agregar',
-                icon: Icons.add,
-                onTap: saving
-                    ? null
-                    : () async {
-                        if (!formKey.currentState!.validate()) return;
-                        if (finCtrl.text.trim().isNotEmpty) {
-                          final ini = DateTime.tryParse(inicioCtrl.text.trim());
-                          final fin = DateTime.tryParse(finCtrl.text.trim());
-                          if (ini == null || fin == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fechas inválidas')));
-                            return;
+            actions: (() {
+              final isMobile = MediaQuery.of(ctx).size.width < 700;
+              final buttons = <Widget>[
+                SimpleButton(
+                  title: 'Cancelar',
+                  icon: Icons.close_outlined,
+                  backgroundColor: Colors.blueGrey,
+                  textColor: Colors.white,
+                  onTap: () => Navigator.pop(dialogCtx),
+                ),
+                SimpleButton(
+                  title: saving ? 'Guardando...' : 'Agregar',
+                  icon: Icons.add,
+                  onTap: saving
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          if (finCtrl.text.trim().isNotEmpty) {
+                            final ini = DateTime.tryParse(inicioCtrl.text.trim());
+                            final fin = DateTime.tryParse(finCtrl.text.trim());
+                            if (ini == null || fin == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fechas inválidas')));
+                              return;
+                            }
+                            if (fin.isBefore(ini)) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fin antes de inicio')));
+                              return;
+                            }
                           }
-                          if (fin.isBefore(ini)) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fin antes de inicio')));
-                            return;
-                          }
-                        }
-                        setState(() => saving = true);
-                        try {
-                          final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final idAlumno = provider.idRol;
-                          if (idAlumno == null) {
-                            setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se encontró id_alumno')));
-                            return;
-                          }
-                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/experiencia/agregar');
-                          final habs = selectedHabOptions.isEmpty
-                              ? <Map<String, dynamic>>[]
-                              : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();
-                          final Map<String, dynamic> payload = {
-                            'id_alumno': idAlumno,
-                            'cargo': cargoCtrl.text.trim(),
-                            'empresa': empresaCtrl.text.trim(),
-                            'fecha_inicio': inicioCtrl.text.trim(),
-                            'habilidades_desarrolladas': habs,
-                          };
-                          final finTxt = finCtrl.text.trim();
-                          if (finTxt.isNotEmpty) payload['fecha_fin'] = finTxt;
-                          final descTxt = descripcionCtrl.text.trim();
-                          if (descTxt.isNotEmpty) payload['descripcion'] = descTxt;
+                          setState(() => saving = true);
+                          try {
+                            final provider = Provider.of<UserDataProvider>(context, listen: false);
+                            final idAlumno = provider.idRol;
+                            if (idAlumno == null) {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se encontró id_alumno')));
+                              return;
+                            }
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/experiencia/agregar');
+                            final habs = selectedHabOptions.isEmpty
+                                ? <Map<String, dynamic>>[]
+                                : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();
+                            final Map<String, dynamic> payload = {
+                              'id_alumno': idAlumno,
+                              'cargo': cargoCtrl.text.trim(),
+                              'empresa': empresaCtrl.text.trim(),
+                              'fecha_inicio': inicioCtrl.text.trim(),
+                              'habilidades_desarrolladas': habs,
+                            };
+                            final finTxt = finCtrl.text.trim();
+                            if (finTxt.isNotEmpty) payload['fecha_fin'] = finTxt;
+                            final descTxt = descripcionCtrl.text.trim();
+                            if (descTxt.isNotEmpty) payload['descripcion'] = descTxt;
 
-                          final headers = await provider.getAuthHeaders();
-                          final resp = await http.post(
-                            uri,
-                            headers: headers,
-                            body: jsonEncode(payload),
-                          );
-                          if (resp.statusCode >= 200 && resp.statusCode < 300) {
-                            Navigator.pop(dialogCtx);
-                            onUpdated();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Experiencia agregada')));
-                          } else {
+                            final headers = await provider.getAuthHeaders();
+                            final resp = await http.post(
+                              uri,
+                              headers: headers,
+                              body: jsonEncode(payload),
+                            );
+                            if (resp.statusCode >= 200 && resp.statusCode < 300) {
+                              Navigator.pop(dialogCtx);
+                              onUpdated();
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Experiencia agregada')));
+                            } else {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al agregar')));
+                            }
+                          } catch (e) {
                             setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al agregar')));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
                           }
-                        } catch (e) {
-                          setState(() => saving = false);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
-                        }
-                      },
-              ),
-            ],
+                        },
+                ),
+              ];
+              if (isMobile) {
+                return [
+                  Center(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: buttons,
+                    ),
+                  ),
+                ];
+              }
+              return buttons;
+            })(),
           ),
         );
       },

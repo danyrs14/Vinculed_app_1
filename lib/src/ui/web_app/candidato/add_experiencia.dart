@@ -168,6 +168,7 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
                               ConstrainedBox(
                                 constraints: const BoxConstraints(maxWidth: 560),
                                 child: StyledTextFormField(
+                                  isRequired: true,
                                   controller: _titleCtrl,
                                   title: 'Título',
                                   maxLength: 120,
@@ -204,6 +205,7 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
                                   children: [
                                     Expanded(
                                       child: StyledTextFormField(
+                                        isRequired: false,
                                         controller: _youtubeCtrl,
                                         title: 'URL de YouTube (opcional)',
                                         keyboardType: TextInputType.url,

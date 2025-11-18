@@ -12,6 +12,7 @@ class StyledTextFormField extends StatefulWidget {
   final bool isPasswordField;
   final int? maxLines;
   final int? maxLength;
+  final bool? isRequired;
 
   const StyledTextFormField({
     Key? key,
@@ -25,6 +26,7 @@ class StyledTextFormField extends StatefulWidget {
     this.isPasswordField = false,
     this.maxLines,
     this.maxLength,
+    this.isRequired,
   }) : super(key: key);
 
   @override
@@ -63,7 +65,7 @@ class _StyledTextFormFieldState extends State<StyledTextFormField> {
           fontFamily: 'Poppins',
         ),
         decoration: InputDecoration(
-          labelText: isRequired ? '${widget.title}*' : widget.title,
+          labelText: widget.isRequired! ? '${widget.title}*' : widget.title,
           labelStyle: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w400,

@@ -830,57 +830,72 @@ class _UserProfilePageState extends State<UserProfilePage> {
     await showDialog(
       context: context,
       builder: (dctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Editar Ciudad y Entidad'),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                StyledTextFormField(
-                  title: 'Ciudad',
-                  controller: ciudadCtrl,
-                  validator: (v) {
-                    final had = (p.ciudad != null && p.ciudad!.trim().isNotEmpty);
-                    if (had && (v == null || v.trim().isEmpty)) return 'No puede quedar vacío';
-                    return null;
+        builder: (ctx, setState) {
+          final isMobile = MediaQuery.of(ctx).size.width < 700;
+          final cancelarBtn = SimpleButton(title: 'Cancelar', icon: Icons.close_outlined, backgroundColor: Colors.blueGrey, textColor: Colors.white, onTap: () => Navigator.pop(dctx));
+          final guardarBtn = SimpleButton(
+            title: saving ? 'Guardando...' : 'Guardar',
+            icon: Icons.save_outlined,
+            onTap: saving
+                ? null
+                : () async {
+                    if (!formKey.currentState!.validate()) return;
+                    setState(() => saving = true);
+                    try {
+                      await _saveCiudadEntidad(idAlumno: p.idAlumno, ciudad: ciudadCtrl.text.trim(), entidad: entidadCtrl.text.trim());
+                      Navigator.pop(dctx);
+                      await _fetchPerfil(p.idAlumno);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ciudad/Entidad actualizadas')));
+                    } catch (e) {
+                      setState(() => saving = false);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    }
                   },
-                ),
-                StyledTextFormField(
-                  title: 'Entidad',
-                  controller: entidadCtrl,
-                  validator: (v) {
-                    final had = (p.entidad != null && p.entidad!.trim().isNotEmpty);
-                    if (had && (v == null || v.trim().isEmpty)) return 'No puede quedar vacío';
-                    return null;
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            SimpleButton(title: 'Cancelar', icon: Icons.close_outlined, backgroundColor: Colors.blueGrey, textColor: Colors.white, onTap: () => Navigator.pop(dctx)),
-            SimpleButton(
-              title: saving ? 'Guardando...' : 'Guardar',
-              icon: Icons.save_outlined,
-              onTap: saving
-                  ? null
-                  : () async {
-                      if (!formKey.currentState!.validate()) return;
-                      setState(() => saving = true);
-                      try {
-                        await _saveCiudadEntidad(idAlumno: p.idAlumno, ciudad: ciudadCtrl.text.trim(), entidad: entidadCtrl.text.trim());
-                        Navigator.pop(dctx);
-                        await _fetchPerfil(p.idAlumno);
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ciudad/Entidad actualizadas')));
-                      } catch (e) {
-                        setState(() => saving = false);
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                      }
+          );
+          return AlertDialog(
+            title: const Text('Editar Ciudad y Entidad'),
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  StyledTextFormField(
+                    isRequired: true,
+                    title: 'Ciudad',
+                    controller: ciudadCtrl,
+                    validator: (v) {
+                      final had = (p.ciudad != null && p.ciudad!.trim().isNotEmpty);
+                      if (had && (v == null || v.trim().isEmpty)) return 'No puede quedar vacío';
+                      return null;
                     },
+                  ),
+                  StyledTextFormField(
+                    isRequired: true,
+                    title: 'Entidad',
+                    controller: entidadCtrl,
+                    validator: (v) {
+                      final had = (p.entidad != null && p.entidad!.trim().isNotEmpty);
+                      if (had && (v == null || v.trim().isEmpty)) return 'No puede quedar vacío';
+                      return null;
+                    },
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+            actions: isMobile
+                ? [
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [cancelarBtn, guardarBtn],
+                      ),
+                    ),
+                  ]
+                : [cancelarBtn, guardarBtn],
+          );
+        },
       ),
     );
   }
@@ -892,45 +907,59 @@ class _UserProfilePageState extends State<UserProfilePage> {
     await showDialog(
       context: context,
       builder: (dctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Editar Teléfono'),
-          content: Form(
-            key: formKey,
-            child: StyledTextFormField(
-              title: 'Teléfono',
-              controller: telCtrl,
-              validator: (v) {
-                // simple validation optional
-                if (v != null && v.trim().isNotEmpty && !RegExp(r'^[0-9+\-\s]{10}$').hasMatch(v.trim())) {
-                  return 'Teléfono inválido';
-                }
-                return null;
-              },
+        builder: (ctx, setState) {
+          final isMobile = MediaQuery.of(ctx).size.width < 700;
+          final cancelarBtn = SimpleButton(title: 'Cancelar', icon: Icons.close_outlined, backgroundColor: Colors.blueGrey, textColor: Colors.white, onTap: () => Navigator.pop(dctx));
+          final guardarBtn = SimpleButton(
+            title: saving ? 'Guardando...' : 'Guardar',
+            icon: Icons.save_outlined,
+            onTap: saving
+                ? null
+                : () async {
+                    if (!formKey.currentState!.validate()) return;
+                    setState(() => saving = true);
+                    try {
+                      await _saveTelefono(idAlumno: p.idAlumno, telefono: telCtrl.text.trim());
+                      Navigator.pop(dctx);
+                      await _fetchPerfil(p.idAlumno);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Teléfono actualizado')));
+                    } catch (e) {
+                      setState(() => saving = false);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    }
+                  },
+          );
+          return AlertDialog(
+            title: const Text('Editar Teléfono'),
+            content: Form(
+              key: formKey,
+              child: StyledTextFormField(
+                isRequired: true,
+                title: 'Teléfono',
+                controller: telCtrl,
+                validator: (v) {
+                  // simple validation optional
+                  if (v != null && v.trim().isNotEmpty && !RegExp(r'^[0-9+\-\s]{10}$').hasMatch(v.trim())) {
+                    return 'Teléfono inválido';
+                  }
+                  return null;
+                },
+              ),
             ),
-          ),
-          actions: [
-            SimpleButton(title: 'Cancelar', icon: Icons.close_outlined, backgroundColor: Colors.blueGrey, textColor: Colors.white, onTap: () => Navigator.pop(dctx)),
-            SimpleButton(
-              title: saving ? 'Guardando...' : 'Guardar',
-              icon: Icons.save_outlined,
-              onTap: saving
-                  ? null
-                  : () async {
-                      if (!formKey.currentState!.validate()) return;
-                      setState(() => saving = true);
-                      try {
-                        await _saveTelefono(idAlumno: p.idAlumno, telefono: telCtrl.text.trim());
-                        Navigator.pop(dctx);
-                        await _fetchPerfil(p.idAlumno);
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Teléfono actualizado')));
-                      } catch (e) {
-                        setState(() => saving = false);
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                      }
-                    },
-            ),
-          ],
-        ),
+            actions: isMobile
+                ? [
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [cancelarBtn, guardarBtn],
+                      ),
+                    ),
+                  ]
+                : [cancelarBtn, guardarBtn],
+          );
+        },
       ),
     );
   }
@@ -941,46 +970,59 @@ class _UserProfilePageState extends State<UserProfilePage> {
     await showDialog(
       context: context,
       builder: (dctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Editar Semestre Actual'),
-          content: DropdownInput<String>(
-            value: selected,
-            title: 'Selecciona semestre (1-12)',
-            items: [for (var i = 1; i <= 12; i++) DropdownMenuItem(value: '$i', child: Text('$i'))],
-            onChanged: (v) => setState(() => selected = v),
-          ),
-          actions: [
-            SimpleButton(title: 'Cancelar', icon: Icons.close_outlined, backgroundColor: Colors.blueGrey, textColor: Colors.white, onTap: () => Navigator.pop(dctx)),
-            SimpleButton(
-              title: saving ? 'Guardando...' : 'Guardar',
-              icon: Icons.save_outlined,
-              onTap: saving
-                  ? null
-                  : () async {
-                      final had = p.semestreActual != null; // si ya tenía valor, no permitir vacío
-                      if (had && (selected == null || selected!.trim().isEmpty)) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('El semestre no puede quedar vacío')));
-                        return;
-                      }
-                      if (selected == null || selected!.trim().isEmpty) {
-                        // permitir si no tenía; pero si no selecciona nada, no hacemos PUT
-                        Navigator.pop(dctx);
-                        return;
-                      }
-                      setState(() => saving = true);
-                      try {
-                        await _saveSemestre(idAlumno: p.idAlumno, semestre: selected!);
-                        Navigator.pop(dctx);
-                        await _fetchPerfil(p.idAlumno);
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Semestre actualizado')));
-                      } catch (e) {
-                        setState(() => saving = false);
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                      }
-                    },
+        builder: (ctx, setState) {
+          final isMobile = MediaQuery.of(ctx).size.width < 700;
+          final cancelarBtn = SimpleButton(title: 'Cancelar', icon: Icons.close_outlined, backgroundColor: Colors.blueGrey, textColor: Colors.white, onTap: () => Navigator.pop(dctx));
+          final guardarBtn = SimpleButton(
+            title: saving ? 'Guardando...' : 'Guardar',
+            icon: Icons.save_outlined,
+            onTap: saving
+                ? null
+                : () async {
+                    final had = p.semestreActual != null; // si ya tenía valor, no permitir vacío
+                    if (had && (selected == null || selected!.trim().isEmpty)) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('El semestre no puede quedar vacío')));
+                      return;
+                    }
+                    if (selected == null || selected!.trim().isEmpty) {
+                      // permitir si no tenía; pero si no selecciona nada, no hacemos PUT
+                      Navigator.pop(dctx);
+                      return;
+                    }
+                    setState(() => saving = true);
+                    try {
+                      await _saveSemestre(idAlumno: p.idAlumno, semestre: selected!);
+                      Navigator.pop(dctx);
+                      await _fetchPerfil(p.idAlumno);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Semestre actualizado')));
+                    } catch (e) {
+                      setState(() => saving = false);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    }
+                  },
+          );
+          return AlertDialog(
+            title: const Text('Editar Semestre Actual'),
+            content: DropdownInput<String>(
+              value: selected,
+              title: 'Selecciona semestre (1-12)',
+              items: [for (var i = 1; i <= 12; i++) DropdownMenuItem(value: '$i', child: Text('$i'))],
+              onChanged: (v) => setState(() => selected = v),
             ),
-          ],
-        ),
+            actions: isMobile
+                ? [
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [cancelarBtn, guardarBtn],
+                      ),
+                    ),
+                  ]
+                : [cancelarBtn, guardarBtn],
+          );
+        },
       ),
     );
   }
@@ -992,47 +1034,61 @@ class _UserProfilePageState extends State<UserProfilePage> {
     await showDialog(
       context: context,
       builder: (dctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Editar Descripción'),
-          content: Form(
-            key: formKey,
-            child: SizedBox(
-              width: 500,
-              child: StyledTextFormField(
-                title: 'Descripción',
-                controller: descCtrl,
-                maxLines: 6,
-                validator: (v) {
-                  final had = (p.descripcion != null && p.descripcion!.trim().isNotEmpty);
-                  if (had && (v == null || v.trim().isEmpty)) return 'No puede quedar vacío';
-                  return null;
-                },
+        builder: (ctx, setState) {
+          final isMobile = MediaQuery.of(ctx).size.width < 700;
+          final cancelarBtn = SimpleButton(title: 'Cancelar', icon: Icons.close_outlined, backgroundColor: Colors.blueGrey, textColor: Colors.white, onTap: () => Navigator.pop(dctx));
+          final guardarBtn = SimpleButton(
+            title: saving ? 'Guardando...' : 'Guardar',
+            icon: Icons.save_outlined,
+            onTap: saving
+                ? null
+                : () async {
+                    if (!formKey.currentState!.validate()) return;
+                    setState(() => saving = true);
+                    try {
+                      await _saveDescripcion(idAlumno: p.idAlumno, descripcion: descCtrl.text.trim());
+                      Navigator.pop(dctx);
+                      await _fetchPerfil(p.idAlumno);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Descripción actualizada')));
+                    } catch (e) {
+                      setState(() => saving = false);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    }
+                  },
+          );
+          return AlertDialog(
+            title: const Text('Editar Descripción'),
+            content: Form(
+              key: formKey,
+              child: SizedBox(
+                width: 500,
+                child: StyledTextFormField(
+                  isRequired: true,
+                  title: 'Descripción',
+                  controller: descCtrl,
+                  maxLines: 6,
+                  validator: (v) {
+                    final had = (p.descripcion != null && p.descripcion!.trim().isNotEmpty);
+                    if (had && (v == null || v.trim().isEmpty)) return 'No puede quedar vacío';
+                    return null;
+                  },
+                ),
               ),
             ),
-          ),
-          actions: [
-            SimpleButton(title: 'Cancelar', icon: Icons.close_outlined, backgroundColor: Colors.blueGrey, textColor: Colors.white, onTap: () => Navigator.pop(dctx)),
-            SimpleButton(
-              title: saving ? 'Guardando...' : 'Guardar',
-              icon: Icons.save_outlined,
-              onTap: saving
-                  ? null
-                  : () async {
-                      if (!formKey.currentState!.validate()) return;
-                      setState(() => saving = true);
-                      try {
-                        await _saveDescripcion(idAlumno: p.idAlumno, descripcion: descCtrl.text.trim());
-                        Navigator.pop(dctx);
-                        await _fetchPerfil(p.idAlumno);
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Descripción actualizada')));
-                      } catch (e) {
-                        setState(() => saving = false);
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                      }
-                    },
-            ),
-          ],
-        ),
+            actions: isMobile
+                ? [
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [cancelarBtn, guardarBtn],
+                      ),
+                    ),
+                  ]
+                : [cancelarBtn, guardarBtn],
+          );
+        },
       ),
     );
   }
@@ -1046,61 +1102,74 @@ class _UserProfilePageState extends State<UserProfilePage> {
     await showDialog(
       context: context,
       builder: (dctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Editar Fecha de Nacimiento'),
-          content: SizedBox(
-            width: 360,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(selected != null ? _fmtDate(selected!) : 'Sin fecha', style: const TextStyle(color: Colors.black87)),
-                ),
-                IconButton(
-                  tooltip: 'Seleccionar fecha',
-                  icon: const Icon(Icons.calendar_today_outlined),
-                  onPressed: () async {
-                    final now = DateTime.now();
-                    final init = selected ?? DateTime(now.year - 20, now.month, now.day);
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: init,
-                      firstDate: DateTime(1950, 1, 1),
-                      lastDate: DateTime(now.year, now.month, now.day),
-                    );
-                    if (picked != null) setState(() => selected = picked);
+        builder: (ctx, setState) {
+          final isMobile = MediaQuery.of(ctx).size.width < 700;
+          final cancelarBtn = SimpleButton(title: 'Cancelar', icon: Icons.close_outlined, backgroundColor: Colors.blueGrey, textColor: Colors.white, onTap: () => Navigator.pop(dctx));
+          final guardarBtn = SimpleButton(
+            title: saving ? 'Guardando...' : 'Guardar',
+            icon: Icons.save_outlined,
+            onTap: saving
+                ? null
+                : () async {
+                    final had = (p.fechaNacimiento != null && p.fechaNacimiento!.trim().isNotEmpty);
+                    if (had && selected == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('La fecha no puede quedar vacía')));
+                      return;
+                    }
+                    if (selected == null) { Navigator.pop(dctx); return; }
+                    setState(() => saving = true);
+                    try {
+                      await _saveFechaNacimiento(idAlumno: p.idAlumno, fecha: _fmtDate(selected!));
+                      Navigator.pop(dctx);
+                      await _fetchPerfil(p.idAlumno);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fecha de nacimiento actualizada')));
+                    } catch (e) {
+                      setState(() => saving = false);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    }
                   },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            SimpleButton(title: 'Cancelar', icon: Icons.close_outlined, backgroundColor: Colors.blueGrey, textColor: Colors.white, onTap: () => Navigator.pop(dctx)),
-            SimpleButton(
-              title: saving ? 'Guardando...' : 'Guardar',
-              icon: Icons.save_outlined,
-              onTap: saving
-                  ? null
-                  : () async {
-                      final had = (p.fechaNacimiento != null && p.fechaNacimiento!.trim().isNotEmpty);
-                      if (had && selected == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('La fecha no puede quedar vacía')));
-                        return;
-                      }
-                      if (selected == null) { Navigator.pop(dctx); return; }
-                      setState(() => saving = true);
-                      try {
-                        await _saveFechaNacimiento(idAlumno: p.idAlumno, fecha: _fmtDate(selected!));
-                        Navigator.pop(dctx);
-                        await _fetchPerfil(p.idAlumno);
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fecha de nacimiento actualizada')));
-                      } catch (e) {
-                        setState(() => saving = false);
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                      }
+          );
+          return AlertDialog(
+            title: const Text('Editar Fecha de Nacimiento'),
+            content: SizedBox(
+              width: 360,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(selected != null ? _fmtDate(selected!) : 'Sin fecha', style: const TextStyle(color: Colors.black87)),
+                  ),
+                  IconButton(
+                    tooltip: 'Seleccionar fecha',
+                    icon: const Icon(Icons.calendar_today_outlined),
+                    onPressed: () async {
+                      final now = DateTime.now();
+                      final init = selected ?? DateTime(now.year - 20, now.month, now.day);
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: init,
+                        firstDate: DateTime(1950, 1, 1),
+                        lastDate: DateTime(now.year, now.month, now.day),
+                      );
+                      if (picked != null) setState(() => selected = picked);
                     },
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+            actions: isMobile
+                ? [
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [cancelarBtn, guardarBtn],
+                      ),
+                    ),
+                  ]
+                : [cancelarBtn, guardarBtn],
+          );
+        },
       ),
     );
   }
@@ -1209,6 +1278,74 @@ class _BannerSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
 
+    Widget _cvBox({required bool expand}) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 18),
+        height: 44,
+        constraints: expand ? null : const BoxConstraints(maxWidth: 330),
+        decoration: BoxDecoration(
+          color: theme.background(),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFBFD7E2), width: 1.4),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: 12),
+            InkWell(
+              onTap: onUploadCv,
+              child: const Icon(Icons.attach_file, size: 18, color: Colors.black54),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: InkWell(
+                onTap: onViewCv,
+                child: Text(
+                  cvName,
+                  style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+          ],
+        ),
+      );
+    }
+
+    if (isMobile) {
+      return Container(
+        height: 240,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/portada.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Align(
+          alignment: Alignment.bottomLeft,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InkWell(
+                onTap: onUploadPhoto,
+                borderRadius: BorderRadius.circular(58),
+                child: CircleAvatar(
+                  radius: 58,
+                  backgroundImage: urlFoto != null ? NetworkImage(urlFoto!) : null,
+                  child: urlFoto == null ? const Icon(Icons.person, size: 58) : null,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _cvBox(expand: true),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Stack(
       children: [
         AspectRatio(
@@ -1238,37 +1375,7 @@ class _BannerSection extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  //if (!isMobile)
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 18),
-                      width: 330,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: theme.background(),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFBFD7E2), width: 1.4),
-                      ),
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 12),
-                          InkWell(
-                            onTap: onUploadCv,
-                            child: const Icon(Icons.attach_file, size: 18, color: Colors.black54),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: InkWell(
-                              onTap: onViewCv,
-                              child: Text(
-                                cvName,
-                                style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  _cvBox(expand: false),
                 ],
               ),
             ),

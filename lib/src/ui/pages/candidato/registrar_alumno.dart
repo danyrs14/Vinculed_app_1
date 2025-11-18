@@ -186,6 +186,7 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
                                         ),),
                                       SizedBox(height: 20),
                                       StyledTextFormField(
+                                        isRequired: true,
                                         controller: _nameController,
                                         title: "Nombre completo",
                                         validator: (value) {
@@ -219,6 +220,7 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
                                       ),
                                       SizedBox(height: 10),
                                       StyledTextFormField(
+                                        isRequired: true,
                                         controller: _emailController,
                                         title: "Correo institucional",
                                         keyboardType: TextInputType.emailAddress,
@@ -235,6 +237,7 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
                                       ),
                                       SizedBox(height: 10),
                                       StyledTextFormField(
+                                        isRequired: true,
                                         controller: _passwordController,
                                         title: "Contraseña",
                                         obscureText: true,

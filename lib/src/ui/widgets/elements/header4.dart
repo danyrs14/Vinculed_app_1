@@ -53,6 +53,24 @@ class EscomHeader4 extends StatelessWidget implements PreferredSizeWidget {
           ? [
         // Campana en móvil
         _notifIcon(context),
+        TextButton(
+          onPressed: onLoginTap,
+          child: Text(
+            "Reportes",
+            style: TextStyle(
+              color: theme.secundario(),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: MiniButton(
+            onTap: () => _cerrarSesion(context),
+            title: "Cerrar Sesión",
+            dense: true,
+          ),
+        ),
         PopupMenuButton<String>(
           icon: const Icon(Icons.menu),
           onSelected: (value) => onMenuSelected?.call(value),
@@ -83,6 +101,7 @@ class EscomHeader4 extends StatelessWidget implements PreferredSizeWidget {
           child: MiniButton(
             onTap: () => _cerrarSesion(context),
             title: "Cerrar Sesión",
+            dense: false,
           ),
         ),
         // Campana con badge

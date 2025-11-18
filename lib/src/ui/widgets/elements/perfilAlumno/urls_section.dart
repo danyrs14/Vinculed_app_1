@@ -115,6 +115,7 @@ class UrlsSection extends StatelessWidget {
                       validator: (v) => (v == null || v.isEmpty) ? 'Tipo requerido' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'URL',
                       controller: urlCtrl,
                       validator: (v) {
@@ -128,100 +129,116 @@ class UrlsSection extends StatelessWidget {
                 ),
               ),
             ),
-            actions: [
-              SimpleButton(
-                title: saving ? 'Eliminando...' : 'Eliminar',
-                icon: Icons.delete_outline,
-                backgroundColor: Colors.redAccent,
-                textColor: Colors.white,
-                onTap: saving
-                    ? null
-                    : () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            title: const Text('Confirmar eliminación'),
-                            content: const Text('¿Eliminar esta experiencia? Esta acción no se puede deshacer.'),
-                            actions: [
-                              SimpleButton(onTap: () => Navigator.pop(_, true), title: ('Eliminar'), backgroundColor: Colors.redAccent,icon: Icons.delete_outline, textColor: Colors.white,),
-                              SimpleButton(onTap: () => Navigator.pop(_, false), title: ('Cancelar'), backgroundColor: Colors.blueGrey,icon: Icons.close_outlined, textColor: Colors.white,),
-                            ],
-                          ),
-                        );
-                        if (confirm != true) return;
-                        setState(() => saving = true);
-                        try {
-                          final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/url_externa/eliminar');
-                          final payload = jsonEncode({
-                            'id_url': item.idUrl,
-                            'id_alumno': item.idAlumno,
-                          });
-                          final headers = await provider.getAuthHeaders();
-                          final resp = await http.delete(
-                            uri,
-                            headers: headers,
-                            body: payload,
+            actions: (() {
+              final isMobile = MediaQuery.of(ctx).size.width < 700;
+              final buttons = <Widget>[
+                SimpleButton(
+                  title: saving ? 'Eliminando...' : 'Eliminar',
+                  icon: Icons.delete_outline,
+                  backgroundColor: Colors.redAccent,
+                  textColor: Colors.white,
+                  onTap: saving
+                      ? null
+                      : () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text('Confirmar eliminación'),
+                              content: const Text('¿Eliminar esta experiencia? Esta acción no se puede deshacer.'),
+                              actions: [
+                                SimpleButton(onTap: () => Navigator.pop(_, true), title: ('Eliminar'), backgroundColor: Colors.redAccent,icon: Icons.delete_outline, textColor: Colors.white,),
+                                SimpleButton(onTap: () => Navigator.pop(_, false), title: ('Cancelar'), backgroundColor: Colors.blueGrey,icon: Icons.close_outlined, textColor: Colors.white,),
+                              ],
+                            ),
                           );
-                          if (resp.statusCode >= 200 && resp.statusCode < 300) {
-                            Navigator.pop(dialogCtx);
-                            onUpdated();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('URL eliminada')));
-                          } else {
+                          if (confirm != true) return;
+                          setState(() => saving = true);
+                          try {
+                            final provider = Provider.of<UserDataProvider>(context, listen: false);
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/url_externa/eliminar');
+                            final payload = jsonEncode({
+                              'id_url': item.idUrl,
+                              'id_alumno': item.idAlumno,
+                            });
+                            final headers = await provider.getAuthHeaders();
+                            final resp = await http.delete(
+                              uri,
+                              headers: headers,
+                              body: payload,
+                            );
+                            if (resp.statusCode >= 200 && resp.statusCode < 300) {
+                              Navigator.pop(dialogCtx);
+                              onUpdated();
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('URL eliminada')));
+                            } else {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al eliminar')));
+                            }
+                          } catch (e) {
                             setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al eliminar')));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
                           }
-                        } catch (e) {
-                          setState(() => saving = false);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
-                        }
-                      },
-              ),
-              SimpleButton(
-                title: 'Cancelar',
-                icon: Icons.close_outlined,
-                backgroundColor: Colors.blueGrey,
-                textColor: Colors.white,
-                onTap: () => Navigator.pop(dialogCtx),
-              ),
-              SimpleButton(
-                title: saving ? 'Guardando...' : 'Guardar',
-                icon: Icons.save_outlined,
-                onTap: saving
-                    ? null
-                    : () async {
-                        if (!formKey.currentState!.validate()) return;
-                        setState(() => saving = true);
-                        try {
-                          final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/url_externa/actualizar');
-                          final payload = jsonEncode({
-                            'id_alumno': item.idAlumno,
-                            'id_url': item.idUrl,
-                            'tipo': tipoSel,
-                            'url': urlCtrl.text.trim(),
-                          });
-                          final headers = await provider.getAuthHeaders();
-                          final resp = await http.put(
-                            uri,
-                            headers: headers,
-                            body: payload,
-                          );
-                          if (resp.statusCode >= 200 && resp.statusCode < 300) {
-                            Navigator.pop(dialogCtx);
-                            onUpdated();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('URL actualizada')));
-                          } else {
+                        },
+                ),
+                SimpleButton(
+                  title: 'Cancelar',
+                  icon: Icons.close_outlined,
+                  backgroundColor: Colors.blueGrey,
+                  textColor: Colors.white,
+                  onTap: () => Navigator.pop(dialogCtx),
+                ),
+                SimpleButton(
+                  title: saving ? 'Guardando...' : 'Guardar',
+                  icon: Icons.save_outlined,
+                  onTap: saving
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setState(() => saving = true);
+                          try {
+                            final provider = Provider.of<UserDataProvider>(context, listen: false);
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/url_externa/actualizar');
+                            final payload = jsonEncode({
+                              'id_alumno': item.idAlumno,
+                              'id_url': item.idUrl,
+                              'tipo': tipoSel,
+                              'url': urlCtrl.text.trim(),
+                            });
+                            final headers = await provider.getAuthHeaders();
+                            final resp = await http.put(
+                              uri,
+                              headers: headers,
+                              body: payload,
+                            );
+                            if (resp.statusCode >= 200 && resp.statusCode < 300) {
+                              Navigator.pop(dialogCtx);
+                              onUpdated();
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('URL actualizada')));
+                            } else {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al guardar')));
+                            }
+                          } catch (e) {
                             setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al guardar')));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
                           }
-                        } catch (e) {
-                          setState(() => saving = false);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
-                        }
-                      },
-              ),
-            ],
+                        },
+                ),
+              ];
+              if (isMobile) {
+                return [
+                  Center(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: buttons,
+                    ),
+                  ),
+                ];
+              }
+              return buttons;
+            })(),
           ),
         );
       },
@@ -256,6 +273,7 @@ class UrlsSection extends StatelessWidget {
                       validator: (v) => (v == null || v.isEmpty) ? 'Tipo requerido' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'URL',
                       controller: urlCtrl,
                       validator: (v) {
@@ -269,57 +287,73 @@ class UrlsSection extends StatelessWidget {
                 ),
               ),
             ),
-            actions: [
-              SimpleButton(
-                title: 'Cancelar',
-                icon: Icons.close_outlined,
-                backgroundColor: Colors.blueGrey,
-                textColor: Colors.white,
-                onTap: () => Navigator.pop(dialogCtx),
-              ),
-              SimpleButton(
-                title: saving ? 'Guardando...' : 'Agregar',
-                icon: Icons.add,
-                onTap: saving
-                    ? null
-                    : () async {
-                        if (!formKey.currentState!.validate()) return;
-                        setState(() => saving = true);
-                        try {
-                          final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final idAlumno = provider.idRol;
-                          if (idAlumno == null) {
+            actions: (() {
+              final isMobile = MediaQuery.of(ctx).size.width < 700;
+              final buttons = <Widget>[
+                SimpleButton(
+                  title: 'Cancelar',
+                  icon: Icons.close_outlined,
+                  backgroundColor: Colors.blueGrey,
+                  textColor: Colors.white,
+                  onTap: () => Navigator.pop(dialogCtx),
+                ),
+                SimpleButton(
+                  title: saving ? 'Guardando...' : 'Agregar',
+                  icon: Icons.add,
+                  onTap: saving
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setState(() => saving = true);
+                          try {
+                            final provider = Provider.of<UserDataProvider>(context, listen: false);
+                            final idAlumno = provider.idRol;
+                            if (idAlumno == null) {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No hay id_alumno')));
+                              return;
+                            }
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/url_externa/agregar');
+                            final payload = jsonEncode({
+                              'id_alumno': idAlumno,
+                              'tipo': tipoSel,
+                              'url': urlCtrl.text.trim(),
+                            });
+                            final headers = await provider.getAuthHeaders();
+                            final resp = await http.post(
+                              uri,
+                              headers: headers,
+                              body: payload,
+                            );
+                            if (resp.statusCode >= 200 && resp.statusCode < 300) {
+                              Navigator.pop(dialogCtx);
+                              onUpdated();
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('URL agregada')));
+                            } else {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al agregar')));
+                            }
+                          } catch (e) {
                             setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No hay id_alumno')));
-                            return;
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
                           }
-                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/url_externa/agregar');
-                          final payload = jsonEncode({
-                            'id_alumno': idAlumno,
-                            'tipo': tipoSel,
-                            'url': urlCtrl.text.trim(),
-                          });
-                          final headers = await provider.getAuthHeaders();
-                          final resp = await http.post(
-                            uri,
-                            headers: headers,
-                            body: payload,
-                          );
-                          if (resp.statusCode >= 200 && resp.statusCode < 300) {
-                            Navigator.pop(dialogCtx);
-                            onUpdated();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('URL agregada')));
-                          } else {
-                            setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al agregar')));
-                          }
-                        } catch (e) {
-                          setState(() => saving = false);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
-                        }
-                      },
-              ),
-            ],
+                        },
+                ),
+              ];
+              if (isMobile) {
+                return [
+                  Center(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: buttons,
+                    ),
+                  ),
+                ];
+              }
+              return buttons;
+            })(),
           ),
         );
       },

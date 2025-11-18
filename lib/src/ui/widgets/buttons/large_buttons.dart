@@ -42,30 +42,31 @@ class LargeButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8), // Bordes redondeados
         ),
-        padding: EdgeInsets.symmetric(
-            horizontal: 24, vertical: 15), // Padding del botón
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          icon != null
-              ? Icon(
-            icon,
-            size: 24,
-            color: getColorText(),
-          )
-              : SizedBox(), // Ícono opcional
-          SizedBox(
-              width:
-              icon != null ? 10 : 0), // Espacio entre el ícono y el texto
-          Expanded(
+          if (icon != null) ...[
+            Icon(
+              icon,
+              size: 24,
+              color: getColorText(),
+            ),
+            const SizedBox(width: 10),
+          ],
+          Flexible(
             child: Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18, // Tamaño de la fuente
-                fontWeight: FontWeight.w600, // Peso de la fuente (SemiBold)
-                fontFamily: 'Poppins', // Fuente personalizada
+              softWrap: true,
+              maxLines: 2,
+              overflow: TextOverflow.visible,
+              style: const TextStyle(
+                fontSize: 17, // ligeramente menor para evitar cortes
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Poppins',
               ),
             ),
           ),

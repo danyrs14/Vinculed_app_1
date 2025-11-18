@@ -148,6 +148,7 @@ class _RecuperarPasswordPageWebState extends State<RecuperarPasswordPageWeb> {
                                 ),
                                 const SizedBox(height: 24),
                                 StyledTextFormField(
+                                  isRequired: true,
                                   controller: _emailController,
                                   keyboardType: TextInputType.emailAddress,
                                   title: "Correo electrónico registrado",

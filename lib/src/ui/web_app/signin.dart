@@ -260,6 +260,7 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
 
                                   // --- Formulario unificado ---
                                   StyledTextFormField(
+                                    isRequired: true,
                                     controller: _nameController,
                                     title: "Nombre completo",
                                     validator: (value) {
@@ -292,6 +293,7 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                                   ),
                                   const SizedBox(height: 12),
                                   StyledTextFormField(
+                                    isRequired: true,
                                     controller: _emailController,
                                     title: "Correo institucional",
                                     keyboardType: TextInputType.emailAddress,
@@ -308,6 +310,7 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                                   ),
                                   const SizedBox(height: 12),
                                   StyledTextFormField(
+                                    isRequired: true,
                                     controller: _passwordController,
                                     title: "Contraseña",
                                     obscureText: true,

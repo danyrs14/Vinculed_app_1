@@ -56,60 +56,76 @@ class HabilidadesTipoSection extends StatelessWidget {
                   },
                 ),
               ),
-              actions: [
-                SimpleButton(
-                  title: 'Cancelar',
-                  icon: Icons.close_outlined,
-                  backgroundColor: Colors.blueGrey,
-                  textColor: Colors.white,
-                  onTap: () => Navigator.pop(ctx2),
-                ),
-                SimpleButton(
-                  title: 'Guardar',
-                  icon: Icons.save_outlined,
-                  onTap: () async {
-                    final idsToSend = (chosenIds ?? initialIds);
-                    if (idsToSend.isEmpty) {
-                      setStateDialog(() => fieldError = 'Selecciona al menos una habilidad del tipo $tipoDisplay');
-                      return;
-                    }
-                    final payload = idsToSend.map((idHab) => {
-                      'id_alumno': idAlumno,
-                      'id_habilidad': idHab,
-                      'tipo': tipoDisplay,
-                    }).toList();
-                    try {
-                      final headers = await provider.getAuthHeaders();
-                      final res = await http.put(
-                        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_habilidades'),
-                        headers: headers,
-                        body: jsonEncode(payload),
-                      );
-                      if (res.statusCode >= 200 && res.statusCode < 300) {
-                        if (ctx2.mounted) Navigator.pop(ctx2);
-                        onUpdated();
-                        if (ctx.mounted) {
-                          ScaffoldMessenger.of(ctx).showSnackBar(
-                            const SnackBar(content: Text('Habilidades actualizadas')),
-                          );
-                        }
-                      } else {
-                        if (ctx.mounted) {
-                          ScaffoldMessenger.of(ctx).showSnackBar(
-                            SnackBar(content: Text('Error ${res.statusCode} al actualizar')), 
-                          );
-                        }
+              actions: (() {
+                final isMobile = MediaQuery.of(ctx2).size.width < 700;
+                final buttons = <Widget>[
+                  SimpleButton(
+                    title: 'Cancelar',
+                    icon: Icons.close_outlined,
+                    backgroundColor: Colors.blueGrey,
+                    textColor: Colors.white,
+                    onTap: () => Navigator.pop(ctx2),
+                  ),
+                  SimpleButton(
+                    title: 'Guardar',
+                    icon: Icons.save_outlined,
+                    onTap: () async {
+                      final idsToSend = (chosenIds ?? initialIds);
+                      if (idsToSend.isEmpty) {
+                        setStateDialog(() => fieldError = 'Selecciona al menos una habilidad del tipo $tipoDisplay');
+                        return;
                       }
-                    } catch (e) {
-                      if (ctx.mounted) {
-                        ScaffoldMessenger.of(ctx).showSnackBar(
-                          SnackBar(content: Text('Excepción: $e')),
+                      final payload = idsToSend.map((idHab) => {
+                        'id_alumno': idAlumno,
+                        'id_habilidad': idHab,
+                        'tipo': tipoDisplay,
+                      }).toList();
+                      try {
+                        final headers = await provider.getAuthHeaders();
+                        final res = await http.put(
+                          Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/actualizar_habilidades'),
+                          headers: headers,
+                          body: jsonEncode(payload),
                         );
+                        if (res.statusCode >= 200 && res.statusCode < 300) {
+                          if (ctx2.mounted) Navigator.pop(ctx2);
+                          onUpdated();
+                          if (ctx.mounted) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(
+                              const SnackBar(content: Text('Habilidades actualizadas')),
+                            );
+                          }
+                        } else {
+                          if (ctx.mounted) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(
+                              SnackBar(content: Text('Error ${res.statusCode} al actualizar')), 
+                            );
+                          }
+                        }
+                      } catch (e) {
+                        if (ctx.mounted) {
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                            SnackBar(content: Text('Excepción: $e')),
+                          );
+                        }
                       }
-                    }
-                  },
-                ),
-              ],
+                    },
+                  ),
+                ];
+                if (isMobile) {
+                  return [
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: buttons,
+                      ),
+                    ),
+                  ];
+                }
+                return buttons;
+              })(),
             );
           },
         );

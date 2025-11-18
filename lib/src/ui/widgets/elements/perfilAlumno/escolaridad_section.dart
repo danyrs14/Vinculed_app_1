@@ -165,15 +165,18 @@ class EscolaridadSection extends StatelessWidget {
                       validator: (v) => (v == null || v.isEmpty) ? 'Selecciona el nivel' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Institución',
                       controller: institucionCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Institución requerida' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: false,
                       title: 'Carrera (opcional)',
                       controller: carreraCtrl,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Plantel',
                       controller: plantelCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Plantel requerido' : null,
@@ -192,6 +195,7 @@ class EscolaridadSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Año inicio',
                             controller: inicioCtrl,
                             keyboardType: TextInputType.number,
@@ -216,6 +220,7 @@ class EscolaridadSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Año fin',
                             controller: finCtrl,
                             keyboardType: TextInputType.number,
@@ -239,122 +244,137 @@ class EscolaridadSection extends StatelessWidget {
                 ),
               ),
             ),
-            actions: [
-              
-              SimpleButton(
-                title: saving ? 'Eliminando...' : 'Eliminar',
-                icon: Icons.delete_outline,
-                backgroundColor: Colors.redAccent,
-                textColor: Colors.white,
-                onTap: saving
-                    ? null
-                    : () async {
-                        // Confirmación rápida
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            title: const Text('Confirmar eliminación'),
-                            content: const Text('¿Eliminar este registro de escolaridad? Esta acción no se puede deshacer.'),
-                            actions: [
-                              SimpleButton(onTap: () => Navigator.pop(_, true), title: ('Eliminar'), backgroundColor: Colors.redAccent,icon: Icons.delete_outline, textColor: Colors.white,),
-                              SimpleButton(onTap: () => Navigator.pop(_, false), title: ('Cancelar'), backgroundColor: Colors.blueGrey,icon: Icons.close_outlined, textColor: Colors.white,),
-                            ],
-                          ),
-                        );
-                        if (confirm != true) return;
-                        setState(() => saving = true);
-                        try {
-                          final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/escolaridad/eliminar');
-                          final body = jsonEncode({
-                            'id_escolaridad': item.idEscolaridad,
-                            'id_alumno': item.idAlumno,
-                          });
-                          final headers = await provider.getAuthHeaders();
-                          final resp = await http.delete(
-                            uri,
-                            headers: headers,
-                            body: body,
+            actions: (() {
+              final isMobile = MediaQuery.of(ctx).size.width < 700;
+              final buttons = <Widget>[
+                SimpleButton(
+                  title: saving ? 'Eliminando...' : 'Eliminar',
+                  icon: Icons.delete_outline,
+                  backgroundColor: Colors.redAccent,
+                  textColor: Colors.white,
+                  onTap: saving
+                      ? null
+                      : () async {
+                          // Confirmación rápida
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text('Confirmar eliminación'),
+                              content: const Text('¿Eliminar este registro de escolaridad? Esta acción no se puede deshacer.'),
+                              actions: [
+                                SimpleButton(onTap: () => Navigator.pop(_, true), title: ('Eliminar'), backgroundColor: Colors.redAccent,icon: Icons.delete_outline, textColor: Colors.white,),
+                                SimpleButton(onTap: () => Navigator.pop(_, false), title: ('Cancelar'), backgroundColor: Colors.blueGrey,icon: Icons.close_outlined, textColor: Colors.white,),
+                              ],
+                            ),
                           );
-                          if (resp.statusCode >= 200 && resp.statusCode < 300) {
-                            Navigator.pop(dialogCtx);
-                            onUpdated();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Escolaridad eliminada')));
-                          } else {
-                            setState(() => saving = false);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al eliminar')));
-                          }
-                        } catch (e) {
-                          setState(() => saving = false);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
-                        }
-                      },
-              ),
-              SimpleButton(
-                title: 'Cancelar',
-                icon: Icons.close_outlined,
-                backgroundColor: Colors.blueGrey,
-                textColor: Colors.white,
-                onTap: () => Navigator.pop(dialogCtx),
-              ),
-              SimpleButton(
-                title: saving ? 'Guardando...' : 'Guardar',
-                icon: Icons.save_outlined,
-                onTap: saving
-                    ? null
-                    : () async {
-                        if (!formKey.currentState!.validate()) return;
-                        // Validación adicional de rango de años
-                        final ini = int.parse(inicioCtrl.text);
-                        final fin = int.parse(finCtrl.text);
-                        if (fin < ini) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('El año de fin no puede ser menor al de inicio')),
-                          );
-                          return;
-                        }
-                        setState(() => saving = true);
-                        try {
-                          final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/escolaridad/actualizar');
-                          final body = jsonEncode({
-                            'id_escolaridad': item.idEscolaridad,
-                            'id_alumno': item.idAlumno,
-                            'nivel': nivelValue,
-                            'institucion': institucionCtrl.text.trim(),
-                            'carrera': carreraCtrl.text.trim().isEmpty ? null : carreraCtrl.text.trim(),
-                            'plantel': plantelCtrl.text.trim(),
-                            'nota': notaValue,
-                            'fecha_inicio': inicioCtrl.text.trim(),
-                            'fecha_fin': finCtrl.text.trim(),
-                          });
-                          final headers = await provider.getAuthHeaders();
-                          final resp = await http.put(
-                            uri,
-                            headers: headers,
-                            body: body,
-                          );
-                          if (resp.statusCode == 200) {
-                            Navigator.pop(dialogCtx); // close dialog
-                            onUpdated(); // reload profile
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Escolaridad actualizada correctamente')),
+                          if (confirm != true) return;
+                          setState(() => saving = true);
+                          try {
+                            final provider = Provider.of<UserDataProvider>(context, listen: false);
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/escolaridad/eliminar');
+                            final body = jsonEncode({
+                              'id_escolaridad': item.idEscolaridad,
+                              'id_alumno': item.idAlumno,
+                            });
+                            final headers = await provider.getAuthHeaders();
+                            final resp = await http.delete(
+                              uri,
+                              headers: headers,
+                              body: body,
                             );
-                          } else {
+                            if (resp.statusCode >= 200 && resp.statusCode < 300) {
+                              Navigator.pop(dialogCtx);
+                              onUpdated();
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Escolaridad eliminada')));
+                            } else {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al eliminar')));
+                            }
+                          } catch (e) {
+                            setState(() => saving = false);
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
+                          }
+                        },
+                ),
+                SimpleButton(
+                  title: 'Cancelar',
+                  icon: Icons.close_outlined,
+                  backgroundColor: Colors.blueGrey,
+                  textColor: Colors.white,
+                  onTap: () => Navigator.pop(dialogCtx),
+                ),
+                SimpleButton(
+                  title: saving ? 'Guardando...' : 'Guardar',
+                  icon: Icons.save_outlined,
+                  onTap: saving
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          // Validación adicional de rango de años
+                          final ini = int.parse(inicioCtrl.text);
+                          final fin = int.parse(finCtrl.text);
+                          if (fin < ini) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('El año de fin no puede ser menor al de inicio')),
+                            );
+                            return;
+                          }
+                          setState(() => saving = true);
+                          try {
+                            final provider = Provider.of<UserDataProvider>(context, listen: false);
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/escolaridad/actualizar');
+                            final body = jsonEncode({
+                              'id_escolaridad': item.idEscolaridad,
+                              'id_alumno': item.idAlumno,
+                              'nivel': nivelValue,
+                              'institucion': institucionCtrl.text.trim(),
+                              'carrera': carreraCtrl.text.trim().isEmpty ? null : carreraCtrl.text.trim(),
+                              'plantel': plantelCtrl.text.trim(),
+                              'nota': notaValue,
+                              'fecha_inicio': inicioCtrl.text.trim(),
+                              'fecha_fin': finCtrl.text.trim(),
+                            });
+                            final headers = await provider.getAuthHeaders();
+                            final resp = await http.put(
+                              uri,
+                              headers: headers,
+                              body: body,
+                            );
+                            if (resp.statusCode == 200) {
+                              Navigator.pop(dialogCtx); // close dialog
+                              onUpdated(); // reload profile
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Escolaridad actualizada correctamente')),
+                              );
+                            } else {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error ${resp.statusCode} al actualizar')),
+                              );
+                            }
+                          } catch (e) {
                             setState(() => saving = false);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error ${resp.statusCode} al actualizar')),
+                              SnackBar(content: Text('Excepción: $e')),
                             );
                           }
-                        } catch (e) {
-                          setState(() => saving = false);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Excepción: $e')),
-                          );
-                        }
-                      },
-              ),
-            ],
+                        },
+                ),
+              ];
+              if (isMobile) {
+                return [
+                  Center(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: buttons,
+                    ),
+                  ),
+                ];
+              }
+              return buttons;
+            })(),
           ),
         );
       },
@@ -410,15 +430,18 @@ class EscolaridadSection extends StatelessWidget {
                       validator: (v) => (v == null || v.isEmpty) ? 'Selecciona el nivel' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Institución',
                       controller: institucionCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Institución requerida' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: false,
                       title: 'Carrera (opcional)',
                       controller: carreraCtrl,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Plantel',
                       controller: plantelCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Plantel requerido' : null,
@@ -435,6 +458,7 @@ class EscolaridadSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Año inicio',
                             controller: inicioCtrl,
                             keyboardType: TextInputType.number,
@@ -459,6 +483,7 @@ class EscolaridadSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Año fin',
                             controller: finCtrl,
                             keyboardType: TextInputType.number,
@@ -482,78 +507,94 @@ class EscolaridadSection extends StatelessWidget {
                 ),
               ),
             ),
-            actions: [
-              SimpleButton(
-                title: 'Cancelar',
-                icon: Icons.close_outlined,
-                backgroundColor: Colors.blueGrey,
-                textColor: Colors.white,
-                onTap: () => Navigator.pop(dialogCtx),
-              ),
-              SimpleButton(
-                title: saving ? 'Guardando...' : 'Agregar',
-                icon: Icons.add,
-                onTap: saving
-                    ? null
-                    : () async {
-                        if (!formKey.currentState!.validate()) return;
-                        final ini = int.parse(inicioCtrl.text);
-                        final fin = int.parse(finCtrl.text);
-                        if (fin < ini) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('El año de fin no puede ser menor al de inicio')),
-                          );
-                          return;
-                        }
-                        setState(() => saving = true);
-                        try {
-                          final provider = Provider.of<UserDataProvider>(context, listen: false);
-                          final idAlumno = provider.idRol;
-                          if (idAlumno == null) {
-                            setState(() => saving = false);
+            actions: (() {
+              final isMobile = MediaQuery.of(ctx).size.width < 700;
+              final buttons = <Widget>[
+                SimpleButton(
+                  title: 'Cancelar',
+                  icon: Icons.close_outlined,
+                  backgroundColor: Colors.blueGrey,
+                  textColor: Colors.white,
+                  onTap: () => Navigator.pop(dialogCtx),
+                ),
+                SimpleButton(
+                  title: saving ? 'Guardando...' : 'Agregar',
+                  icon: Icons.add,
+                  onTap: saving
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          final ini = int.parse(inicioCtrl.text);
+                          final fin = int.parse(finCtrl.text);
+                          if (fin < ini) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('No se encontró id_alumno')),
+                              const SnackBar(content: Text('El año de fin no puede ser menor al de inicio')),
                             );
                             return;
                           }
-                          final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/escolaridad/agregar');
-                          final body = jsonEncode({
-                            'id_alumno': idAlumno,
-                            'nivel': nivelValue,
-                            'institucion': institucionCtrl.text.trim(),
-                            'carrera': carreraCtrl.text.trim().isEmpty ? null : carreraCtrl.text.trim(),
-                            'plantel': plantelCtrl.text.trim(),
-                            'nota': notaValue,
-                            'fecha_inicio': inicioCtrl.text.trim(),
-                            'fecha_fin': finCtrl.text.trim(),
-                          });
-                          final headers = await provider.getAuthHeaders();
-                          final resp = await http.post(
-                            uri,
-                            headers: headers,
-                            body: body,
-                          );
-                          if (resp.statusCode >= 200 && resp.statusCode < 300) {
-                            Navigator.pop(dialogCtx);
-                            onUpdated();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Escolaridad agregada correctamente')),
+                          setState(() => saving = true);
+                          try {
+                            final provider = Provider.of<UserDataProvider>(context, listen: false);
+                            final idAlumno = provider.idRol;
+                            if (idAlumno == null) {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('No se encontró id_alumno')),
+                              );
+                              return;
+                            }
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/escolaridad/agregar');
+                            final body = jsonEncode({
+                              'id_alumno': idAlumno,
+                              'nivel': nivelValue,
+                              'institucion': institucionCtrl.text.trim(),
+                              'carrera': carreraCtrl.text.trim().isEmpty ? null : carreraCtrl.text.trim(),
+                              'plantel': plantelCtrl.text.trim(),
+                              'nota': notaValue,
+                              'fecha_inicio': inicioCtrl.text.trim(),
+                              'fecha_fin': finCtrl.text.trim(),
+                            });
+                            final headers = await provider.getAuthHeaders();
+                            final resp = await http.post(
+                              uri,
+                              headers: headers,
+                              body: body,
                             );
-                          } else {
+                            if (resp.statusCode >= 200 && resp.statusCode < 300) {
+                              Navigator.pop(dialogCtx);
+                              onUpdated();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Escolaridad agregada correctamente')),
+                              );
+                            } else {
+                              setState(() => saving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error ${resp.statusCode} al agregar')),
+                              );
+                            }
+                          } catch (e) {
                             setState(() => saving = false);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error ${resp.statusCode} al agregar')),
+                              SnackBar(content: Text('Excepción: $e')),
                             );
                           }
-                        } catch (e) {
-                          setState(() => saving = false);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Excepción: $e')),
-                          );
-                        }
-                      },
-              ),
-            ],
+                        },
+                ),
+              ];
+              if (isMobile) {
+                return [
+                  Center(
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: buttons,
+                    ),
+                  )
+                ];
+              }
+              return buttons;
+            })(),
           ),
         );
       },
@@ -624,3 +665,5 @@ class EscolaridadSection extends StatelessWidget {
     );
   }
 }
+// Wrap actions for mobile in all dialogs
+// Helper: modify each AlertDialog after creation using isMobile width check (done inline above).
