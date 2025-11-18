@@ -58,7 +58,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
       _markdownContent = null;
     });
     try {
-      final url = Uri.parse('http://localhost:3000/api/roles_trabajo/articulos/$idRol');
+      final url = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/roles_trabajo/articulos/$idRol');
       // Usa headers autenticados si están disponibles
       Map<String, String>? headers;
       try {
