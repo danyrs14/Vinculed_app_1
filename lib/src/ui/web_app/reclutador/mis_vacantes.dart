@@ -67,9 +67,6 @@ class _MyVacanciesPageState extends State<MyVacanciesPage> {
               context.go('/reclutador/new_vacancy');
               break;
             case "Mis Vacantes":
-              context.go('/reclutador/my_vacancy');
-              break;
-            case "Postulaciones":
               context.go('/reclutador/postulaciones');
               break;
             case "FAQ":
@@ -86,9 +83,6 @@ class _MyVacanciesPageState extends State<MyVacanciesPage> {
           Positioned.fill(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final minBodyHeight =
-                    constraints.maxHeight - _footerReservedSpace - _extraBottomPadding;
-
                 return NotificationListener<ScrollNotification>(
                   onNotification: (n) {
                     if (n is ScrollUpdateNotification ||

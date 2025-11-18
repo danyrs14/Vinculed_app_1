@@ -152,9 +152,6 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
               context.go('/reclutador/new_vacancy');
               break;
             case "Mis Vacantes":
-              context.go('/my_vacancy');
-              break;
-            case "Postulaciones":
               context.go('/reclutador/postulaciones');
               break;
             case "FAQ":
@@ -278,7 +275,7 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
                                               keyboardType: TextInputType.number,
                                               isRequired: true,
                                               validator: (v) {
-                                                if (v == null || v.trim().isEmpty) return null; // opcional
+                                                if (v == null || v.trim().isEmpty) return 'C.P. es obligatorio'; // opcional
                                                 if (int.tryParse(v) == null) return 'CP inválido';
                                                 if (v.length < 4 || v.length > 10) return 'CP inválido';
                                                 return null;
@@ -311,11 +308,11 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
                                                 controller: _cpCtrl,
                                                 title: 'Código Postal',
                                                 keyboardType: TextInputType.number,
-                                                isRequired: false,
+                                                isRequired: true,
                                                 validator: (v) {
-                                                  if (v == null || v.trim().isEmpty) return null;
-                                                  if (int.tryParse(v) == null) return 'CP inválido';
-                                                  if (v.length < 4 || v.length > 10) return 'CP inválido';
+                                                  if (v == null || v.trim().isEmpty) return 'C.P. es obligatorio';
+                                                  if (int.tryParse(v) == null) return 'C.P. inválido';
+                                                  if (v.length < 4 || v.length > 10) return 'C.P. inválido';
                                                   return null;
                                                 },
                                               ),

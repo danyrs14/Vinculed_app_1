@@ -30,11 +30,13 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
   int? _selectedIndex; // null => listado, idx => detalle
   bool _loading = true;
   String? _error;
+  bool _isEmptyState = false; //flag para 404
 
   // Estado para detalle completo
   Map<String, dynamic>? _detalleVacante;
   List<Map<String, dynamic>> _postulaciones = [];
   bool _loadingDetalle = false;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -50,6 +52,7 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
     setState(() {
       _loading = true;
       _error = null;
+      _isEmptyState = false;
     });
     try {
       final userProv = Provider.of<UserDataProvider>(context, listen: false);
@@ -59,6 +62,14 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
           .replace(queryParameters: {'id_reclutador': '$idRol'});
 
       final resp = await http.get(uri, headers: headers);
+      if (resp.statusCode == 404) {
+        setState(() {
+          _loading = false;
+          _isEmptyState = true; // Activar el mensaje bonito
+          _vacancies = [];
+        });
+        return; // Salir correctamente
+      }
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
         final data = jsonDecode(resp.body);
         if (data is List) {
@@ -136,6 +147,130 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
     }
   }
 
+  Future<void> _borrarVacante() async {
+    final det = _detalleVacante;
+    if (det == null) return;
+    final idRaw = det['id_vacante'] ?? det['idVacante'] ?? det['id'];
+    if (idRaw == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ID de vacante no disponible')),
+      );
+      return;
+    }
+    // 1. Confirmación de seguridad
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Eliminar vacante?'),
+        content: const Text('Esta acción es irreversible. ¿Estás seguro de que deseas eliminar esta vacante?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar != true) return;
+
+    // 2. Iniciar proceso
+    setState(() => _isDeleting = true);
+
+    try {
+      final userProv = context.read<UserDataProvider>();
+      final headers = await userProv.getAuthHeaders();
+      
+      // Nota: http.delete soporta body, aunque algunos servidores son estrictos.
+      // Asumimos que tu backend Node.js lo acepta correctamente.
+      final uri = Uri.parse('http://localhost:3000/api/reclutadores/borrar_vacante');
+      final idVac = (idRaw is int) ? idRaw : int.tryParse('$idRaw') ?? idRaw;
+      
+      final response = await http.delete(
+        uri,
+        headers: headers,
+        body: jsonEncode({
+          "id_vacante": idVac // Asegúrate de tener esta variable disponible
+        }),
+      );
+
+      if (response.statusCode == 204) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Vacante eliminada correctamente')),
+          );
+          // Regresar a la lista de vacantes
+          context.pop(); 
+          // O si prefieres ir a una ruta especifica: context.go('/my_vacancy');
+        }
+      } else {
+        throw Exception('Error ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No se pudo eliminar: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isDeleting = false);
+      }
+    }
+  }
+
+  Future<void> _toggleEstadoVacante() async {
+    // Cambia el estado entre Activa <-> Expirada y actualiza el badge y el texto del botón
+    final det = _detalleVacante;
+    if (det == null) return;
+    final idRaw = det['id_vacante'] ?? det['idVacante'] ?? det['id'];
+    if (idRaw == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ID de vacante no disponible')),
+      );
+      return;
+    }
+    final current = (det['estado']?.toString() ?? 'Activa').toLowerCase();
+    final target = current == 'expirada' ? 'Activa' : 'Expirada';
+
+    try {
+      final userProv = Provider.of<UserDataProvider>(context, listen: false);
+      final headers = await userProv.getAuthHeaders();
+      final uri = Uri.parse('http://localhost:3000/api/reclutadores/cambiar_estado_vacante');
+      final idVac = (idRaw is int) ? idRaw : int.tryParse('$idRaw') ?? idRaw;
+
+      final resp = await http.put(
+        uri,
+        headers: headers,
+        body: jsonEncode({
+          'id_vacante': idVac,
+          'estado': target,
+        }),
+      );
+
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        setState(() {
+          _detalleVacante!['estado'] = target;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Estado actualizado a $target')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error ${resp.statusCode}: ${resp.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cambiar estado: $e')),
+      );
+    }
+  }
+
   void _onScroll() {
     final pos = _scrollCtrl.position;
     if (!pos.hasPixels || !pos.hasContentDimensions) return;
@@ -146,6 +281,52 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
     }
     final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
     if (atBottom != _showFooter) setState(() => _showFooter = atBottom);
+  }
+
+  Widget _buildEmptyStateView() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 30),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icono grande y bonito (Simulación de inventario vacío)
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 80,
+              color: Colors.blueGrey.shade300,
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              '¡Aún no tienes vacantes publicadas!',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1F2A36),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Tu inventario de vacantes está vacío. Es hora de crear tu primera oferta para atraer talento de la ESCOM.',
+              style: TextStyle(fontSize: 16, color: Colors.black54),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            // Botón de acción (Crear vacante)
+            SizedBox(
+              height: 45,
+              child: SimpleButton(
+                title: 'Crear Nueva Vacante',
+                // Asumo que esta es la ruta de creación
+                onTap: () => context.go('/reclutador/new_vacancy'), 
+                primaryColor: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -173,12 +354,9 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
               context.go('/inicio');
               break;
             case "Crear Vacante":
-              context.go('/reclutador/new_vacancy');
+              context.go('/reclutador/new_vacante');
               break;
             case "Mis Vacantes":
-              context.go('/my_vacancy');
-              break;
-            case "Postulaciones":
               context.go('/reclutador/postulaciones');
               break;
             case "FAQ":
@@ -239,6 +417,8 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
                                           ],
                                         ),
                                       )
+                                    : (_isEmptyState)
+                                        ? _buildEmptyStateView()
                                     : (_selectedIndex == null)
                                         ? _VacancyListView(
                                             vacancies: _vacancies,
@@ -256,6 +436,8 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
                                                 postulaciones: _postulaciones,
                                                 isMobile: isMobile,
                                                 onBackToList: () => setState(() => _selectedIndex = null),
+                                                onToggleEstado: _toggleEstadoVacante,
+                                                onDeleting: _borrarVacante,
                                               ),
                           ),
                         ),
@@ -350,7 +532,7 @@ class _VacancyListView extends StatelessWidget {
         LayoutBuilder(
           builder: (_, c) {
             // Hacer tarjetas más angostas y un poco más altas para evitar overflow en móvil
-            final maxExtent = isMobile ? 600.0 : 420.0; // ancho máximo de cada tarjeta
+            final maxExtent = isMobile ? 600.0 : 500.0; // ancho máximo de cada tarjeta
             final aspect = 1.25; // más alto en móvil, moderado en desktop
             return GridView.builder(
               shrinkWrap: true,
@@ -361,6 +543,7 @@ class _VacancyListView extends StatelessWidget {
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
                 childAspectRatio: aspect,
+                mainAxisExtent: 320,
               ),
               itemBuilder: (_, i) {
                 final v = vacancies[i];
@@ -652,12 +835,16 @@ class _VacancyDetailRichView extends StatelessWidget {
     required this.postulaciones,
     required this.isMobile,
     required this.onBackToList,
+    required this.onToggleEstado,
+    required this.onDeleting,
   });
 
   final Map<String, dynamic> detail;
   final List<Map<String, dynamic>> postulaciones;
   final bool isMobile;
   final VoidCallback onBackToList;
+  final VoidCallback onToggleEstado;
+  final VoidCallback onDeleting;
 
   String _fmtDate(String? iso) {
     if (iso == null || iso.isEmpty) return 'No especificada';
@@ -667,6 +854,7 @@ class _VacancyDetailRichView extends StatelessWidget {
       return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
     } catch (_) { return iso; }
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -691,6 +879,8 @@ class _VacancyDetailRichView extends StatelessWidget {
     ].where((e) => e != null && e.toString().isNotEmpty).join(', ');
 
     final habilidades = detail['habilidades'] as List? ?? [];
+    final estadoActual = detail['estado']?.toString() ?? 'Activa';
+    final esExpirada = estadoActual.toLowerCase() == 'expirada';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -701,9 +891,23 @@ class _VacancyDetailRichView extends StatelessWidget {
           runSpacing: 8,
           children: [
             SizedBox(width: isMobile ? 170 : 200, child: SimpleButton(title: 'Regresar', onTap: onBackToList)),
-            SizedBox(width: isMobile ? 170 : 200, child: SimpleButton(title: 'Editar Vacante', onTap: () {})),
-            SizedBox(width: isMobile ? 170 : 200, child: SimpleButton(title: 'Eliminar Vacante', onTap: () {})),
-            SizedBox(width: isMobile ? 170 : 200, child: SimpleButton(title: 'Marcar como Expirada', onTap: () {})),
+            SizedBox(width: isMobile ? 170 : 200, child: SimpleButton(title: 'Editar Vacante', onTap: () {
+              final idVacante = detail['id_vacante'] ?? detail['idVacante'] ?? detail['id'];
+              if (idVacante != null) {
+                GoRouter.of(context).go('/reclutador/editar_vacante/$idVacante');
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ID de vacante no disponible')));
+              }
+            })),
+            SizedBox(width: isMobile ? 170 : 200, child: SimpleButton(title:  'Eliminar Vacante', backgroundColor: Colors.redAccent, onTap: onDeleting,)),
+            // Botón toggle con mayor ancho para evitar overflow y texto dinámico
+            SizedBox(
+              width: isMobile ? 205 : 225,
+              child: SimpleButton(
+                title: esExpirada ? 'Marcar como Activa' : 'Marcar como Expirada',
+                onTap: onToggleEstado,
+              ),
+            ),
           ],
         ),
 
@@ -761,8 +965,8 @@ class _VacancyDetailRichView extends StatelessWidget {
                             _PillBadge(detail['duracion']?.toString() ?? 'No esp.', Icons.timer_outlined, theme.secundario()),
                             if (detail['numero_vacantes'] != null)
                               _PillBadge('${detail['numero_vacantes']} vacantes', Icons.people_outline, theme.secundario()),
-                            _PillBadge(detail['estado']?.toString() ?? 'Activa', Icons.check_circle_outline,
-                                (detail['estado']?.toString().toLowerCase() == 'activa') ? theme.primario() : Colors.blueGrey),
+                            _PillBadge(estadoActual, Icons.check_circle_outline,
+                                (estadoActual.toLowerCase() == 'activa') ? theme.primario() : Colors.blueGrey),
                           ],
                         ),
                       ],

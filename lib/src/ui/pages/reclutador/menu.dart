@@ -142,15 +142,6 @@ class _MenuPageRecState extends State<MenuPageRec> {
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
               icon: Image.asset(
-                'assets/icons/verif.png',
-                color: _paginaActual == 1 ? theme.fuente() : Colors.grey,
-                width: 26, height: 26,
-              ),
-              label: 'Mis Vacantes',
-            ),
-            BottomNavigationBarItem(
-              backgroundColor: theme.background(),
-              icon: Image.asset(
                 'assets/icons/home.png',
                 color: _paginaActual == 2 ? theme.fuente() : Colors.grey,
                 width: 26, height: 26,

@@ -21,7 +21,6 @@ class EscomHeader3 extends StatelessWidget implements PreferredSizeWidget {
   static const _menuItems = <String>[
     "Inicio",
     "Mis Vacantes",
-    "Postulaciones",
     "Mensajes",
     "Crear Vacante",
     "FAQ",

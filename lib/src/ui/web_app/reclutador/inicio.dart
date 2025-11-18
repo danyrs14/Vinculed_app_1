@@ -72,9 +72,6 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
               context.go('/reclutador/new_vacancy');
               break;
             case "Mis Vacantes":
-              context.go('/reclutador/my_vacancy');
-              break;
-            case "Postulaciones":
               context.go('/reclutador/postulaciones');
               break;
             case "FAQ":
