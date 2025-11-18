@@ -249,20 +249,15 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                                     ],
                                   ),
                                   const SizedBox(height: 16),
-                                  SizedBox(
-                                    height: 44,
-                                    child: LargeButton(
-                                      onTap: () => context.go('/lector_qr'),
-                                      title: 'Registrarme como Candidato',
-                                    ),
+                                  // Allow the button to expand vertically to wrap long text
+                                  LargeButton(
+                                    onTap: () => context.go('/lector_qr'),
+                                    title: 'Registrarme como Candidato',
                                   ),
                                   const SizedBox(height: 12),
-                                  SizedBox(
-                                    height: 44,
-                                    child: LargeButton(
-                                      onTap: () => context.go('/signin_rec'),
-                                      title: 'Registrarme como Reclutador',
-                                    ),
+                                  LargeButton(
+                                    onTap: () => context.go('/signin_rec'),
+                                    title: 'Registrarme como Reclutador',
                                   ),
                                   const SizedBox(height: 40),
                                 ],
