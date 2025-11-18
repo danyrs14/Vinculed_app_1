@@ -838,6 +838,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 StyledTextFormField(
+                  isRequired: true,
                   title: 'Ciudad',
                   controller: ciudadCtrl,
                   validator: (v) {
@@ -847,6 +848,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   },
                 ),
                 StyledTextFormField(
+                  isRequired: true,
                   title: 'Entidad',
                   controller: entidadCtrl,
                   validator: (v) {
@@ -897,6 +899,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           content: Form(
             key: formKey,
             child: StyledTextFormField(
+              isRequired: true,
               title: 'Teléfono',
               controller: telCtrl,
               validator: (v) {
@@ -999,6 +1002,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             child: SizedBox(
               width: 500,
               child: StyledTextFormField(
+                isRequired: true,
                 title: 'Descripción',
                 controller: descCtrl,
                 maxLines: 6,

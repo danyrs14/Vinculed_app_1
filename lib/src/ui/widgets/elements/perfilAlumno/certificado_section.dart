@@ -160,11 +160,13 @@ class CertificadosSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Nombre',
                       controller: nombreCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Nombre requerido' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Institución',
                       controller: institucionCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Institución requerida' : null,
@@ -173,6 +175,7 @@ class CertificadosSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Fecha expedición (YYYY-MM-DD)',
                             controller: expedicionCtrl,
                             validator: (v) {
@@ -194,6 +197,7 @@ class CertificadosSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: false,
                             title: 'Fecha caducidad (opcional)',
                             controller: caducidadCtrl,
                             validator: (v) {
@@ -212,10 +216,12 @@ class CertificadosSection extends StatelessWidget {
                       ],
                     ),
                     StyledTextFormField(
+                      isRequired: false,
                       title: 'ID credencial (opcional)',
                       controller: credencialCtrl,
                     ),
                     StyledTextFormField(
+                      isRequired: false,
                       title: 'URL certificado (opcional)',
                       controller: urlCtrl,
                       validator: (v) {
@@ -388,11 +394,13 @@ class CertificadosSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Nombre',
                       controller: nombreCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Nombre requerido' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Institución',
                       controller: institucionCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Institución requerida' : null,
@@ -401,6 +409,7 @@ class CertificadosSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Fecha expedición (YYYY-MM-DD)',
                             controller: expedicionCtrl,
                             validator: (v) {
@@ -422,6 +431,7 @@ class CertificadosSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: false,
                             title: 'Fecha caducidad (opcional)',
                             controller: caducidadCtrl,
                             validator: (v) {
@@ -440,10 +450,12 @@ class CertificadosSection extends StatelessWidget {
                       ],
                     ),
                     StyledTextFormField(
+                      isRequired: false,
                       title: 'ID de credencial (opcional)',
                       controller: idCredCtrl,
                     ),
                     StyledTextFormField(
+                      isRequired: false,
                       title: 'URL del certificado (opcional)',
                       controller: urlCtrl,
                       validator: (v) {

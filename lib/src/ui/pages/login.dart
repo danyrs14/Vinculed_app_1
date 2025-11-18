@@ -111,6 +111,7 @@ class _LoginPageState extends State<LoginPage> {
       
                                         // Campo de texto para el email
                                         StyledTextFormField(
+                                          isRequired: true,
                                           controller: emailController,
                                           title: "Correo institucional",
                                           keyboardType: TextInputType.emailAddress,
@@ -131,6 +132,7 @@ class _LoginPageState extends State<LoginPage> {
       
                                         // Campo de texto para la contraseña
                                         StyledTextFormField(
+                                          isRequired: true,
                                           controller: passwordController,
                                           title: "Contraseña",
                                           obscureText: true,

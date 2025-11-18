@@ -130,11 +130,13 @@ class CursosSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Nombre',
                       controller: nombreCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Nombre requerido' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Institución',
                       controller: institucionCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Institución requerida' : null,
@@ -143,6 +145,7 @@ class CursosSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Fecha inicio (YYYY-MM-DD)',
                             controller: inicioCtrl,
                             validator: (v) {
@@ -164,6 +167,7 @@ class CursosSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Fecha fin (YYYY-MM-DD)',
                             controller: finCtrl,
                             validator: (v) {
@@ -321,11 +325,13 @@ class CursosSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Nombre',
                       controller: nombreCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Nombre requerido' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Institución',
                       controller: institucionCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Institución requerida' : null,
@@ -334,6 +340,7 @@ class CursosSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Fecha inicio (YYYY-MM-DD)',
                             controller: inicioCtrl,
                             validator: (v) {
@@ -355,6 +362,7 @@ class CursosSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Fecha fin (YYYY-MM-DD)',
                             controller: finCtrl,
                             validator: (v) {

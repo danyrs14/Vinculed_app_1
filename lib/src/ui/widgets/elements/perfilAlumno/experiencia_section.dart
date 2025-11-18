@@ -147,11 +147,13 @@ class ExperienciaSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Cargo',
                       controller: cargoCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Cargo requerido' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Empresa',
                       controller: empresaCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Empresa requerida' : null,
@@ -160,6 +162,7 @@ class ExperienciaSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Fecha inicio (YYYY-MM-DD)',
                             controller: inicioCtrl,
                             validator: (v) {
@@ -181,6 +184,7 @@ class ExperienciaSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: false,
                             title: 'Fecha fin (opcional)',
                             controller: finCtrl,
                             validator: (v) {
@@ -199,6 +203,7 @@ class ExperienciaSection extends StatelessWidget {
                       ],
                     ),
                     StyledTextFormField(
+                      isRequired: false,
                       title: 'Descripción (opcional)',
                       controller: descripcionCtrl,
                       validator: (v) {
@@ -367,11 +372,13 @@ class ExperienciaSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Cargo',
                       controller: cargoCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Cargo requerido' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Empresa',
                       controller: empresaCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Empresa requerida' : null,
@@ -380,6 +387,7 @@ class ExperienciaSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Fecha inicio (YYYY-MM-DD)',
                             controller: inicioCtrl,
                             validator: (v) {
@@ -401,6 +409,7 @@ class ExperienciaSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: false,
                             title: 'Fecha fin (opcional)',
                             controller: finCtrl,
                             validator: (v) {
@@ -419,6 +428,7 @@ class ExperienciaSection extends StatelessWidget {
                       ],
                     ),
                     StyledTextFormField(
+                      isRequired: false,
                       title: 'Descripción (opcional)',
                       controller: descripcionCtrl,
                       validator: (v) {

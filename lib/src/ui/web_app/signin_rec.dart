@@ -251,7 +251,9 @@ class _RegisterPageWebRecState extends State<RegisterPageWebRec> {
                                   const SizedBox(height: 28),
                               
                                   // Formulario
-                                  StyledTextFormField(title: 'Nombre(s)', controller: _nombreCtrl,
+                                  StyledTextFormField(
+                                    isRequired: true,
+                                    title: 'Nombre(s)', controller: _nombreCtrl,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'El nombre es obligatorio.';
@@ -260,7 +262,9 @@ class _RegisterPageWebRecState extends State<RegisterPageWebRec> {
                                     },
                                   ),
                                   const SizedBox(height: 12),
-                                  StyledTextFormField(title: 'Apellido Paterno', controller: _apPaternoCtrl,
+                                  StyledTextFormField(
+                                    isRequired: true,
+                                    title: 'Apellido Paterno', controller: _apPaternoCtrl,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'El apellido paterno es obligatorio.';
@@ -269,7 +273,9 @@ class _RegisterPageWebRecState extends State<RegisterPageWebRec> {
                                     },
                                   ),
                                   const SizedBox(height: 12),
-                                  StyledTextFormField(title: 'Apellido Materno', controller: _apMaternoCtrl,
+                                  StyledTextFormField(
+                                    isRequired: true,
+                                    title: 'Apellido Materno', controller: _apMaternoCtrl,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'El apellido materno es obligatorio.';
@@ -322,6 +328,7 @@ class _RegisterPageWebRecState extends State<RegisterPageWebRec> {
                                   ),
                                   const SizedBox(height: 12),
                                   StyledTextFormField(
+                                    isRequired: true,
                                     controller: _emailCtrl,
                                     title: "Correo electrónico",
                                     keyboardType: TextInputType.emailAddress,

@@ -55,6 +55,7 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                 ),
                 const SizedBox(height: 24),
                 StyledTextFormField(
+                  isRequired: true,
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   title: "Correo electrónico",

@@ -189,6 +189,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
 
                                   // Campo de Correo con validación
                                   StyledTextFormField(
+                                    isRequired: true,
                                     title: 'Correo institucional',
                                     controller: _emailCtrl,
                                     keyboardType: TextInputType.emailAddress,
@@ -207,6 +208,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
 
                                   // Campo de Contraseña con validación
                                   StyledTextFormField(
+                                    isRequired: true,
                                     controller: _passCtrl,
                                     title: 'Contraseña',
                                     obscureText: true,

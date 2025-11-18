@@ -115,6 +115,7 @@ class UrlsSection extends StatelessWidget {
                       validator: (v) => (v == null || v.isEmpty) ? 'Tipo requerido' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'URL',
                       controller: urlCtrl,
                       validator: (v) {
@@ -256,6 +257,7 @@ class UrlsSection extends StatelessWidget {
                       validator: (v) => (v == null || v.isEmpty) ? 'Tipo requerido' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'URL',
                       controller: urlCtrl,
                       validator: (v) {

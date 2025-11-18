@@ -34,6 +34,7 @@ import 'package:vinculed_app_1/src/ui/web_app/signin_rec.dart';
 import 'package:vinculed_app_1/src/ui/web_app/recuperar_password.dart';
 import 'package:vinculed_app_1/src/ui/web_app/verificarEmailWeb.dart';
 import 'package:vinculed_app_1/src/ui/web_app/despachador_inicio.dart';
+import 'package:vinculed_app_1/src/ui/web_app/reclutador/agregar_empresa.dart';
 
 // Reclutador
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/inicio.dart';
@@ -77,7 +78,7 @@ class _AdminAppState extends State<AdminApp> {
         // Las que se puede acceder sin login
         const publicRoutes = [
           '/dashboard', '/login', '/lector_qr', '/signin', 
-          '/signin_rec', '/recover_password', '/404'
+          '/signin_rec', '/recover_password', '/404', '/agregar_empresa'
         ];
         
         final isGoingToPublic = publicRoutes.contains(location);
@@ -149,6 +150,10 @@ class _AdminAppState extends State<AdminApp> {
         GoRoute(
           path: '/inicio',
           builder: (context, state) => const InicioPage(),
+        ),
+        GoRoute(
+          path: '/agregar_empresa',
+          builder: (context, state) => const AgregarEmpresaPageWeb(),
         ),
         // -----admin --------
         GoRoute(

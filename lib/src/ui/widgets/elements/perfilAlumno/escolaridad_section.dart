@@ -165,15 +165,18 @@ class EscolaridadSection extends StatelessWidget {
                       validator: (v) => (v == null || v.isEmpty) ? 'Selecciona el nivel' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Institución',
                       controller: institucionCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Institución requerida' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: false,
                       title: 'Carrera (opcional)',
                       controller: carreraCtrl,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Plantel',
                       controller: plantelCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Plantel requerido' : null,
@@ -192,6 +195,7 @@ class EscolaridadSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Año inicio',
                             controller: inicioCtrl,
                             keyboardType: TextInputType.number,
@@ -216,6 +220,7 @@ class EscolaridadSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Año fin',
                             controller: finCtrl,
                             keyboardType: TextInputType.number,
@@ -410,15 +415,18 @@ class EscolaridadSection extends StatelessWidget {
                       validator: (v) => (v == null || v.isEmpty) ? 'Selecciona el nivel' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Institución',
                       controller: institucionCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Institución requerida' : null,
                     ),
                     StyledTextFormField(
+                      isRequired: false,
                       title: 'Carrera (opcional)',
                       controller: carreraCtrl,
                     ),
                     StyledTextFormField(
+                      isRequired: true,
                       title: 'Plantel',
                       controller: plantelCtrl,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'Plantel requerido' : null,
@@ -435,6 +443,7 @@ class EscolaridadSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Año inicio',
                             controller: inicioCtrl,
                             keyboardType: TextInputType.number,
@@ -459,6 +468,7 @@ class EscolaridadSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StyledTextFormField(
+                            isRequired: true,
                             title: 'Año fin',
                             controller: finCtrl,
                             keyboardType: TextInputType.number,

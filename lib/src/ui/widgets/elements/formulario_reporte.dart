@@ -126,6 +126,7 @@ class ReportContentDialogState extends State<ReportContentDialog> {
               ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 150, maxWidth: 300),
                 child: StyledTextFormField(
+                  isRequired: false,
                   controller: _descripcionCtrl,
                   maxLength: 250,
                   maxLines: 4,
