@@ -386,13 +386,16 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
 
     return Scaffold(
       appBar: EscomHeader4(
-        onLoginTap: () => context.go('/reclutador/perfil_rec'),
+        onLoginTap: () => context.go('/admin/reportes'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
               context.go('/inicio');
               break;
+            case "Empresas":
+            context.go('/admin/empresas');
+            break;
           }
         },
       ),

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/auth_notifier.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil_visible.dart';
+import 'package:vinculed_app_1/src/ui/web_app/admin_gestion_empresas.dart';
 
 // Candidato
 import 'package:vinculed_app_1/src/ui/web_app/candidato/add_experiencia.dart';
@@ -31,6 +32,7 @@ import 'package:vinculed_app_1/src/ui/web_app/reclutador/mis_vacantes.dart';
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/perfil_candidato.dart';
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/perfil_reclutador.dart';
 import 'package:vinculed_app_1/src/ui/web_app/reclutador/postulaciones.dart';
+import 'package:vinculed_app_1/src/ui/web_app/reportes_admin.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin.dart';
 import 'package:vinculed_app_1/src/ui/web_app/signin_rec.dart';
 import 'package:vinculed_app_1/src/ui/web_app/recuperar_password.dart';
@@ -177,44 +179,12 @@ class _AdminAppState extends State<AdminApp> {
           // Este padre no tiene 'builder', solo agrupa a los hijos
           routes: [
             GoRoute(
-              path: 'busqueda_job',
-              builder: (context, state) => const JobSearchPage(),
+              path: 'reportes',
+              builder: (context, state) => const ReportesAdminPage(),
             ),
             GoRoute(
-              path: 'vacante_job',
-              builder: (context, state) {
-                final String id = state.pathParameters['id']!;
-                return JobDetailPage(idVacante: int.parse(id));
-    },
-            ),
-            GoRoute(
-              path: 'perfil_cand', 
-              builder: (context, state) => const UserProfilePage(),
-            ),
-            GoRoute(
-              path: 'mis_postulaciones',
-              builder: (context, state) => const MyApplicationsPage(),
-            ),
-            GoRoute(
-              path: 'messages',
-              builder: (context, state) => const MessagesPage(),
-            ),
-            // La ruta real será '/candidato/experiencias'
-            GoRoute(
-              path: 'experiencias',
-              builder: (context, state) => const ExperiencesPage(),
-            ),
-            GoRoute(
-              path: 'experiencias_create',
-              builder: (context, state) => const CreateExperiencePage(),
-            ),
-            GoRoute(
-              path: 'faq',
-              builder: (context, state) => const FaqPage(),
-            ),
-            GoRoute(
-              path: 'preferences',
-              builder: (context, state) => const PreferencesPage(),
+              path: 'empresas',
+              builder: (context, state) => const AdminGestionEmpresasPage(),
             ),
           ],
         ),

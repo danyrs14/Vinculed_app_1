@@ -755,7 +755,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         return;
       }
 
-      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/eliminar_cuenta');
+      final uri = Uri.parse('http://localhost:3000/api/alumnos/perfil/eliminar_cuenta');
       final body = jsonEncode({
         'id_usuario': idUsuario,
         'id_alumno': idRol,
@@ -764,6 +764,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       final resp = await http.delete(uri, headers: headers, body: body);
 
       if (resp.statusCode == 204) {
+        context.read<UserDataProvider>().clearData();
         // Ir al inicio de sesión
         context.go('/login');
       } else {

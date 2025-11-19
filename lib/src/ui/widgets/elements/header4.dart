@@ -20,6 +20,7 @@ class EscomHeader4 extends StatelessWidget implements PreferredSizeWidget {
 
   static const _menuItems = <String>[
     "Inicio",
+    "Empresas",
   ];
 
   Future<void> _cerrarSesion(BuildContext context) async {
