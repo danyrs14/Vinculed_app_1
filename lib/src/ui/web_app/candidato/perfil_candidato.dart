@@ -693,9 +693,23 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                         
                                       ],
                                     ),
+                                    const SizedBox(height: 32),
+                                    Center(
+                                      child: SizedBox(
+                                        width: 300, // Ancho fijo para que no sea 100% en pantallas grandes
+                                        height: 50,
+                                        child: SimpleButton(
+                                          title: 'Desactivar Cuenta',
+                                          backgroundColor: Colors.red,
+                                          primaryColor: false,
+                                          onTap: () => _confirmarDesactivacion(), // Implementa esta función
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                         ),
+                        
                       ],
                     ),
                   ),
@@ -706,6 +720,62 @@ class _UserProfilePageState extends State<UserProfilePage> {
         );
       },
     );
+  }
+
+  Future<void> _confirmarDesactivacion() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirmar acción'),
+        content: const Text('¿Seguro que deseas desactivar tu cuenta? Esta acción no se puede deshacer.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sí, desactivar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final userProv = context.read<UserDataProvider>();
+      final headers = await userProv.getAuthHeaders();
+      final idUsuario = userProv.idUsuario;
+      final idRol = userProv.idRol; // solicitado como id_alumno
+
+      if (idUsuario == null || idRol == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo obtener el usuario actual.')));
+        return;
+      }
+
+      final uri = Uri.parse('http://localhost:3000/api/alumnos/perfil/eliminar_cuenta');
+      final body = jsonEncode({
+        'id_usuario': idUsuario,
+        'id_alumno': idRol,
+      });
+
+      final resp = await http.delete(uri, headers: headers, body: body);
+
+      if (resp.statusCode == 204) {
+        // Ir al inicio de sesión
+        context.go('/login');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al desactivar: ${resp.statusCode}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 
   String _cvName(String? urlCv) {

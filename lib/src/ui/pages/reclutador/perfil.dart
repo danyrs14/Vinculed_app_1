@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
+import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 
 class PerfilRec extends StatelessWidget {
   const PerfilRec({super.key});
@@ -74,10 +79,81 @@ class PerfilRec extends StatelessWidget {
               ),
 
               const SizedBox(height: 24),
+
+              // Botón rojo centrado: Desactivar cuenta
+              Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  onPressed: () => _confirmarDesactivacion(context),
+                  child: const Text('Desactivar cuenta'),
+                ),
+              ),
+
+              const SizedBox(height: 24),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+Future<void> _confirmarDesactivacion(BuildContext context) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Confirmar acción'),
+      content: const Text('¿Seguro que deseas desactivar tu cuenta? Esta acción no se puede deshacer.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: const Text('Sí, desactivar'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmed != true) return;
+
+  try {
+    final userProv = context.read<UserDataProvider>();
+    final headers = await userProv.getAuthHeaders();
+    final idUsuario = userProv.idUsuario;
+    final idRol = userProv.idRol; // solicitado como id_alumno
+
+    if (idUsuario == null || idRol == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo obtener el usuario actual.')));
+      return;
+    }
+
+    final uri = Uri.parse('http://localhost:3000/api/alumnos/perfil/eliminar_cuenta');
+    final body = jsonEncode({
+      'id_usuario': idUsuario,
+      'id_alumno': idRol,
+    });
+
+    final resp = await http.delete(uri, headers: headers, body: body);
+
+    if (resp.statusCode == 204) {
+      // Ir al inicio de sesión
+      context.go('/login');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al desactivar: ${resp.statusCode}')),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: $e')),
     );
   }
 }
@@ -89,8 +165,6 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ThemeController.instance;
-
     // Encabezado limpio: engrane arriba a la derecha, título centrado y avatar
     return Column(
       children: [
@@ -118,6 +192,7 @@ class _Header extends StatelessWidget {
   }
 }
 
+/*
 // Lo dejo por si después lo vuelves a mostrar
 class _CvBox extends StatelessWidget {
   const _CvBox({required this.fileName});
@@ -155,6 +230,7 @@ class _CvBox extends StatelessWidget {
     );
   }
 }
+*/
 
 class _ProfileSection extends StatelessWidget {
   const _ProfileSection({
