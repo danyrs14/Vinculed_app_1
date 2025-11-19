@@ -613,7 +613,7 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
       payload.removeWhere((k, v) => v == null);
 
       final resp = await http.post(
-        Uri.parse('http://localhost:3000/api/reclutadores/crear_vacante'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/crear_vacante'),
         headers: headers,
         body: jsonEncode(payload),
       );

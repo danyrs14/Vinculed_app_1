@@ -58,7 +58,7 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
       final userProv = Provider.of<UserDataProvider>(context, listen: false);
       final headers = await userProv.getAuthHeaders();
       final idRol = userProv.idRol;
-      final uri = Uri.parse('http://localhost:3000/api/reclutadores/vacantes_publicadas')
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/vacantes_publicadas')
           .replace(queryParameters: {'id_reclutador': '$idRol'});
 
       final resp = await http.get(uri, headers: headers);
@@ -109,7 +109,7 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
     try {
       final userProv = Provider.of<UserDataProvider>(context, listen: false);
       final headers = await userProv.getAuthHeaders();
-      final uri = Uri.parse('http://localhost:3000/api/reclutadores/postulaciones')
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/postulaciones')
           .replace(queryParameters: {'id_vacante': '$idVacante'});
 
       final resp = await http.get(uri, headers: headers);
@@ -187,7 +187,7 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
       
       // Nota: http.delete soporta body, aunque algunos servidores son estrictos.
       // Asumimos que tu backend Node.js lo acepta correctamente.
-      final uri = Uri.parse('http://localhost:3000/api/reclutadores/borrar_vacante');
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/borrar_vacante');
       final idVac = (idRaw is int) ? idRaw : int.tryParse('$idRaw') ?? idRaw;
       
       final response = await http.delete(
@@ -240,7 +240,7 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
     try {
       final userProv = Provider.of<UserDataProvider>(context, listen: false);
       final headers = await userProv.getAuthHeaders();
-      final uri = Uri.parse('http://localhost:3000/api/reclutadores/cambiar_estado_vacante');
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/cambiar_estado_vacante');
       final idVac = (idRaw is int) ? idRaw : int.tryParse('$idRaw') ?? idRaw;
 
       final resp = await http.put(

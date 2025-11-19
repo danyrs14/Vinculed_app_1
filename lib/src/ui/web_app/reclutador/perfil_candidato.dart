@@ -111,7 +111,7 @@ class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage
         return;
       }
       final headers = await provider.getAuthHeaders();
-      final uri = Uri.parse('http://localhost:3000/api/reclutadores/postulaciones_revision?id_alumno=$idAlumno&id_reclutador=$idReclutador');
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/postulaciones_revision?id_alumno=$idAlumno&id_reclutador=$idReclutador');
       final resp = await http.get(uri, headers: headers);
       if (resp.statusCode == 404) {
         setState(() {
@@ -998,7 +998,7 @@ class _PostulacionCard extends StatelessWidget {
     try {
       final provider = context.read<UserDataProvider>();
       final headers = await provider.getAuthHeaders();
-      final uri = Uri.parse('http://localhost:3000/api/reclutadores/reclutar');
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/reclutar');
       final body = jsonEncode({
         'id_postulacion': postulacion.idPostulacion,
         'id_vacante': postulacion.idVacante,
@@ -1020,7 +1020,7 @@ class _PostulacionCard extends StatelessWidget {
     try {
       final provider = context.read<UserDataProvider>();
       final headers = await provider.getAuthHeaders();
-      final uri = Uri.parse('http://localhost:3000/api/reclutadores/rechazar_postulacion');
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/rechazar_postulacion');
       final body = jsonEncode({
         'id_postulacion': postulacion.idPostulacion,
         'estatus': 'Rechazado',

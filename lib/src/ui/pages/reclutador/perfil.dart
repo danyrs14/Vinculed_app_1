@@ -135,7 +135,7 @@ Future<void> _confirmarDesactivacion(BuildContext context) async {
       return;
     }
 
-    final uri = Uri.parse('http://localhost:3000/api/alumnos/perfil/eliminar_cuenta');
+    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/eliminar_cuenta');
     final body = jsonEncode({
       'id_usuario': idUsuario,
       'id_alumno': idRol,

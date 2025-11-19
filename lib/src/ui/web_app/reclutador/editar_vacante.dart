@@ -136,7 +136,7 @@ class _EditVacancyPageState extends State<EditVacancyPage> {
       final idReclutador = provider.idRol;
       if (idReclutador == null) { setState(() { _loadError = 'Sin id_reclutador'; _loadingData = false; }); return; }
       final headers = await provider.getAuthHeaders();
-      final uri = Uri.parse('http://localhost:3000/api/vacantes/detalles?id_vacante=$id&id_reclutador=$idReclutador');
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/vacantes/detalles?id_vacante=$id&id_reclutador=$idReclutador');
       final resp = await http.get(uri, headers: headers);
       if (resp.statusCode != 200) { setState(() { _loadError = 'Error ${resp.statusCode}'; _loadingData = false; }); return; }
       final data = jsonDecode(resp.body) as Map<String,dynamic>;
@@ -408,7 +408,7 @@ class _EditVacancyPageState extends State<EditVacancyPage> {
         'roles_relacionados': rolesList.isEmpty ? null : rolesList,
       };
       payload.removeWhere((k,v)=> v==null);
-      final resp = await http.put(Uri.parse('http://localhost:3000/api/reclutadores/editar_vacante'), headers: headers, body: jsonEncode(payload));
+      final resp = await http.put(Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/editar_vacante'), headers: headers, body: jsonEncode(payload));
       if (!mounted) return;
       if (resp.statusCode >=200 && resp.statusCode <300) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cambios guardados')));

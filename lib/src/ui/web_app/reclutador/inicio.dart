@@ -49,7 +49,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
       final userProv = context.read<UserDataProvider>();
       final headers = await userProv.getAuthHeaders();
       final idRol = userProv.idRol;
-      final uri = Uri.parse('http://localhost:3000/api/reclutadores/alumnos_reclutados')
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/alumnos_reclutados')
           .replace(queryParameters: { 'id_reclutador': '$idRol' });
       final resp = await http.get(uri, headers: headers);
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
@@ -403,7 +403,7 @@ class _RecruitedCandidateCard extends StatelessWidget {
 
   Future<void> _markCompleted(BuildContext context) async {
     try {
-      final uri = Uri.parse('http://localhost:3000/api/reclutadores/marcar_completada_postulacion');
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/marcar_completada_postulacion');
       final userProv = context.read<UserDataProvider>();
       final headers = await userProv.getAuthHeaders();
       headers['Content-Type'] = 'application/json';

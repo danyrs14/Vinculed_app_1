@@ -24,12 +24,13 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return kIsWeb
-        ? const AdminApp()
-        : MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: 'Montserrat'),
-      home: SplashScreen(),
-    );
+    // return kIsWeb
+    //     ? const AdminApp()
+    //     : MaterialApp(
+    //   debugShowCheckedModeBanner: false,
+    //   theme: ThemeData(fontFamily: 'Montserrat'),
+    //   home: SplashScreen(),
+    // );
+    return const AdminApp();
   }
 }

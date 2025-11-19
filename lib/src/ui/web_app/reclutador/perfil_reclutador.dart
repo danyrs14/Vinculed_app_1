@@ -55,7 +55,7 @@ class _UserProfileState extends State<UserProfile> {
       final headers = await userProv.getAuthHeaders();
       final idRol = userProv.idRol; // Obtenemos el ID del rol/reclutador
       
-      final uri = Uri.parse('http://localhost:3000/api/reclutadores/perfil')
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/perfil')
           .replace(queryParameters: {'id_reclutador': '$idRol'});
       
       final resp = await http.get(uri, headers: headers);
@@ -121,7 +121,7 @@ class _UserProfileState extends State<UserProfile> {
       // Enviar al backend del reclutador
       final headers = await userProv.getAuthHeaders();
       final resp = await http.put(
-        Uri.parse('http://localhost:3000/api/reclutadores/perfil/actualizar_foto'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/perfil/actualizar_foto'),
         headers: headers,
         body: jsonEncode({'id_reclutador': idRol, 'url_foto_perfil': photoUrl}),
       );
