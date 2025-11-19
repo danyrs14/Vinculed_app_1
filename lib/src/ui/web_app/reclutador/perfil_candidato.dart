@@ -47,7 +47,8 @@ class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage
   List<PostulacionRevision> _postulaciones = [];
   bool _loadingPostulaciones = false;
   String? _errorPostulaciones;
-
+  bool _emptyPostulacionesNice = false; // mostrar vacío ilustrado en 404
+  
   @override
   void initState() {
     super.initState();
@@ -97,6 +98,7 @@ class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage
     setState(() {
       _loadingPostulaciones = true;
       _errorPostulaciones = null;
+      _emptyPostulacionesNice = false;
     });
     try {
       final provider = context.read<UserDataProvider>();
@@ -111,6 +113,14 @@ class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage
       final headers = await provider.getAuthHeaders();
       final uri = Uri.parse('http://localhost:3000/api/reclutadores/postulaciones_revision?id_alumno=$idAlumno&id_reclutador=$idReclutador');
       final resp = await http.get(uri, headers: headers);
+      if (resp.statusCode == 404) {
+        setState(() {
+          _postulaciones = [];
+          _emptyPostulacionesNice = true;
+          _loadingPostulaciones = false;
+        });
+        return;
+      }
       if (resp.statusCode != 200) {
         setState(() {
           _errorPostulaciones = 'Error ${resp.statusCode} al cargar postulaciones';
@@ -228,6 +238,50 @@ class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No se pudo abrir el CV: $e')));
     }
+  }
+
+  Widget _buildPostulacionesEmptyNice() {
+    final theme = ThemeController.instance;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: theme.background(),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.blueGrey.shade100),
+              ),
+              child: Icon(Icons.inbox_outlined, size: 44, color: Colors.blueGrey.shade300),
+            ),
+            const SizedBox(height: 14),
+            const Text(
+              'Este alumno no está postulado a ninguna de tus vacantes activas',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF1F2A36)),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Cuando el alumno se postule, verás sus solicitudes aquí.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.black87),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 40,
+              child: SimpleButton(
+                title: 'Actualizar',
+                onTap: _fetchPostulacionesRevision,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildBody(bool isMobile, double w) {
@@ -556,6 +610,8 @@ class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage
                                 const Center(child: CircularProgressIndicator())
                               else if (_errorPostulaciones != null)
                                 Text(_errorPostulaciones!, style: const TextStyle(color: Colors.red))
+                              else if (_emptyPostulacionesNice)
+                                _buildPostulacionesEmptyNice()
                               else if (_postulaciones.isEmpty)
                                 const Text('Sin postulaciones')
                               else
@@ -948,7 +1004,7 @@ class _PostulacionCard extends StatelessWidget {
         'id_vacante': postulacion.idVacante,
         'estatus': 'Reclutado',
       });
-      final resp = await http.post(uri, headers: headers, body: body);
+      final resp = await http.put(uri, headers: headers, body: body);
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Postulación aceptada')));
         if (onActionDone != null) onActionDone!();
@@ -969,7 +1025,7 @@ class _PostulacionCard extends StatelessWidget {
         'id_postulacion': postulacion.idPostulacion,
         'estatus': 'Rechazado',
       });
-      final resp = await http.post(uri, headers: headers, body: body);
+      final resp = await http.put(uri, headers: headers, body: body);
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Postulación rechazada')));
         if (onActionDone != null) onActionDone!();

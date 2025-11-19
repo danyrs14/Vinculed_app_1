@@ -1329,14 +1329,33 @@ class _BannerSection extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              InkWell(
-                onTap: onUploadPhoto,
-                borderRadius: BorderRadius.circular(58),
-                child: CircleAvatar(
-                  radius: 58,
-                  backgroundImage: urlFoto != null ? NetworkImage(urlFoto!) : null,
-                  child: urlFoto == null ? const Icon(Icons.person, size: 58) : null,
-                ),
+              // Avatar con botón de edición superpuesto (móvil)
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  CircleAvatar(
+                    radius: 58,
+                    backgroundImage: urlFoto != null ? NetworkImage(urlFoto!) : null,
+                    child: urlFoto == null ? const Icon(Icons.person, size: 58) : null,
+                  ),
+                  if (onUploadPhoto != null)
+                    Positioned(
+                      right: -6,
+                      bottom: -6,
+                      child: Material(
+                        color: Colors.white,
+                        shape: const CircleBorder(),
+                        elevation: 1,
+                        child: IconButton(
+                          tooltip: 'Cambiar foto',
+                          icon: const Icon(Icons.edit, size: 18),
+                          onPressed: onUploadPhoto,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 12),
               _cvBox(expand: true),
@@ -1364,14 +1383,32 @@ class _BannerSection extends StatelessWidget {
                 children: [
                   Container(
                     margin: const EdgeInsets.only(bottom: 18),
-                    child: InkWell(
-                      onTap: onUploadPhoto,
-                      borderRadius: BorderRadius.circular(58),
-                      child: CircleAvatar(
-                        radius: 58,
-                        backgroundImage: urlFoto != null ? NetworkImage(urlFoto!) : null,
-                        child: urlFoto == null ? const Icon(Icons.person, size: 58) : null,
-                      ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        CircleAvatar(
+                          radius: 58,
+                          backgroundImage: urlFoto != null ? NetworkImage(urlFoto!) : null,
+                          child: urlFoto == null ? const Icon(Icons.person, size: 58) : null,
+                        ),
+                        if (onUploadPhoto != null)
+                          Positioned(
+                            right: -6,
+                            bottom: -6,
+                            child: Material(
+                              color: Colors.white,
+                              shape: const CircleBorder(),
+                              elevation: 1,
+                              child: IconButton(
+                                tooltip: 'Cambiar foto',
+                                icon: const Icon(Icons.edit, size: 18),
+                                onPressed: onUploadPhoto,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                   const Spacer(),

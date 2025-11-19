@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:http/http.dart' as http; // Necesario para la petición HTTP
+import 'dart:convert'; // Necesario para decodificar JSON
+import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart' as fs;
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
@@ -15,8 +21,14 @@ class UserProfile extends StatefulWidget {
 }
 
 class _UserProfileState extends State<UserProfile> {
+  final usuario = FirebaseAuth.instance.currentUser!;
   final _scrollCtrl = ScrollController();
   bool _showFooter = false;
+
+  // NUEVOS ESTADOS para manejar la carga de la API
+  Map<String, dynamic>? _perfilData;
+  bool _loading = true;
+  String? _error;
 
   static const double _footerReservedSpace = EscomFooter.height;
   static const double _extraBottomPadding = 24.0;
@@ -26,7 +38,106 @@ class _UserProfileState extends State<UserProfile> {
   void initState() {
     super.initState();
     _scrollCtrl.addListener(_handleScroll);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _handleScroll());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleScroll();
+      _fetchPerfilReclutador(); // Llama a la nueva función de carga
+    });
+  }
+
+  // ──────────────────── FUNCIÓN DE CARGA ────────────────────
+  Future<void> _fetchPerfilReclutador() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final userProv = context.read<UserDataProvider>();
+      final headers = await userProv.getAuthHeaders();
+      final idRol = userProv.idRol; // Obtenemos el ID del rol/reclutador
+      
+      final uri = Uri.parse('http://localhost:3000/api/reclutadores/perfil')
+          .replace(queryParameters: {'id_reclutador': '$idRol'});
+      
+      final resp = await http.get(uri, headers: headers);
+      
+      if (resp.statusCode != 200) {
+        throw Exception('Error al obtener perfil: ${resp.statusCode}');
+      }
+      
+      final data = jsonDecode(resp.body);
+      setState(() {
+        _perfilData = data is Map<String, dynamic> ? data : null;
+        _loading = false;
+      });
+      
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _error = 'Error al cargar el perfil. Asegúrese de que el servidor esté activo. $e';
+      });
+    }
+  }
+
+  Future<String> _uploadRecruiterPhoto(Uint8List bytes, String ext, String ownerId) async {
+    final storage = fs.FirebaseStorage.instance;
+    final baseFolder = 'foto_perfil/${usuario.uid}';
+    final folderRef = storage.ref().child(baseFolder);
+    try {
+      final existing = await folderRef.listAll();
+      for (final item in existing.items) {
+        await item.delete();
+      }
+    } catch (_) {}
+    final path = '$baseFolder/avatar.$ext';
+    final ref = storage.ref().child(path);
+    final contentType = (ext == 'png') ? 'image/png' : 'image/jpeg';
+    await ref.putData(bytes, fs.SettableMetadata(contentType: contentType));
+    final url = await ref.getDownloadURL();
+    return url;
+  }
+
+  Future<void> _changePhoto() async {
+    try {
+      final picked = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: false, withData: true);
+      if (picked == null || picked.files.isEmpty) return;
+      final file = picked.files.single;
+      final bytes = file.bytes;
+      if (bytes == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo leer la imagen seleccionada')));
+        return;
+      }
+      String ext = 'jpg';
+      final name = (file.name).toLowerCase();
+      if (name.endsWith('.png')) ext = 'png';
+      if (name.endsWith('.jpeg')) ext = 'jpeg';
+
+      final userProv = context.read<UserDataProvider>();
+      final idRol = userProv.idRol;
+      final owner = FirebaseAuth.instance.currentUser?.uid ?? '${idRol ?? 'reclutador'}';
+
+      // Subir a Storage y obtener URL pública
+      final photoUrl = await _uploadRecruiterPhoto(bytes, ext, owner);
+
+      // Enviar al backend del reclutador
+      final headers = await userProv.getAuthHeaders();
+      final resp = await http.put(
+        Uri.parse('http://localhost:3000/api/reclutadores/perfil/actualizar_foto'),
+        headers: headers,
+        body: jsonEncode({'id_reclutador': idRol, 'url_foto_perfil': photoUrl}),
+      );
+
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        setState(() {
+          _perfilData = _perfilData ?? <String, dynamic>{};
+          _perfilData!['url_foto_perfil'] = photoUrl;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Foto actualizada correctamente')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode}: ${resp.body}')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No se pudo actualizar la foto: $e')));
+    }
   }
 
   void _handleScroll() {
@@ -48,143 +159,175 @@ class _UserProfileState extends State<UserProfile> {
     super.dispose();
   }
 
+  // ──────────────────── CONSTRUCCIÓN DE DATOS ────────────────────
+
+  List<_InfoItem> _leftItems() {
+    final data = _perfilData ?? {};
+    final empresa = data['empresa'] ?? {};
+    
+    return [
+      _InfoItem(
+        label: 'Correo Electronico:',
+        value: data['correo'] ?? 'Sin correo',
+        icon: Icons.email_outlined,
+        circle: true,
+      ),
+      _InfoItem(
+        label: 'Nombre de la Empresa:',
+        value: empresa['nombre_empresa'] ?? 'Sin datos',
+        icon: Icons.business,
+      ),
+      _InfoItem(
+        label: 'Sitio Web:',
+        value: empresa['sitio_web'] ?? 'No disponible',
+        icon: Icons.link,
+      ),
+    ];
+  }
+
+  List<_InfoItem> _rightItems() {
+    final empresa = _perfilData?['empresa'] ?? {};
+    
+    return [
+      _InfoItem(
+        label: 'Descripción de la Empresa:',
+        value: empresa['descripcion_empresa'] ?? 'Aún no se ha añadido una descripción.',
+        icon: Icons.edit_note,
+        multiLine: true,
+      ),
+    ];
+  }
+
+  // ──────────────────── MÉTODO BUILD ────────────────────
+
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
     final w = MediaQuery.of(context).size.width;
     final isMobile = w < 900;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+    // Extracción segura para el encabezado
+    final perfil = _perfilData ?? {};
+    final nombre = perfil['nombre'] ?? context.select((UserDataProvider u) => u.nombreUsuario ?? 'Reclutador');
+    final fotoUrl = perfil['url_foto_perfil'];
 
     return Scaffold(
       backgroundColor: theme.background(),
       appBar: EscomHeader3(
         onLoginTap: () => context.go('/reclutador/perfil_rec'),
         onNotifTap: () {},
-        onMenuSelected: (label) {
+        onMenuSelected: (label) { /* ... navegación ... */ 
           switch (label) {
-            case "Inicio":
-              context.go('/inicio');
-              break;
-            case "Crear Vacante":
-              context.go('/reclutador/new_vacancy');
-              break;
-            case "Mis Vacantes":
-              context.go('/reclutador/postulaciones');
-              break;
-            case "FAQ":
-              context.go('/reclutador/faq_rec');
-              break;
-            case "Mensajes":
-              context.go('/reclutador/msg_rec');
-              break;
+            case "Inicio": context.go('/inicio'); break;
+            case "Crear Vacante": context.go('/reclutador/new_vacancy'); break;
+            case "Mis Vacantes": context.go('/reclutador/postulaciones'); break;
+            case "FAQ": context.go('/reclutador/faq_rec'); break;
+            case "Mensajes": context.go('/reclutador/msg_rec'); break;
           }
         },
       ),
       body: Stack(
         children: [
           Positioned.fill(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final minBodyHeight =
-                    constraints.maxHeight - _footerReservedSpace - _extraBottomPadding;
-
-                return NotificationListener<ScrollNotification>(
-                  onNotification: (n) {
-                    if (n is ScrollUpdateNotification ||
-                        n is UserScrollNotification ||
-                        n is ScrollEndNotification) {
-                      _handleScroll();
-                    }
-                    return false;
-                  },
-                  child: SingleChildScrollView(
-                    controller: _scrollCtrl,
-                    padding: const EdgeInsets.only(
-                      bottom: _footerReservedSpace + _extraBottomPadding,
-                    ),
-                    child: Center(
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (n) {
+                if (n is ScrollUpdateNotification || n is ScrollEndNotification) _handleScroll();
+                return false;
+              },
+              child: SingleChildScrollView(
+                controller: _scrollCtrl,
+                padding: const EdgeInsets.only(bottom: _footerReservedSpace + _extraBottomPadding),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1100),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1100),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: minBodyHeight > 0 ? minBodyHeight : 0,
+                        constraints: BoxConstraints(
+                          // Reemplaza uso incorrecto de 'constraints' por cálculo basado en pantalla
+                          minHeight: (screenHeight - _footerReservedSpace - _extraBottomPadding).clamp(0, double.infinity),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ───────── Banner + Avatar (Usando datos del perfil) ─────────
+                            _Banner(
+                              avatarUrl: fotoUrl,
+                              logoUrl: perfil['empresa']?['url_logo_empresa'],
+                              onChangePhoto: _changePhoto,
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // ───────── Banner + Avatar ─────────
-                                const _Banner(),
+                            
+                            const SizedBox(height: 18),
 
-                                const SizedBox(height: 18),
-
-                                // ───────── Nombre y Rol ─────────
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        context.select((UserDataProvider u) => u.nombreUsuario ?? 'Reclutador'),
-                                        style: const TextStyle(
-                                          fontSize: 26,
-                                          fontWeight: FontWeight.w800,
-                                          color: Color(0xFF1F2A36),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      const Text(
-                                        'Reclutador',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ],
+                            // ───────── Nombre y Rol ─────────
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    nombre,
+                                    style: const TextStyle(
+                                      fontSize: 26,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFF1F2A36),
+                                    ),
                                   ),
-                                ),
-
-                                const SizedBox(height: 22),
-
-                                // ───────── Datos en dos columnas ─────────
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                                  child: isMobile
-                                      ? Column(
-                                    children: [
-                                      _InfoColumn(items: _leftItems()),
-                                      const SizedBox(height: 24),
-                                      _InfoColumn(items: _rightItems()),
-                                    ],
-                                  )
-                                      : Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(child: _InfoColumn(items: _leftItems())),
-                                      const SizedBox(width: 24),
-                                      Expanded(child: _InfoColumn(items: _rightItems())),
-                                    ],
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    perfil['empresa']?['nombre_empresa'] ?? 'Reclutador independiente',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.w500
+                                    ),
                                   ),
-                                ),
-
-                                const SizedBox(height: 28),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
+
+                            const SizedBox(height: 22),
+
+                            // ───────── Carga de datos o Contenido ─────────
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: _loading
+                                ? const Center(child: Padding(padding: EdgeInsets.only(top: 40), child: CircularProgressIndicator()))
+                                : (_error != null)
+                                    ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
+                                    : isMobile
+                                        ? Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              _InfoColumn(items: _leftItems()),
+                                              const SizedBox(height: 24),
+                                              _InfoColumn(items: _rightItems()),
+                                            ],
+                                          )
+                                        : Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(child: _InfoColumn(items: _leftItems())),
+                                              const SizedBox(width: 24),
+                                              Expanded(child: _InfoColumn(items: _rightItems())),
+                                            ],
+                                          ),
+                            ),
+
+                            const SizedBox(height: 28),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                );
-              },
+                ),
+              ),
             ),
           ),
-
           // ───────── Footer animado ─────────
           Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
+            left: 0, right: 0, bottom: 0,
             child: AnimatedSlide(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOut,
@@ -200,56 +343,71 @@ class _UserProfileState extends State<UserProfile> {
       ),
     );
   }
-
-  // ───────── Contenido (solo email y carrera, NO editables) ─────────
-
-  List<_InfoItem> _leftItems() => const [
-    _InfoItem(
-      label: 'Correo Electronico:',
-      value: 'eminemsrl4@gmail.com',
-      icon: Icons.lock_outline, // no editable
-      circle: true,
-    ),
-    _InfoItem(
-      label: 'Carrera:',
-      value: 'BBVA México',
-      icon: Icons.lock_outline, // no editable
-      circle: true,
-    ),
-  ];
-
-  // Quitamos Dirección, Teléfono, Puesto, Idiomas y Área
-  List<_InfoItem> _rightItems() => const [];
 }
 
 /* ════════════════════════ Secciones / Widgets internos ═══════════════════════ */
 
 class _Banner extends StatelessWidget {
-  const _Banner();
+  final String? avatarUrl;
+  final String? logoUrl;
+  final VoidCallback? onChangePhoto;
+  
+  const _Banner({this.avatarUrl, this.logoUrl, this.onChangePhoto});
 
   @override
   Widget build(BuildContext context) {
+    // Usamos el logo de la empresa como banner de fondo si está disponible
+    final backgroundImageUrl = logoUrl; 
+
     return Stack(
       children: [
-        // Banner
+        // Banner (Color Sólido o Imagen de la Empresa)
         AspectRatio(
           aspectRatio: 16 / 4.5,
-          child: Image.asset(
-            'assets/images/portada.jpg',
-            fit: BoxFit.cover,
-          ),
+          child: backgroundImageUrl != null
+              ? Image.network(
+                  backgroundImageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (ctx, err, stack) => Container(color: Colors.blueGrey.shade100),
+                )
+              : Container(color: Colors.blueGrey.shade100), // Color de fondo si no hay URL
         ),
-        // Avatar alineado a la izquierda, pegado al borde inferior
+        
+        // Avatar del Reclutador
         Positioned(
           left: 24,
           bottom: 18,
-          child: CircleAvatar(
-            radius: 58,
-            backgroundColor: Colors.white,
-            child: const CircleAvatar(
-              radius: 54,
-              backgroundImage: AssetImage('assets/images/reclutador.png'),
-            ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              CircleAvatar(
+                radius: 58,
+                backgroundColor: Colors.white,
+                child: CircleAvatar(
+                  radius: 54,
+                  backgroundColor: Colors.blue[50],
+                  backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : const AssetImage('assets/images/reclutador.png') as ImageProvider,
+                  child: avatarUrl == null ? const Icon(Icons.person, size: 54, color: Colors.blueGrey) : null,
+                ),
+              ),
+              if (onChangePhoto != null)
+                Positioned(
+                  right: -6,
+                  bottom: -6,
+                  child: Material(
+                    color: Colors.white,
+                    shape: const CircleBorder(),
+                    elevation: 1,
+                    child: IconButton(
+                      tooltip: 'Cambiar foto',
+                      icon: const Icon(Icons.edit, size: 18),
+                      onPressed: onChangePhoto,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ],
@@ -278,6 +436,7 @@ class _InfoColumn extends StatelessWidget {
   }
 }
 
+// Mantiene la estructura de datos pero añade URL opcional
 class _InfoItem {
   final String label;
   final String value;
@@ -318,7 +477,7 @@ class _InfoRow extends StatelessWidget {
             style: const TextStyle(color: Colors.black87, height: 1.4),
           ),
         ),
-        // Acción (icono en círculo) - solo visual, sin interacción
+        // Acción (icono en círculo)
         const SizedBox(width: 10),
         Container(
           width: 24,

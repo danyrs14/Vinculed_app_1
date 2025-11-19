@@ -254,7 +254,28 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
         setState(() {
+          // Actualiza el estado en el detalle
           _detalleVacante!['estado'] = target;
+          // Y también en el listado para que el badge de la tarjeta refleje el cambio
+          if (_selectedIndex != null &&
+              _selectedIndex! >= 0 &&
+              _selectedIndex! < _vacancies.length) {
+            final v = _vacancies[_selectedIndex!];
+            _vacancies[_selectedIndex!] = PublishedVacancy(
+              idVacante: v.idVacante,
+              idReclutador: v.idReclutador,
+              titulo: v.titulo,
+              montoBecaText: v.montoBecaText,
+              fechaPublicacion: v.fechaPublicacion,
+              fechaLimite: v.fechaLimite,
+              numeroVacantes: v.numeroVacantes,
+              ciudad: v.ciudad,
+              entidad: v.entidad,
+              modalidad: v.modalidad,
+              estado: target,
+              postulaciones: v.postulaciones,
+            );
+          }
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Estado actualizado a $target')),
