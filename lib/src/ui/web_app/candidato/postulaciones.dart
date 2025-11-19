@@ -305,17 +305,17 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
     final selected = _currentTab == label;
     final theme = ThemeController.instance;
     final accent = theme.secundario();
-    final baseBg = theme.primario();
+    final baseBg = Colors.blueGrey.shade200;
     return ElevatedButton(
       onPressed: () => _changeTab(label),
       style: ElevatedButton.styleFrom(
         elevation: selected ? 2 : 0,
         backgroundColor: selected ? accent : baseBg,
-        foregroundColor: selected ? theme.primario() : accent,
+        foregroundColor: theme.primario() ,
         padding: EdgeInsets.symmetric(horizontal: isMobile ? 18 : 28, vertical: 14),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: accent, width: 1.2),
+          //side: BorderSide(color: accent, width: 1.2),
         ),
         textStyle: TextStyle(
           fontSize: isMobile ? 14 : 16,

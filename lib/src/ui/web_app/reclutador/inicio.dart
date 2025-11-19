@@ -229,7 +229,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                           ),
                                           const SizedBox(height: 14),
                                           SizedBox(
-                                            height: 40,
+                                            height: 48, // altura mayor para evitar corte de texto en móviles
                                             child: SimpleButton(
                                               title: 'Actualizar',
                                               onTap: _fetchRecruitedStudents,

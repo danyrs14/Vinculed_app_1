@@ -333,7 +333,7 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
     }
     try {
       final userProv = Provider.of<UserDataProvider>(context, listen: false);
-      final idAlumno = userProv.idUsuario; // Usar id real del alumno
+      final idAlumno = userProv.idRol; 
       if (idAlumno == null) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se encontró id_alumno')));
         return;

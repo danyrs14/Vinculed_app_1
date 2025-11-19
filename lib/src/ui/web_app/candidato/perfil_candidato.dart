@@ -764,6 +764,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       final resp = await http.delete(uri, headers: headers, body: body);
 
       if (resp.statusCode == 204) {
+        context.read<UserDataProvider>().clearData();
         // Ir al inicio de sesión
         context.go('/login');
       } else {
