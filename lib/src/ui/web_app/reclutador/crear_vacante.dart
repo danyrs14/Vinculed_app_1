@@ -6,8 +6,14 @@ import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/requisitos.dart';
-import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/habilidades_multi_dropdown.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/roles_multi_dropdown.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/dropdown.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 
 class CreateVacancyPage extends StatefulWidget {
   const CreateVacancyPage({super.key});
@@ -24,52 +30,39 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
   static const double _extraBottomPadding = 24.0;
   static const double _atEndThreshold = 4.0;
 
+  final _formKey = GlobalKey<FormState>();
+
   // ===== Controllers (generales) =====
   final _nombreCtrl = TextEditingController();
   final _salarioCtrl = TextEditingController();
   final _direccionCtrl = TextEditingController();
   final _descripcionCtrl = TextEditingController();
-
-  // Nuevos campos solicitados
+  final _horarioCtrl = TextEditingController();
+  final _conocimientosCtrl = TextEditingController();
   final _beneficiosCtrl = TextEditingController();
-  final _fechaInicioCtrl = TextEditingController();
-  final _fechaFinCtrl = TextEditingController();
   final _duracionCtrl = TextEditingController();
-  final _fechaLimiteCtrl = TextEditingController();
-  final _fechaPublicacionCtrl = TextEditingController();
-  String? _modalidad; // Presencial, Remoto, Híbrido
   final _observacionesCtrl = TextEditingController();
   final _numeroVacantesCtrl = TextEditingController();
+  final _escolaridadCtrl = TextEditingController();
+  String? _modalidad; // Remoto, Híbrido, Presencial
 
-  // ===== Opciones de requisitos =====
-  final List<String> _especificosOpciones = const [
-    'Sistemas', 'Informática', 'QA', 'Electrónica',
-    'Ciberseguridad', 'Desarrollo móvil', 'Backend Node.js',
-    'Flutter', 'SQL/MySQL', 'AWS', 'Git/GitHub',
-  ];
-  final List<String> _especificosSel = ['1. Ingeniero en Sistemas'];
+  // Dirección
+  final _municipioCtrl = TextEditingController();
+  final _entidadCtrl = TextEditingController();
+  final _cpCtrl = TextEditingController();
 
-  // ESCOLARES: ahora se agregan desde un TextField libre
-  final List<String> _escolaresSel = ['1. Universitario sin título'];
-  final _escolarInputCtrl = TextEditingController();
+  // Fechas (controllers)
+  final _fechaInicioCtrl = TextEditingController();
+  final _fechaFinCtrl = TextEditingController();
+  final _fechaLimiteCtrl = TextEditingController();
+  final _fechaPublicacionCtrl = TextEditingController();
 
-  // HABILIDADES BLANDAS: dropdown con búsqueda
-  final List<String> _habilidadesBlandasOpc = const [
-    'Comunicación efectiva',
-    'Trabajo en equipo',
-    'Liderazgo',
-    'Adaptabilidad',
-    'Gestión del tiempo',
-    'Pensamiento crítico',
-    'Resolución de problemas',
-    'Proactividad',
-    'Empatía',
-    'Creatividad',
-  ];
-  final List<String> _habilidadesBlandasSel = [];
+  // Selección de roles de trabajo
+  List<RoleOption> _rolesSeleccionados = [];
 
-  // Modalidad
-  final List<String> _modalidades = const ['Presencial', 'Remoto', 'Híbrido'];
+  // IDs de habilidades seleccionadas
+  List<int> _habTecnicasIds = [];
+  List<int> _habBlandasIds = [];
 
   @override
   void initState() {
@@ -100,18 +93,44 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
     _salarioCtrl.dispose();
     _direccionCtrl.dispose();
     _descripcionCtrl.dispose();
-
+    _horarioCtrl.dispose();
+    _conocimientosCtrl.dispose();
     _beneficiosCtrl.dispose();
-    _fechaInicioCtrl.dispose();
-    _fechaFinCtrl.dispose();
     _duracionCtrl.dispose();
-    _fechaLimiteCtrl.dispose();
-    _fechaPublicacionCtrl.dispose();
     _observacionesCtrl.dispose();
     _numeroVacantesCtrl.dispose();
+    _escolaridadCtrl.dispose();
 
-    _escolarInputCtrl.dispose();
+    _municipioCtrl.dispose();
+    _entidadCtrl.dispose();
+    _cpCtrl.dispose();
+
+    _fechaInicioCtrl.dispose();
+    _fechaFinCtrl.dispose();
+    _fechaLimiteCtrl.dispose();
+    _fechaPublicacionCtrl.dispose();
+
     super.dispose();
+  }
+
+  String _fmt(DateTime dt) {
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${dt.year}-${two(dt.month)}-${two(dt.day)} ${two(dt.hour)}:${two(dt.minute)}:00';
+  }
+
+  Future<void> _pickDateTime({required TextEditingController controller, required ValueChanged<DateTime?> onPicked}) async {
+    final now = DateTime.now();
+    final d = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (d == null) return;
+    final t = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(now));
+    final picked = DateTime(d.year, d.month, d.day, t?.hour ?? 0, t?.minute ?? 0);
+    controller.text = _fmt(picked);
+    onPicked(picked);
   }
 
   @override
@@ -133,9 +152,6 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
               context.go('/reclutador/new_vacancy');
               break;
             case "Mis Vacantes":
-              context.go('/my_vacancy');
-              break;
-            case "Postulaciones":
               context.go('/reclutador/postulaciones');
               break;
             case "FAQ":
@@ -175,182 +191,350 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
                           child: ConstrainedBox(
                             constraints: BoxConstraints(minHeight: minBodyHeight > 0 ? minBodyHeight : 0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // ===== Título =====
-                                Row(
-                                  children: [
-                                    const CircleAvatar(
-                                      radius: 18,
-                                      backgroundImage: AssetImage('assets/images/escom.png'),
-                                      backgroundColor: Colors.transparent,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      'Crear Vacante',
-                                      style: TextStyle(
-                                        fontSize: isMobile ? 24 : 32,
-                                        fontWeight: FontWeight.w800,
-                                        color: const Color(0xFF22313F),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // ===== Título =====
+                                  Row(
+                                    children: [
+                                      const CircleAvatar(
+                                        radius: 18,
+                                        backgroundImage: AssetImage('assets/images/escom.png'),
+                                        backgroundColor: Colors.transparent,
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 24),
-
-                                // ===== Formulario: Campos principales =====
-                                TextInput(controller: _nombreCtrl, title: 'Nombre de la Vacante'),
-                                const SizedBox(height: 12),
-                                TextInput(
-                                  controller: _salarioCtrl,
-                                  title: 'Salario',
-                                  keyboardType: TextInputType.number,
-                                ),
-                                const SizedBox(height: 12),
-                                TextInput(controller: _direccionCtrl, title: 'Dirección donde se laborará'),
-                                const SizedBox(height: 16),
-
-                                // ===== Bloque de Requisitos (2 columnas) =====
-                                isMobile
-                                    ? Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    _RequisitosEscolaresTextOnly(
-                                      title: 'REQUISITOS ESCOLARES:',
-                                      inputController: _escolarInputCtrl,
-                                      selected: _escolaresSel,
-                                      onAdd: _addEscolarText,
-                                      onRemove: _removeEscolar,
-                                    ),
-                                    const SizedBox(height: 18),
-                                    _RequisitosDropdownColumn(
-                                      title: 'REQUISITOS ESPECÍFICOS:',
-                                      options: _especificosOpciones,
-                                      selected: _especificosSel,
-                                      onAdd: _addEspecifico,
-                                      onRemove: _removeEspecifico,
-                                    ),
-                                  ],
-                                )
-                                    : Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: _RequisitosEscolaresTextOnly(
-                                        title: 'REQUISITOS ESCOLARES:',
-                                        inputController: _escolarInputCtrl,
-                                        selected: _escolaresSel,
-                                        onAdd: _addEscolarText,
-                                        onRemove: _removeEscolar,
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Crear Vacante',
+                                        style: TextStyle(
+                                          fontSize: isMobile ? 24 : 32,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFF22313F),
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 18),
-                                    Expanded(
-                                      child: _RequisitosDropdownColumn(
-                                        title: 'REQUISITOS ESPECÍFICOS:',
-                                        options: _especificosOpciones,
-                                        selected: _especificosSel,
-                                        onAdd: _addEspecifico,
-                                        onRemove: _removeEspecifico,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 24),
 
-                                const SizedBox(height: 18),
+                                  // ===== Formulario: Campos principales =====
+                                  StyledTextFormField(
+                                    controller: _nombreCtrl,
+                                    title: 'Título de la vacante (ej. Analista de Datos)',
+                                    isRequired: true,
+                                    validator: (v) => (v == null || v.trim().isEmpty) ? 'El título es obligatorio' : null,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  RolesMultiDropdown(
+                                    label: 'Selecciona el rol o roles de trabajo con los que se relaciona la vacante',
+                                    hintText: '',
+                                    onChanged: (roles) => setState(() => _rolesSeleccionados = roles),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  StyledTextFormField(
+                                    controller: _salarioCtrl,
+                                    title: 'Monto de beca mensual (ej. 1500.00)',
+                                    keyboardType: TextInputType.number,
+                                    isRequired: true,
+                                    validator: (v) {
+                                      if (v == null || v.trim().isEmpty) return 'El monto de beca es obligatorio';
+                                      final n = double.tryParse(v.replaceAll(',', '.'));
+                                      if (n == null) return 'Ingresa un número válido';
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  // Dirección detallada
+                                  StyledTextFormField(
+                                    controller: _direccionCtrl,
+                                    title: 'Calle y número de la dirección',
+                                    isRequired: true,
+                                    validator: (v) => (v == null || v.trim().isEmpty) ? 'La ubicación es obligatoria' : null,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  isMobile
+                                      ? Column(
+                                          children: [
+                                            StyledTextFormField(
+                                              controller: _municipioCtrl,
+                                              title: 'Municipio o Ciudad',
+                                              isRequired: true,
+                                              validator: (v) => (v == null || v.trim().isEmpty) ? 'Municipio/Ciudad es obligatorio' : null,
+                                            ),
+                                            const SizedBox(height: 12),
+                                            StyledTextFormField(
+                                              controller: _entidadCtrl,
+                                              title: 'Entidad (Estado)',
+                                              isRequired: true,
+                                              validator: (v) => (v == null || v.trim().isEmpty) ? 'Entidad es obligatoria' : null,
+                                            ),
+                                            const SizedBox(height: 12),
+                                            StyledTextFormField(
+                                              controller: _cpCtrl,
+                                              title: 'Código Postal',
+                                              keyboardType: TextInputType.number,
+                                              isRequired: true,
+                                              validator: (v) {
+                                                if (v == null || v.trim().isEmpty) return 'C.P. es obligatorio'; // opcional
+                                                if (int.tryParse(v) == null) return 'CP inválido';
+                                                if (v.length < 4 || v.length > 10) return 'CP inválido';
+                                                return null;
+                                              },
+                                            ),
+                                          ],
+                                        )
+                                      : Row(
+                                          children: [
+                                            Expanded(
+                                              child: StyledTextFormField(
+                                                controller: _municipioCtrl,
+                                                title: 'Municipio / Ciudad',
+                                                isRequired: true,
+                                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Municipio/Ciudad es obligatorio' : null,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: StyledTextFormField(
+                                                controller: _entidadCtrl,
+                                                title: 'Entidad (Estado)',
+                                                isRequired: true,
+                                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Entidad es obligatoria' : null,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: StyledTextFormField(
+                                                controller: _cpCtrl,
+                                                title: 'Código Postal',
+                                                keyboardType: TextInputType.number,
+                                                isRequired: true,
+                                                validator: (v) {
+                                                  if (v == null || v.trim().isEmpty) return 'C.P. es obligatorio';
+                                                  if (int.tryParse(v) == null) return 'C.P. inválido';
+                                                  if (v.length < 4 || v.length > 10) return 'C.P. inválido';
+                                                  return null;
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
 
-                                // ===== Campos extra solicitados =====
-                                TextInput(controller: _beneficiosCtrl, title: 'Beneficios'),
-                                const SizedBox(height: 12),
+                                  const SizedBox(height: 16),
 
-                                // Fechas y duración
-                                isMobile
-                                    ? Column(
-                                  children: [
-                                    TextInput(controller: _fechaInicioCtrl, title: 'Fecha inicio (AAAA-MM-DD)'),
-                                    const SizedBox(height: 12),
-                                    TextInput(controller: _fechaFinCtrl, title: 'Fecha fin (AAAA-MM-DD)'),
-                                    const SizedBox(height: 12),
-                                    TextInput(controller: _duracionCtrl, title: 'Duración (ej. 6 meses)'),
-                                  ],
-                                )
-                                    : Row(
-                                  children: [
-                                    Expanded(child: TextInput(controller: _fechaInicioCtrl, title: 'Fecha inicio (AAAA-MM-DD)')),
-                                    const SizedBox(width: 12),
-                                    Expanded(child: TextInput(controller: _fechaFinCtrl, title: 'Fecha fin (AAAA-MM-DD)')),
-                                    const SizedBox(width: 12),
-                                    Expanded(child: TextInput(controller: _duracionCtrl, title: 'Duración (ej. 6 meses)')),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-
-                                // Modalidad + Fechas de publicación/postulación
-                                isMobile
-                                    ? Column(
-                                  children: [
-                                    _ModalidadField(
-                                      value: _modalidad,
-                                      options: _modalidades,
-                                      onChanged: (v) => setState(() => _modalidad = v),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    TextInput(controller: _fechaLimiteCtrl, title: 'Fecha límite de postulación (AAAA-MM-DD)'),
-                                    const SizedBox(height: 12),
-                                    TextInput(controller: _fechaPublicacionCtrl, title: 'Fecha de publicación (AAAA-MM-DD)'),
-                                  ],
-                                )
-                                    : Row(
-                                  children: [
-                                    Expanded(
-                                      child: _ModalidadField(
-                                        value: _modalidad,
-                                        options: _modalidades,
-                                        onChanged: (v) => setState(() => _modalidad = v),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(child: TextInput(controller: _fechaLimiteCtrl, title: 'Fecha límite de postulación (AAAA-MM-DD)')),
-                                    const SizedBox(width: 12),
-                                    Expanded(child: TextInput(controller: _fechaPublicacionCtrl, title: 'Fecha de publicación (AAAA-MM-DD)')),
-                                  ],
-                                ),
-
-                                const SizedBox(height: 18),
-
-                                // ===== Agregar para: Habilidades blandas, Observaciones, Número de vacantes =====
-                                _HabilidadesBlandasSearchable(
-                                  title: 'HABILIDADES BLANDAS:',
-                                  options: _habilidadesBlandasOpc,
-                                  selected: _habilidadesBlandasSel,
-                                  onAdd: _addHabilidadBlanda,
-                                  onRemove: _removeHabilidadBlanda,
-                                ),
-                                const SizedBox(height: 12),
-                                TextInput(controller: _observacionesCtrl, title: 'Observaciones'),
-                                const SizedBox(height: 12),
-                                TextInput(controller: _numeroVacantesCtrl, title: 'Número de vacantes', keyboardType: TextInputType.number),
-
-                                const SizedBox(height: 18),
-
-                                // Descripción
-                                TextInput(controller: _descripcionCtrl, title: 'Añade una descripción'),
-                                const SizedBox(height: 18),
-
-                                // Botón Publicar
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: SizedBox(
-                                    width: isMobile ? 240 : 320,
-                                    height: 44,
-                                    child: SimpleButton(
-                                      onTap: _publicar,
-                                      title: 'Publicar Vacante',
+                                  // ===== Requisitos Específicos (Habilidades técnicas) =====
+                                  _CardBox(
+                                    title: 'REQUISITOS ESPECÍFICOS:',
+                                    child: HabilidadesMultiDropdown(
+                                      label: 'Selecciona habilidades técnicas que debe tener el candidato',
+                                      hintText: '',
+                                      allowedTipo: 'técnica',
+                                      onChanged: (list) => setState(() => _habTecnicasIds = list.map((e) => e.id).toList()),
+                                      initialSelectedIds: const [],
                                     ),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 12),
+                                  StyledTextFormField(
+                                    controller: _conocimientosCtrl,
+                                    title: 'Conocimientos (opcional, redacta detalles específicos si no fue suficiente el campo anterior)',
+                                    maxLines: 4,
+                                    maxLength: 1000,
+                                    isRequired: false,
+                                  ),
+
+                                  const SizedBox(height: 16),
+
+                                  // Fechas y duración
+                                  isMobile
+                                      ? Column(
+                                          children: [
+                                            _DateTimePickerField(
+                                              label: 'Fecha inicio (opcional)',
+                                              controller: _fechaInicioCtrl,
+                                              onTap: () => _pickDateTime(controller: _fechaInicioCtrl, onPicked: (_) {}),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            _DateTimePickerField(
+                                              label: 'Fecha fin (opcional)',
+                                              controller: _fechaFinCtrl,
+                                              onTap: () => _pickDateTime(controller: _fechaFinCtrl, onPicked: (_) {}),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            StyledTextFormField(
+                                              controller: _duracionCtrl,
+                                              title: 'Duración (en meses, ej. 6 meses)',
+                                              isRequired: true,
+                                              validator: (v) => (v == null || v.trim().isEmpty) ? 'La duración es obligatoria' : null,
+                                            ),
+                                          ],
+                                        )
+                                      : Row(
+                                          children: [
+                                            Expanded(
+                                              child: _DateTimePickerField(
+                                                label: 'Fecha inicio (opcional)',
+                                                controller: _fechaInicioCtrl,
+                                                onTap: () => _pickDateTime(controller: _fechaInicioCtrl, onPicked: (_) {}),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: _DateTimePickerField(
+                                                label: 'Fecha fin (opcional)',
+                                                controller: _fechaFinCtrl,
+                                                onTap: () => _pickDateTime(controller: _fechaFinCtrl, onPicked: (_) {}),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: StyledTextFormField(
+                                                controller: _duracionCtrl,
+                                                title: 'Duración (en meses, ej. 6 meses)',
+                                                isRequired: true,
+                                                validator: (v) => (v == null || v.trim().isEmpty) ? 'La duración es obligatoria' : null,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                  const SizedBox(height: 12),
+
+                                  // Modalidad + Fecha límite
+                                  isMobile
+                                      ? Column(
+                                          children: [
+                                            DropdownInput<String>(
+                                              title: 'Modalidad',
+                                              required: true,
+                                              items: const [
+                                                DropdownMenuItem(value: 'Remoto', child: Text('Remoto')),
+                                                DropdownMenuItem(value: 'Híbrido', child: Text('Híbrido')),
+                                                DropdownMenuItem(value: 'Presencial', child: Text('Presencial')),
+                                              ],
+                                              value: _modalidad,
+                                              onChanged: (v) => setState(() => _modalidad = v),
+                                              validator: (v) => v == null ? 'Selecciona una modalidad' : null,
+                                            ),
+                                            const SizedBox(height: 12),
+                                            _DateTimePickerField(
+                                              label: 'Fecha límite de postulación (opcional)',
+                                              controller: _fechaLimiteCtrl,
+                                              onTap: () => _pickDateTime(controller: _fechaLimiteCtrl, onPicked: (_) {}),
+                                            ),
+                                          ],
+                                        )
+                                      : Row(
+                                          children: [
+                                            Expanded(
+                                              child: DropdownInput<String>(
+                                                title: 'Modalidad',
+                                                required: true,
+                                                items: const [
+                                                  DropdownMenuItem(value: 'Remoto', child: Text('Remoto')),
+                                                  DropdownMenuItem(value: 'Híbrido', child: Text('Híbrido')),
+                                                  DropdownMenuItem(value: 'Presencial', child: Text('Presencial')),
+                                                ],
+                                                value: _modalidad,
+                                                onChanged: (v) => setState(() => _modalidad = v),
+                                                validator: (v) => v == null ? 'Selecciona una modalidad' : null,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: _DateTimePickerField(
+                                                label: 'Fecha límite de postulación (opcional)',
+                                                controller: _fechaLimiteCtrl,
+                                                onTap: () => _pickDateTime(controller: _fechaLimiteCtrl, onPicked: (_) {}),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+
+                                  const SizedBox(height: 12),
+
+                                  // Escolaridad requerida
+                                  StyledTextFormField(
+                                    controller: _escolaridadCtrl,
+                                    title: 'Escolaridad (obligatoria, ej. Mínimo 6º semestre de Ing. en Sistemas)',
+                                    isRequired: true,
+                                    validator: (v) => (v == null || v.trim().isEmpty) ? 'La escolaridad es obligatoria' : null,
+                                  ),
+
+                                  const SizedBox(height: 18),
+
+                                  // ===== Habilidades blandas + Observaciones + Vacantes =====
+                                  _HabilidadesBlandasSearchable(
+                                    title: 'HABILIDADES BLANDAS:',
+                                    options: const [],
+                                    selected: const [],
+                                    onAdd: (_) {},
+                                    onRemove: (_) {},
+                                    onSelectedHabilidadesChanged: (list) => _habBlandasIds = list.map((e) => e.id).toList(),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  StyledTextFormField(
+                                    controller: _observacionesCtrl,
+                                    title: 'Observaciones (opcional, hasta 400 caracteres)',
+                                    maxLines: 3,
+                                    maxLength: 400,
+                                    isRequired: false,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  StyledTextFormField(
+                                    controller: _numeroVacantesCtrl,
+                                    title: 'Número de vacantes',
+                                    keyboardType: TextInputType.number,
+                                    isRequired: true,
+                                    validator: (v) {
+                                      if (v == null || v.trim().isEmpty) return 'El número de vacantes es obligatorio';
+                                      if (int.tryParse(v) == null) return 'Ingresa un número entero válido';
+                                      return null;
+                                    },
+                                  ),
+
+                                  const SizedBox(height: 18),
+
+                                  // Descripción y otros textos
+                                  StyledTextFormField(
+                                    controller: _descripcionCtrl,
+                                    title: 'Descripción de la vacante (máx. 4000 caracteres)',
+                                    maxLines: 6,
+                                    maxLength: 4000,
+                                    isRequired: true,
+                                    validator: (v) => (v == null || v.trim().isEmpty) ? 'La descripción es obligatoria' : null,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  StyledTextFormField(
+                                    controller: _beneficiosCtrl,
+                                    title: 'Beneficios (opcional, máx. 1500 caracteres)',
+                                    maxLines: 4,
+                                    maxLength: 1500,
+                                    isRequired: false,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  StyledTextFormField(
+                                    controller: _horarioCtrl,
+                                    title: 'Horario (ej. Lunes a Viernes, 9:00 AM - 6:00 PM)',
+                                    isRequired: true,
+                                    validator: (v) => (v == null || v.trim().isEmpty) ? 'El horario es obligatorio' : null,
+                                  ),
+                                  
+
+                                  const SizedBox(height: 18),
+
+                                  // Botón Publicar
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: SizedBox(
+                                      width: isMobile ? 240 : 320,
+                                      height: 44,
+                                      child: SimpleButton(
+                                        onTap: _publicar,
+                                        title: 'Publicar Vacante',
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -388,313 +572,70 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
     );
   }
 
-  // ===== Handlers (Escolares) =====
-  void _addEscolarText() {
-    final v = _escolarInputCtrl.text.trim();
-    if (v.isEmpty) return;
-    setState(() {
-      final idx = _escolaresSel.length + 1;
-      _escolaresSel.add('$idx. $v');
-      _escolarInputCtrl.clear();
-    });
-  }
-
-  void _removeEscolar(String v) {
-    setState(() => _escolaresSel.remove(v));
-  }
-
-  // ===== Handlers (Específicos) =====
-  void _addEspecifico(String v) {
-    if (!_especificosSel.contains(v)) {
-      setState(() => _especificosSel.add(v));
+  void _publicar() async {
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Corrige los errores del formulario')));
+      return;
     }
-  }
+    try {
+      final userProv = Provider.of<UserDataProvider>(context, listen: false);
+      final headers = await userProv.getAuthHeaders();
+      final idReclutador = userProv.idRol;
 
-  void _removeEspecifico(String v) {
-    setState(() => _especificosSel.remove(v));
-  }
+      final habilidadesSet = <int>{}..addAll(_habTecnicasIds)..addAll(_habBlandasIds);
+      final habilidadesList = habilidadesSet.map((id) => { 'id_habilidad': id }).toList();
+      final rolesList = _rolesSeleccionados.map((r) => { 'id_roltrabajo': r.id }).toList();
 
-  // ===== Handlers (Habilidades blandas) =====
-  void _addHabilidadBlanda(String v) {
-    if (!_habilidadesBlandasSel.contains(v)) {
-      setState(() => _habilidadesBlandasSel.add(v));
+      final payload = <String, dynamic>{
+        'id_reclutador': idReclutador,
+        'titulo': _nombreCtrl.text.trim(),
+        'descripcion': _descripcionCtrl.text.trim(),
+        'beneficios': _beneficiosCtrl.text.trim().isEmpty ? null : _beneficiosCtrl.text.trim(),
+        'duracion': _duracionCtrl.text.trim(),
+        'fecha_inicio': _fechaInicioCtrl.text.trim().isEmpty ? null : _fechaInicioCtrl.text.trim(),
+        'fecha_fin': _fechaFinCtrl.text.trim().isEmpty ? null : _fechaFinCtrl.text.trim(),
+        'monto_beca': double.tryParse(_salarioCtrl.text.replaceAll(',', '.')),
+        'horario': _horarioCtrl.text.trim(),
+        'ubicacion': _direccionCtrl.text.trim(),
+        'ciudad': _municipioCtrl.text.trim(),
+        'entidad': _entidadCtrl.text.trim(),
+        'codigo_postal': _cpCtrl.text.trim().isEmpty ? null : int.tryParse(_cpCtrl.text.trim()),
+        'modalidad': _modalidad,
+        'fecha_limite': _fechaLimiteCtrl.text.trim().isEmpty ? null : _fechaLimiteCtrl.text.trim(),
+        'escolaridad': _escolaridadCtrl.text.trim(),
+        'conocimientos': _conocimientosCtrl.text.trim().isEmpty ? null : _conocimientosCtrl.text.trim(),
+        'habilidades': habilidadesList,
+        'observaciones': _observacionesCtrl.text.trim().isEmpty ? null : _observacionesCtrl.text.trim(),
+        'numero_vacantes': int.tryParse(_numeroVacantesCtrl.text.trim()),
+        'roles_relacionados': rolesList.isEmpty ? null : rolesList,
+      };
+
+      payload.removeWhere((k, v) => v == null);
+
+      final resp = await http.post(
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/crear_vacante'),
+        headers: headers,
+        body: jsonEncode(payload),
+      );
+
+      if (!mounted) return;
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vacante creada correctamente')));
+        if (resp.statusCode == 201) {
+          context.go('/reclutador/postulaciones');
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode}: ${resp.body}')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al enviar: $e')));
     }
-  }
-
-  void _removeHabilidadBlanda(String v) {
-    setState(() => _habilidadesBlandasSel.remove(v));
-  }
-
-  void _publicar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Vacante publicada (demo UI).')),
-    );
   }
 }
 
 // ===================================================================
 // ===============  WIDGETS DE APOYO VISUAL (inline)  =================
 // ===================================================================
-
-class _ChipList extends StatelessWidget {
-  const _ChipList({required this.items, required this.onRemove});
-
-  final List<String> items;
-  final void Function(String) onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) return const SizedBox.shrink();
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: items
-          .map(
-            (e) => Chip(
-          label: Text(e),
-          deleteIcon: const Icon(Icons.close, size: 18),
-          onDeleted: () => onRemove(e),
-        ),
-      )
-          .toList(),
-    );
-  }
-}
-
-class _RequisitosEscolaresTextOnly extends StatelessWidget {
-  const _RequisitosEscolaresTextOnly({
-    required this.title,
-    required this.inputController,
-    required this.selected,
-    required this.onAdd,
-    required this.onRemove,
-  });
-
-  final String title;
-  final TextEditingController inputController;
-  final List<String> selected;
-  final VoidCallback onAdd;
-  final void Function(String) onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    return _CardBox(
-      title: title,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: inputController,
-                  decoration: const InputDecoration(
-                    labelText: 'Escribe un requisito escolar y presiona Agregar',
-                    border: OutlineInputBorder(),
-                  ),
-                  onSubmitted: (_) => onAdd(),
-                ),
-              ),
-              const SizedBox(width: 10),
-              SizedBox(
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: onAdd,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Agregar'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _ChipList(items: selected, onRemove: onRemove),
-        ],
-      ),
-    );
-  }
-}
-
-class _RequisitosDropdownColumn extends StatefulWidget {
-  const _RequisitosDropdownColumn({
-    required this.title,
-    required this.options,
-    required this.selected,
-    required this.onAdd,
-    required this.onRemove,
-  });
-
-  final String title;
-  final List<String> options;
-  final List<String> selected;
-  final void Function(String) onAdd;
-  final void Function(String) onRemove;
-
-  @override
-  State<_RequisitosDropdownColumn> createState() => _RequisitosDropdownColumnState();
-}
-
-class _RequisitosDropdownColumnState extends State<_RequisitosDropdownColumn> {
-  String? _current;
-
-  @override
-  Widget build(BuildContext context) {
-    return _CardBox(
-      title: widget.title,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: _current,
-                  items: widget.options
-                      .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (v) => setState(() => _current = v),
-                  decoration: const InputDecoration(
-                    labelText: 'Selecciona un requisito específico',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              SizedBox(
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: _current == null ? null : () => widget.onAdd(_current!),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Agregar'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _ChipList(items: widget.selected, onRemove: widget.onRemove),
-        ],
-      ),
-    );
-  }
-}
-
-// ====== FIX AQUÍ: Autocomplete con controller + focusNode ======
-class _HabilidadesBlandasSearchable extends StatefulWidget {
-  const _HabilidadesBlandasSearchable({
-    required this.title,
-    required this.options,
-    required this.selected,
-    required this.onAdd,
-    required this.onRemove,
-  });
-
-  final String title;
-  final List<String> options;
-  final List<String> selected;
-  final void Function(String) onAdd;
-  final void Function(String) onRemove;
-
-  @override
-  State<_HabilidadesBlandasSearchable> createState() => _HabilidadesBlandasSearchableState();
-}
-
-class _HabilidadesBlandasSearchableState extends State<_HabilidadesBlandasSearchable> {
-  final TextEditingController _fieldCtrl = TextEditingController();
-  final FocusNode _fieldFocus = FocusNode(); // <-- añadido
-
-  @override
-  void dispose() {
-    _fieldCtrl.dispose();
-    _fieldFocus.dispose(); // <-- añadido
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _CardBox(
-      title: widget.title,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RawAutocomplete<String>(
-            textEditingController: _fieldCtrl, // <-- pasamos ambos
-            focusNode: _fieldFocus,            // <-- pasamos ambos
-            optionsBuilder: (TextEditingValue textEditingValue) {
-              final q = textEditingValue.text.trim().toLowerCase();
-              if (q.isEmpty) return const Iterable<String>.empty();
-              return widget.options.where((opt) => opt.toLowerCase().contains(q));
-            },
-            fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-              // controller == _fieldCtrl y focusNode == _fieldFocus
-              return TextField(
-                controller: controller,
-                focusNode: focusNode,
-                decoration: const InputDecoration(
-                  labelText: 'Buscar y agregar habilidad blanda',
-                  border: OutlineInputBorder(),
-                ),
-                onSubmitted: (_) => onFieldSubmitted(),
-              );
-            },
-            onSelected: (String selection) {
-              widget.onAdd(selection);
-              _fieldCtrl.clear();
-              _fieldFocus.requestFocus();
-            },
-            optionsViewBuilder: (context, onSelected, options) {
-              return Align(
-                alignment: Alignment.topLeft,
-                child: Material(
-                  elevation: 4.0,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 240, maxWidth: 520),
-                    child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      itemCount: options.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final String option = options.elementAt(index);
-                        return ListTile(
-                          title: Text(option),
-                          onTap: () => onSelected(option),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-          _ChipList(items: widget.selected, onRemove: widget.onRemove),
-        ],
-      ),
-    );
-  }
-}
-
-class _ModalidadField extends StatelessWidget {
-  const _ModalidadField({
-    required this.value,
-    required this.options,
-    required this.onChanged,
-  });
-
-  final String? value;
-  final List<String> options;
-  final ValueChanged<String?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      items: options.map((e) => DropdownMenuItem<String>(value: e, child: Text(e))).toList(),
-      onChanged: onChanged,
-      decoration: const InputDecoration(
-        labelText: 'Modalidad',
-        border: OutlineInputBorder(),
-      ),
-    );
-  }
-}
 
 class _CardBox extends StatelessWidget {
   const _CardBox({required this.title, required this.child});
@@ -729,6 +670,88 @@ class _CardBox extends StatelessWidget {
           Text(title, style: titleStyle),
           const SizedBox(height: 12),
           child,
+        ],
+      ),
+    );
+  }
+}
+
+// Reusable pequeño campo de fecha/hora
+class _DateTimePickerField extends StatelessWidget {
+  const _DateTimePickerField({
+    required this.label,
+    required this.controller,
+    required this.onTap,
+  });
+
+  final String label;
+  final TextEditingController controller;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
+    return TextFormField(
+      controller: controller,
+      readOnly: true,
+      onTap: onTap,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontSize: 14, color: Colors.grey, fontFamily: 'Poppins'),
+        floatingLabelStyle: TextStyle(color: theme.fuente(), fontFamily: 'Poppins'),
+        border: const OutlineInputBorder(),
+        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: theme.secundario())),
+        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: theme.secundario(), width: 1.4)),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+        suffixIcon: const Icon(Icons.calendar_today),
+      ),
+    );
+  }
+}
+
+// ====== Habilidades blandas selector (ya adaptado) ======
+class _HabilidadesBlandasSearchable extends StatefulWidget {
+  const _HabilidadesBlandasSearchable({
+    required this.title,
+    required this.options,
+    required this.selected,
+    required this.onAdd,
+    required this.onRemove,
+    this.onSelectedHabilidadesChanged,
+  });
+
+  final String title;
+  final List<String> options; // no usado
+  final List<String> selected; // no usado
+  final void Function(String) onAdd; // compat
+  final void Function(String) onRemove; // compat
+  final ValueChanged<List<HabilidadOption>>? onSelectedHabilidadesChanged;
+
+  @override
+  State<_HabilidadesBlandasSearchable> createState() => _HabilidadesBlandasSearchableState();
+}
+
+class _HabilidadesBlandasSearchableState extends State<_HabilidadesBlandasSearchable> {
+  void _onChanged(List<HabilidadOption> list) {
+    widget.onSelectedHabilidadesChanged?.call(list);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _CardBox(
+      title: widget.title,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          HabilidadesMultiDropdown(
+            label: 'Selecciona habilidades blandas e idiomas que debe tener el candidato',
+            hintText: '',
+            allowedTipos: const ['blanda', 'idioma'],
+            onChanged: _onChanged,
+            initialSelectedIds: const [],
+          ),
+          const SizedBox(height: 12),
         ],
       ),
     );

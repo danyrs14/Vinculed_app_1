@@ -35,7 +35,8 @@ class HabilidadesMultiDropdown extends StatefulWidget {
   final String? hintText;
   final bool enabled;
   final String? authToken;
-  final String? allowedTipo; // restrict selectable tipo
+  final String? allowedTipo; // restrict selectable tipo (single)
+  final List<String>? allowedTipos; // restrict selectable tipos (multiple)
   final String? errorText; // show error and red border
 
   const HabilidadesMultiDropdown({
@@ -46,7 +47,8 @@ class HabilidadesMultiDropdown extends StatefulWidget {
     this.hintText,
     this.enabled = true,
     this.authToken,
-    this.allowedTipo, // new param
+    this.allowedTipo,
+    this.allowedTipos,
     this.errorText,
   });
 
@@ -70,21 +72,23 @@ class _HabilidadesMultiDropdownState extends State<HabilidadesMultiDropdown> {
 
   Future<void> _ensureLoaded() async {
     if (_options.isNotEmpty || _loading) return;
-    setState(() { _loading = true; _error = ''; });
+    setState(() {
+      _loading = true;
+      _error = '';
+    });
     try {
-      // Intentar cargar desde el cache del UserDataProvider
       final userProv = Provider.of<UserDataProvider>(context, listen: false);
       if (!userProv.habilidadesCargadas) {
-        // Pre-cargar una sola vez (usa idToken internamente)
         await userProv.preloadHabilidades();
       }
       final cached = userProv.habilidadesDisponibles;
       if (cached != null && cached.isNotEmpty) {
         _options = cached.map((e) => HabilidadOption.fromJson(e)).toList();
-        setState(() { _loading = false; });
+        setState(() {
+          _loading = false;
+        });
         return;
       }
-      // Fallback: si por alguna razón no hay cache, intenta una única petición HTTP
       final headers = await userProv.getAuthHeaders();
       final res = await http.get(Uri.parse(_endpoint), headers: headers);
       if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -121,7 +125,9 @@ class _HabilidadesMultiDropdownState extends State<HabilidadesMultiDropdown> {
         options: _options,
         initialSelected: selected,
         onConfirm: (ids) {
-          _selectedIds..clear()..addAll(ids);
+          _selectedIds
+            ..clear()
+            ..addAll(ids);
           final chosen = _options.where((o) => _selectedIds.contains(o.id)).toList();
           widget.onChanged(chosen);
           setState(() {});
@@ -129,7 +135,8 @@ class _HabilidadesMultiDropdownState extends State<HabilidadesMultiDropdown> {
         },
         errorText: _error,
         loading: _loading,
-        allowedTipo: widget.allowedTipo, // pass restriction
+        allowedTipo: widget.allowedTipo,
+        allowedTipos: widget.allowedTipos,
       ),
     );
   }
@@ -194,7 +201,8 @@ class _SelectorDialog extends StatefulWidget {
   final ValueChanged<Set<int>> onConfirm;
   final String errorText;
   final bool loading;
-  final String? allowedTipo; // restriction
+  final String? allowedTipo; // single restriction
+  final List<String>? allowedTipos; // multi restriction
 
   const _SelectorDialog({
     required this.options,
@@ -203,6 +211,7 @@ class _SelectorDialog extends StatefulWidget {
     required this.errorText,
     required this.loading,
     this.allowedTipo,
+    this.allowedTipos,
   });
 
   @override
@@ -233,10 +242,19 @@ class _SelectorDialogState extends State<_SelectorDialog> {
 
   Map<String, Map<String, List<HabilidadOption>>> _grouped(List<HabilidadOption> opts) {
     final map = <String, Map<String, List<HabilidadOption>>>{};
-    for (final o in opts) { map.putIfAbsent(o.tipo, () => {}); map[o.tipo]!.putIfAbsent(o.categoria, () => []); map[o.tipo]![o.categoria]!.add(o); }
+    for (final o in opts) {
+      map.putIfAbsent(o.tipo, () => {});
+      map[o.tipo]!.putIfAbsent(o.categoria, () => []);
+      map[o.tipo]![o.categoria]!.add(o);
+    }
     for (final tipo in map.keys) {
-      final catMap = map[tipo]!; final sortedCatKeys = catMap.keys.toList()..sort(); final newCatMap = <String, List<HabilidadOption>>{};
-      for (final c in sortedCatKeys) { final skills = List<HabilidadOption>.from(catMap[c]!)..sort((a,b)=>a.habilidad.compareTo(b.habilidad)); newCatMap[c] = skills; }
+      final catMap = map[tipo]!;
+      final sortedCatKeys = catMap.keys.toList()..sort();
+      final newCatMap = <String, List<HabilidadOption>>{};
+      for (final c in sortedCatKeys) {
+        final skills = List<HabilidadOption>.from(catMap[c]!)..sort((a, b) => a.habilidad.compareTo(b.habilidad));
+        newCatMap[c] = skills;
+      }
       map[tipo] = newCatMap;
     }
     return map;
@@ -265,6 +283,9 @@ class _SelectorDialogState extends State<_SelectorDialog> {
       return t;
     }
     final allowedBase = widget.allowedTipo == null ? null : _baseTipo(widget.allowedTipo!);
+    final allowedBases = widget.allowedTipos == null
+        ? null
+        : widget.allowedTipos!.map((e) => _baseTipo(e)).toSet();
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: ConstrainedBox(
@@ -298,8 +319,8 @@ class _SelectorDialogState extends State<_SelectorDialog> {
                     backgroundColor: Colors.blueGrey,
                     textColor: Colors.white,
                     onTap: () {
-                      _searchCtrl.clear(); setState(() {}
-                      );
+                      _searchCtrl.clear();
+                      setState(() {});
                     },
                     icon: Icons.clear,
                   ),
@@ -322,7 +343,8 @@ class _SelectorDialogState extends State<_SelectorDialog> {
                   : ListView(
                       padding: const EdgeInsets.only(bottom: 8),
                       children: grouped.entries.map((tipoEntry) {
-                        final tipo = tipoEntry.key; final categorias = tipoEntry.value;
+                        final tipo = tipoEntry.key;
+                        final categorias = tipoEntry.value;
                         return Theme(
                           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                           child: ExpansionTile(
@@ -331,7 +353,8 @@ class _SelectorDialogState extends State<_SelectorDialog> {
                             collapsedIconColor: accent,
                             childrenPadding: const EdgeInsets.only(left: 8, right: 8, bottom: 4),
                             children: categorias.entries.map((catEntry) {
-                              final categoria = catEntry.key; final habilidades = catEntry.value;
+                              final categoria = catEntry.key;
+                              final habilidades = catEntry.value;
                               return ExpansionTile(
                                 title: Text(categoria, style: const TextStyle(fontWeight: FontWeight.w600)),
                                 childrenPadding: const EdgeInsets.only(left: 8, right: 8),
@@ -339,7 +362,10 @@ class _SelectorDialogState extends State<_SelectorDialog> {
                                 collapsedIconColor: accent,
                                 children: habilidades.map((h) {
                                   final checked = _selected.contains(h.id);
-                                  final isAllowed = allowedBase == null ? true : _baseTipo(h.tipo) == allowedBase;
+                                  final baseTipo = _baseTipo(h.tipo);
+                                  final isAllowed = allowedBase != null
+                                      ? baseTipo == allowedBase
+                                      : (allowedBases != null ? allowedBases.contains(baseTipo) : true);
                                   return CheckboxListTile(
                                     dense: true,
                                     activeColor: accent,
@@ -347,9 +373,17 @@ class _SelectorDialogState extends State<_SelectorDialog> {
                                     title: Text(h.habilidad, style: TextStyle(color: isAllowed ? theme.fuente() : Colors.black38)),
                                     subtitle: Text('${h.tipo} • ${h.categoria}', style: const TextStyle(fontSize: 12)),
                                     value: checked,
-                                    onChanged: isAllowed ? (v) {
-                                      setState(() { if (v == true) { _selected.add(h.id); } else { _selected.remove(h.id); } });
-                                    } : null,
+                                    onChanged: isAllowed
+                                        ? (v) {
+                                            setState(() {
+                                              if (v == true) {
+                                                _selected.add(h.id);
+                                              } else {
+                                                _selected.remove(h.id);
+                                              }
+                                            });
+                                          }
+                                        : null,
                                   );
                                 }).toList(),
                               );
@@ -374,7 +408,11 @@ class _SelectorDialogState extends State<_SelectorDialog> {
                           backgroundColor: Colors.blueGrey,
                           textColor: Colors.white,
                           icon: Icons.delete_outline,
-                          onTap: () { setState(() { _selected.clear(); }); },
+                          onTap: () {
+                            setState(() {
+                              _selected.clear();
+                            });
+                          },
                         ),
                         const SizedBox(height: 8),
                         SimpleButton(
@@ -395,7 +433,11 @@ class _SelectorDialogState extends State<_SelectorDialog> {
                           backgroundColor: Colors.blueGrey,
                           textColor: Colors.white,
                           icon: Icons.delete_outline,
-                          onTap: () { setState(() { _selected.clear(); }); },
+                          onTap: () {
+                            setState(() {
+                              _selected.clear();
+                            });
+                          },
                         ),
                         const SizedBox(width: 8),
                         SimpleButton(

@@ -47,10 +47,11 @@ class CertificadoItem {
 
 
 class CertificadosSection extends StatelessWidget {
-  const CertificadosSection({super.key, required this.items, required this.emptyText, required this.onUpdated});
+  const CertificadosSection({super.key, required this.items, required this.emptyText, required this.onUpdated, this.readOnly = false});
   final List<CertificadoItem> items;
   final String emptyText;
   final VoidCallback onUpdated;
+  final bool readOnly;
 
   String _display(CertificadoItem e) {
     final exp = e.fechaExpedicion.length >= 10 ? e.fechaExpedicion.substring(0,10) : e.fechaExpedicion;
@@ -132,6 +133,131 @@ class CertificadosSection extends StatelessWidget {
     );
     if (idx != null) _openEditForm(context, items[idx]);
   }
+
+  void _openViewSelection(BuildContext context) async {
+    if (items.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Visualizar Certificados'),
+          content: const Text('No hay elementos en "Certificados" todavía.'),
+          actions: [
+            SimpleButton(
+              title: 'Cerrar',
+              backgroundColor: Colors.blueGrey,
+              textColor: Colors.white,
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    final idx = await showDialog<int>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Selecciona un certificado'),
+        content: SizedBox(
+          width: 480,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: items.length,
+            itemBuilder: (ctx, i) => ListTile(
+              title: Text(_display(items[i])),
+              onTap: () => Navigator.pop(ctx, i),
+            ),
+          ),
+        ),
+        actions: [
+          SimpleButton(
+            title: 'Cerrar',
+            backgroundColor: Colors.blueGrey,
+            textColor: Colors.white,
+            onTap: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+    if (idx != null) _openViewDetails(context, items[idx]);
+  }
+
+  void _openViewDetails(BuildContext context, CertificadoItem item) {
+    String _fmt(String? v) => (v == null || v.trim().isEmpty) ? '-' : v;
+    final exp = item.fechaExpedicion.length >= 10 ? item.fechaExpedicion.substring(0,10) : item.fechaExpedicion;
+    final cad = (item.fechaCaducidad == null || item.fechaCaducidad!.isEmpty)
+        ? '-'
+        : (item.fechaCaducidad!.length >= 10 ? item.fechaCaducidad!.substring(0,10) : item.fechaCaducidad!);
+
+    Widget row(String k, String v) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 130, child: Text('$k:', style: const TextStyle(fontWeight: FontWeight.w700))),
+          const SizedBox(width: 8),
+          Expanded(child: Text(v.isEmpty ? '-' : v)),
+        ],
+      ),
+    );
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Detalle de Certificado'),
+        content: SizedBox(
+          width: 520,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                row('Nombre', item.nombre),
+                row('Institución', item.institucion),
+                row('Expedición', exp),
+                row('Caducidad', cad),
+                row('ID credencial', _fmt(item.idCredencial)),
+                row('URL certificado', _fmt(item.urlCertificado ?? '')),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(width: 130, child: Text('Habilidades:', style: TextStyle(fontWeight: FontWeight.w700))),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (item.habilidadesDesarrolladas.isEmpty)
+                              const Text('-')
+                            else
+                              for (final h in item.habilidadesDesarrolladas)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 2),
+                                  child: Text(h.habilidad),
+                                ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          SimpleButton(
+            title: 'Cerrar',
+            backgroundColor: Colors.blueGrey,
+            textColor: Colors.white,
+            onTap: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   void _openEditForm(BuildContext context, CertificadoItem item) {
     final formKey = GlobalKey<FormState>();
@@ -601,17 +727,25 @@ class CertificadosSection extends StatelessWidget {
             child: Text(emptyText, style: const TextStyle(color: Colors.black54)),
           ),
           const SizedBox(width: 8),
-          IconButton(
-            tooltip: 'Editar',
-            icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
-            onPressed: () => _openEditSelection(context),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            tooltip: 'Agregar',
-            icon: const Icon(Icons.add, size: 18, color: Colors.black54),
-            onPressed: () => _openAddForm(context),
-          ),
+          if (readOnly)
+            IconButton(
+              tooltip: 'Visualizar',
+              icon: const Icon(Icons.visibility_outlined, size: 18, color: Colors.black54),
+              onPressed: () => _openViewSelection(context),
+            )
+          else ...[
+            IconButton(
+              tooltip: 'Editar',
+              icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
+              onPressed: () => _openEditSelection(context),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              tooltip: 'Agregar',
+              icon: const Icon(Icons.add, size: 18, color: Colors.black54),
+              onPressed: () => _openAddForm(context),
+            ),
+          ],
         ],
       );
     }
@@ -635,17 +769,25 @@ class CertificadosSection extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        IconButton(
-          tooltip: 'Editar lista',
-          icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
-          onPressed: () => _openEditSelection(context),
-        ),
-        const SizedBox(width: 8),
-        IconButton(
-          tooltip: 'Agregar',
-          icon: const Icon(Icons.add, size: 18, color: Colors.black54),
-          onPressed: () => _openAddForm(context),
-        ),
+        if (readOnly)
+          IconButton(
+            tooltip: 'Visualizar',
+            icon: const Icon(Icons.visibility_outlined, size: 18, color: Colors.black54),
+            onPressed: () => _openViewSelection(context),
+          )
+        else ...[
+          IconButton(
+            tooltip: 'Editar lista',
+            icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
+            onPressed: () => _openEditSelection(context),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            tooltip: 'Agregar',
+            icon: const Icon(Icons.add, size: 18, color: Colors.black54),
+            onPressed: () => _openAddForm(context),
+          ),
+        ],
       ],
     );
   }

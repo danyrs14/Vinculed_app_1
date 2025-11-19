@@ -71,9 +71,6 @@ class _FaqPageRecState extends State<FaqPageRec> {
               context.go('/reclutador/new_vacancy');
               break;
             case "Mis Vacantes":
-              context.go('/reclutador/my_vacancy');
-              break;
-            case "Postulaciones":
               context.go('/reclutador/postulaciones');
               break;
             case "FAQ":

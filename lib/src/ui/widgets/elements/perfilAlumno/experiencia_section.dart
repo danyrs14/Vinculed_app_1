@@ -42,10 +42,11 @@ class ExperienciaItem {
 }
 
 class ExperienciaSection extends StatelessWidget {
-  const ExperienciaSection({super.key, required this.items, required this.emptyText, required this.onUpdated});
+  const ExperienciaSection({super.key, required this.items, required this.emptyText, required this.onUpdated, this.readOnly = false});
   final List<ExperienciaItem> items;
   final String emptyText;
   final VoidCallback onUpdated;
+  final bool readOnly;
 
   String _display(ExperienciaItem e) {
     final ini = e.fechaInicio.length >= 10 ? e.fechaInicio.substring(0,10) : e.fechaInicio;
@@ -58,7 +59,7 @@ class ExperienciaSection extends StatelessWidget {
   Future<void> _pickDate(BuildContext context, TextEditingController controller) async {
     DateTime initial = DateTime.now();
     final txt = controller.text.trim();
-    if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(txt)) {
+    if (RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(txt)) {
       try { initial = DateTime.parse(txt); } catch (_) {}
     }
     final picked = await showDatePicker(
@@ -121,6 +122,129 @@ class ExperienciaSection extends StatelessWidget {
     if (idx != null) _openEditForm(context, items[idx]);
   }
 
+  void _openViewSelection(BuildContext context) async {
+    if (items.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Visualizar Experiencias'),
+          content: const Text('No hay elementos en "Experiencias" todavía.'),
+          actions: [
+            SimpleButton(
+              title: 'Cerrar',
+              backgroundColor: Colors.blueGrey,
+              textColor: Colors.white,
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    final idx = await showDialog<int>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Selecciona una experiencia'),
+        content: SizedBox(
+          width: 480,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: items.length,
+            itemBuilder: (ctx, i) => ListTile(
+              title: Text(_display(items[i])),
+              onTap: () => Navigator.pop(ctx, i),
+            ),
+          ),
+        ),
+        actions: [
+          SimpleButton(
+            title: 'Cerrar',
+            backgroundColor: Colors.blueGrey,
+            textColor: Colors.white,
+            onTap: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+    if (idx != null) _openViewDetails(context, items[idx]);
+  }
+
+  void _openViewDetails(BuildContext context, ExperienciaItem item) {
+    String _fmt(String? v) => (v == null || v.trim().isEmpty) ? '-' : v;
+    final ini = item.fechaInicio.length >= 10 ? item.fechaInicio.substring(0,10) : item.fechaInicio;
+    final fin = (item.fechaFin == null || item.fechaFin!.isEmpty)
+        ? 'Presente'
+        : (item.fechaFin!.length >= 10 ? item.fechaFin!.substring(0,10) : item.fechaFin!);
+
+    Widget row(String k, String v) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 130, child: Text('$k:', style: const TextStyle(fontWeight: FontWeight.w700))),
+          const SizedBox(width: 8),
+          Expanded(child: Text(v.isEmpty ? '-' : v)),
+        ],
+      ),
+    );
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Detalle de Experiencia'),
+        content: SizedBox(
+          width: 520,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                row('Cargo', item.cargo),
+                row('Empresa', item.empresa),
+                row('Inicio', ini),
+                row('Fin', fin),
+                row('Descripción', _fmt(item.descripcion)),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(width: 130, child: Text('Habilidades:', style: TextStyle(fontWeight: FontWeight.w700))),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (item.habilidadesDesarrolladas.isEmpty)
+                              const Text('-')
+                            else
+                              for (final h in item.habilidadesDesarrolladas)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 2),
+                                  child: Text(h.habilidad),
+                                ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          SimpleButton(
+            title: 'Cerrar',
+            backgroundColor: Colors.blueGrey,
+            textColor: Colors.white,
+            onTap: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _openEditForm(BuildContext context, ExperienciaItem item) {
     final formKey = GlobalKey<FormState>();
     final cargoCtrl = TextEditingController(text: item.cargo);
@@ -167,7 +291,7 @@ class ExperienciaSection extends StatelessWidget {
                             controller: inicioCtrl,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) return 'Requerida';
-                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(v)) return 'Formato inválido';
+                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(v)) return 'Formato inválido';
                               return null;
                             },
                           ),
@@ -189,7 +313,7 @@ class ExperienciaSection extends StatelessWidget {
                             controller: finCtrl,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) return null;
-                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(v)) return 'Formato inválido';
+                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(v)) return 'Formato inválido';
                               return null;
                             },
                           ),
@@ -406,7 +530,7 @@ class ExperienciaSection extends StatelessWidget {
                             controller: inicioCtrl,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) return 'Requerida';
-                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(v)) return 'Formato inválido';
+                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(v)) return 'Formato inválido';
                               return null;
                             },
                           ),
@@ -428,7 +552,7 @@ class ExperienciaSection extends StatelessWidget {
                             controller: finCtrl,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) return null;
-                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(v)) return 'Formato inválido';
+                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(v)) return 'Formato inválido';
                               return null;
                             },
                           ),
@@ -570,17 +694,25 @@ class ExperienciaSection extends StatelessWidget {
             child: Text(emptyText, style: const TextStyle(color: Colors.black54)),
           ),
           const SizedBox(width: 8),
-          IconButton(
-            tooltip: 'Editar',
-            icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
-            onPressed: () => _openEditSelection(context),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            tooltip: 'Agregar',
-            icon: const Icon(Icons.add, size: 18, color: Colors.black54),
-            onPressed: () => _openAddForm(context),
-          ),
+          if (readOnly)
+            IconButton(
+              tooltip: 'Visualizar',
+              icon: const Icon(Icons.visibility_outlined, size: 18, color: Colors.black54),
+              onPressed: () => _openViewSelection(context),
+            )
+          else ...[
+            IconButton(
+              tooltip: 'Editar',
+              icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
+              onPressed: () => _openEditSelection(context),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              tooltip: 'Agregar',
+              icon: const Icon(Icons.add, size: 18, color: Colors.black54),
+              onPressed: () => _openAddForm(context),
+            ),
+          ],
         ],
       );
     }
@@ -604,17 +736,25 @@ class ExperienciaSection extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        IconButton(
-          tooltip: 'Editar lista',
-          icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
-          onPressed: () => _openEditSelection(context),
-        ),
-        const SizedBox(width: 8),
-        IconButton(
-          tooltip: 'Agregar',
-          icon: const Icon(Icons.add, size: 18, color: Colors.black54),
-          onPressed: () => _openAddForm(context),
-        ),
+        if (readOnly)
+          IconButton(
+            tooltip: 'Visualizar',
+            icon: const Icon(Icons.visibility_outlined, size: 18, color: Colors.black54),
+            onPressed: () => _openViewSelection(context),
+          )
+        else ...[
+          IconButton(
+            tooltip: 'Editar lista',
+            icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.black54),
+            onPressed: () => _openEditSelection(context),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            tooltip: 'Agregar',
+            icon: const Icon(Icons.add, size: 18, color: Colors.black54),
+            onPressed: () => _openAddForm(context),
+          ),
+        ],
       ],
     );
   }

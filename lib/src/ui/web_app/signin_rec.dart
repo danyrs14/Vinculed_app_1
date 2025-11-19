@@ -98,6 +98,11 @@ class _RegisterPageWebRecState extends State<RegisterPageWebRec> {
       );
 
       if ((response.statusCode == 201 || response.statusCode == 200) ) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gracias por registrarse. Revisaremos su registro y nos pondremos en contacto con usted.'), backgroundColor: Colors.green, duration: Duration(seconds: 5),),
+          );
+        }
         // Navegación con go_router. Asegúrate de tener esta ruta configurada.
         if (mounted) context.go('/dashboard');
       } else {
