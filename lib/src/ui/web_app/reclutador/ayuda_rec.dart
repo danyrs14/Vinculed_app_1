@@ -135,21 +135,56 @@ class _FaqPageRecState extends State<FaqPageRec> {
                               ConstrainedBox(
                                 constraints: const BoxConstraints(maxWidth: 560),
                                 child: const Column(
-                                  children: const [
+                                  children: [
                                     FaqItem(
-                                      question: '¿Cómo postularme?',
-                                      answer:
-                                      'Entra a "Mis Vacantes" o usa la búsqueda, abre la vacante y presiona "Postularme". '
-                                          'Sigue los pasos para enviar tu solicitud.',
-                                      initiallyExpanded: false,
+                                      question: '¿Qué campos son obligatorios para publicar?',
+                                      answer: 'Título, monto de beca, dirección (calle y número, municipio y entidad), horario, escolaridad, número de vacantes y descripción. Si falta alguno, el formulario mostrará el error.',
+                                      initiallyExpanded: true,
                                     ),
                                     SizedBox(height: 16),
                                     FaqItem(
-                                      question: '¿Cómo edito mi perfil?',
-                                      answer:
-                                      'Accede a la sección "Mi Perfil" para actualizar tu información personal, académica y profesional. '
-                                          'No olvides guardar los cambios.',
-                                      initiallyExpanded: true,
+                                      question: '¿Cómo elijo el rol de trabajo?',
+                                      answer: 'Usa "Selecciona el rol o roles" para asociar la vacante a uno o varios roles. Esto ayuda a que candidatos adecuados la encuentren.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Cómo agrego habilidades?',
+                                      answer: 'En "Requisitos específicos" elige habilidades técnicas. En "Habilidades blandas" agrega habilidades blandas e idiomas. Puedes combinar ambas.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Qué formato uso para el monto de beca?',
+                                      answer: 'Ingresa un número válido (ej. 1500.00). Se valida automáticamente; evita símbolos y texto.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Cómo capturo la dirección?',
+                                      answer: 'Completa calle y número, municipio/ciudad y entidad. El código postal es opcional, pero recomendado.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Para qué sirven las fechas?',
+                                      answer: 'Inicio/fin describen el periodo de la beca. "Fecha límite" define hasta cuándo se reciben postulaciones.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Qué modalidad debo elegir?',
+                                      answer: 'Selecciona Remoto, Híbrido o Presencial según corresponda. Esta información se mostrará al candidato.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Cómo defino el número de vacantes?',
+                                      answer: 'Ingresa un entero (ej. 3). El campo valida que sea numérico.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Qué extensión debe tener la descripción?',
+                                      answer: 'Hasta 4000 caracteres. Sé claro con responsabilidades, requisitos y beneficios.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Qué ocurre al publicar?',
+                                      answer: 'Al presionar "Publicar Vacante", si todo es válido se envía al servidor. Al crearla (201) se redirige a "Mis Vacantes" para administrarla.',
                                     ),
                                   ],
                                 ),

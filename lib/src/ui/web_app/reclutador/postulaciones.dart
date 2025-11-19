@@ -336,7 +336,7 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
             const SizedBox(height: 24),
             // Botón de acción (Crear vacante)
             SizedBox(
-              height: 45,
+              height: 50,
               child: SimpleButton(
                 title: 'Crear Nueva Vacante',
                 // Asumo que esta es la ruta de creación
