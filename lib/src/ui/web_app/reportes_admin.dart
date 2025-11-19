@@ -171,7 +171,7 @@ class ReportesAdminPage extends StatefulWidget {
 }
 
 class _ReportesAdminPageState extends State<ReportesAdminPage> {
-  static const String _endpoint = 'http://localhost:3000/api/reportes/ver_reportes';
+  static const String _endpoint = 'https://oda-talent-back-81413836179.us-central1.run.app/api/reportes/ver_reportes';
 
   // Datos y paginación
   List<ReporteItem> _reportes = const [];
@@ -304,7 +304,7 @@ class _ReportesAdminPageState extends State<ReportesAdminPage> {
 
   Future<PublicacionDetalle> _fetchPublicacionDetalle(int idContenido) async {
     final headers = await context.read<UserDataProvider>().getAuthHeaders();
-    final uri = Uri.parse('http://localhost:3000/api/experiencias_alumnos/ver/$idContenido');
+    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/ver/$idContenido');
     final res = await http.get(uri, headers: headers);
     if (res.statusCode >= 400) {
       throw Exception('Error ${res.statusCode}: ${res.body}');
@@ -727,7 +727,7 @@ class _PublicacionModalContent extends StatelessWidget {
       final headersBase = await context.read<UserDataProvider>().getAuthHeaders();
       final headers = {...headersBase, 'Content-Type': 'application/json'};
       final res = await http.put(
-        Uri.parse('http://localhost:3000/api/reportes/resolver_reporte'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reportes/resolver_reporte'),
         headers: headers,
         body: jsonEncode({'id_reporte': idReporte}),
       );
@@ -747,7 +747,7 @@ class _PublicacionModalContent extends StatelessWidget {
       final headersBase = await context.read<UserDataProvider>().getAuthHeaders();
       final headers = {...headersBase, 'Content-Type': 'application/json'};
       final res = await http.delete(
-        Uri.parse('http://localhost:3000/api/reportes/eliminar_publicacion'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reportes/eliminar_publicacion'),
         headers: headers,
         body: jsonEncode({
           'id_publicacion': detalle.idPublicacion,

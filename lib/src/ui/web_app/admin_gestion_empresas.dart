@@ -60,10 +60,10 @@ class AdminGestionEmpresasPage extends StatefulWidget {
 }
 
 class _AdminGestionEmpresasPageState extends State<AdminGestionEmpresasPage> {
-  static const _getUrl = 'http://localhost:3000/api/empresas/obtener_empresas';
-  static const _postUrl = 'http://localhost:3000/api/empresas/agregar_empresa';
-  static const _putUrl  = 'http://localhost:3000/api/empresas/actualizar_empresa';
-  static const _delUrl  = 'http://localhost:3000/api/empresas/eliminar_empresa';
+  static const _getUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/empresas/obtener_empresas';
+  static const _postUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/empresas/agregar_empresa';
+  static const _putUrl  = 'https://oda-talent-back-81413836179.us-central1.run.app/api/empresas/actualizar_empresa';
+  static const _delUrl  = 'https://oda-talent-back-81413836179.us-central1.run.app/api/empresas/eliminar_empresa';
 
   List<EmpresaItem> _empresas = [];
   bool _loading = false;
