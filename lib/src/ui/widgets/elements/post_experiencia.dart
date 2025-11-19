@@ -569,6 +569,41 @@ class _ExperiencePostState extends State<ExperiencePost> {
     }
   }
 
+  Widget _defaultAvatarIcon(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFE0E0E0)),
+      alignment: Alignment.center,
+      child: Icon(Icons.person, size: size * 0.6, color: Colors.grey.shade700),
+    );
+  }
+
+  Widget _buildAvatarFrom(String src, double radius) {
+    final size = radius * 2;
+    if (src.isEmpty) return _defaultAvatarIcon(size);
+    if (src.startsWith('http')) {
+      return ClipOval(
+        child: Image.network(
+          src,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _defaultAvatarIcon(size),
+        ),
+      );
+    }
+    return ClipOval(
+      child: Image.asset(
+        src,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _defaultAvatarIcon(size),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
@@ -598,12 +633,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: widget.avatarAsset.startsWith('http')
-                      ? NetworkImage(widget.avatarAsset)
-                      : AssetImage(widget.avatarAsset) as ImageProvider,
-                ),
+                SizedBox(width: 40, height: 40, child: _buildAvatarFrom(widget.avatarAsset, 20)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -1002,6 +1032,31 @@ class _CommentBubble extends StatelessWidget {
   final VoidCallback? onReply;
   final String? repliesButtonLabel;
 
+  Widget _defaultAvatarIcon(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFE0E0E0)),
+      alignment: Alignment.center,
+      child: Icon(Icons.person, size: size * 0.6, color: Colors.grey.shade700),
+    );
+  }
+
+  Widget _buildAvatar(String src, double radius) {
+    final size = radius * 2;
+    if (src.isEmpty) return _defaultAvatarIcon(size);
+    if (src.startsWith('http')) {
+      return ClipOval(
+        child: Image.network(src, width: size, height: size, fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _defaultAvatarIcon(size)),
+      );
+    }
+    return ClipOval(
+      child: Image.asset(src, width: size, height: size, fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _defaultAvatarIcon(size)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -1009,10 +1064,7 @@ class _CommentBubble extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 8, right: 8),
-          child: CircleAvatar(
-            radius: 18,
-            backgroundImage: avatar.startsWith('http') ? NetworkImage(avatar) : AssetImage(avatar) as ImageProvider,
-          ),
+          child: SizedBox(width: 36, height: 36, child: _buildAvatar(avatar, 18)),
         ),
         Flexible(
           child: Container(
@@ -1077,6 +1129,30 @@ class _ReplyBubble extends StatelessWidget {
     this.repliesButtonLabel,
     this.onReply,
   });
+  Widget _defaultAvatarIcon(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFE0E0E0)),
+      alignment: Alignment.center,
+      child: Icon(Icons.person, size: size * 0.6, color: Colors.grey.shade700),
+    );
+  }
+
+  Widget _buildAvatar(String src, double radius) {
+    final size = radius * 2;
+    if (src.isEmpty) return _defaultAvatarIcon(size);
+    if (src.startsWith('http')) {
+      return ClipOval(
+        child: Image.network(src, width: size, height: size, fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _defaultAvatarIcon(size)),
+      );
+    }
+    return ClipOval(
+      child: Image.asset(src, width: size, height: size, fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _defaultAvatarIcon(size)),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -1084,12 +1160,7 @@ class _ReplyBubble extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 8, right: 8),
-          child: CircleAvatar(
-            radius: 16,
-            backgroundImage: reply.urlFotoPerfil.isNotEmpty && reply.urlFotoPerfil.startsWith('http')
-                ? NetworkImage(reply.urlFotoPerfil)
-                : AssetImage(fallbackAvatar) as ImageProvider,
-          ),
+          child: SizedBox(width: 32, height: 32, child: _buildAvatar(reply.urlFotoPerfil.isNotEmpty ? reply.urlFotoPerfil : '', 16)),
         ),
         Flexible(
           child: Container(
