@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/pages/transicionInicial.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -9,22 +7,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-
-    Future.delayed(
-      Duration(milliseconds: 3000),
-          () => Navigator.pushReplacement(
-        context,
-        PageTransition(
-          type: PageTransitionType.fade,
-          child: TrasicionPage(),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
