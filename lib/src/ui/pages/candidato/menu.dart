@@ -69,7 +69,7 @@ class _MenuPageState extends State<MenuPage> {
                 IconButton(
                   icon: Icon(Icons.search, color: theme.primario()),
                   onPressed: () {
-                    Navigator.pushReplacement(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => Busqueda()),
                     );

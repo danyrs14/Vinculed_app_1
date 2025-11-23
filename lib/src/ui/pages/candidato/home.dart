@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/busqueda.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/vacante.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 import 'package:provider/provider.dart';
@@ -107,7 +108,10 @@ class _HomeState extends State<Home> {
             child: SimpleButton(
               title: 'Ver detalles',
               onTap: idVac == null ? null : () {
-                //TODO: ir a detalle de vacante en móvil
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => JobDetailPage(idVacante: idVac)),
+                );
               },
               primaryColor: true,
             ),

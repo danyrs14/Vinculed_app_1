@@ -84,12 +84,12 @@ class _BusquedaState extends State<Busqueda> {
                 Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.arrow_back_rounded, color: theme.secundario()),
+                      icon: Icon(Icons.arrow_back_rounded, color: theme.primario()),
                       tooltip: 'Regresar',
                       onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
+                        Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(builder: (_) => MenuPage()),
+                          (route) => false,
                         );
                       },
                     ),
@@ -299,32 +299,6 @@ class _BusquedaState extends State<Busqueda> {
                 ],
 
                 const SizedBox(height: 24),
-
-                // Botones inferiores (Regresar / Buscar)
-                Row(
-                  children: [
-                    Expanded(
-                      child: SimpleButton(
-                        title: 'Regresar',
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (_) => MenuPage()),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: SimpleButton(
-                        title: 'Buscar',
-                        primaryColor: true,
-                        onTap: _onSearch,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
               ],
             ),
           ),
