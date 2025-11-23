@@ -10,7 +10,8 @@ import 'package:firebase_storage/firebase_storage.dart' as fs;
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
-import 'package:vinculed_app_1/src/ui/pages/login.dart';
+// import 'package:vinculed_app_1/src/ui/pages/login.dart'; // ya no se usa directamente, navegación central via TrasicionPage
+import 'package:vinculed_app_1/src/ui/pages/transicionInicial.dart';
 // Secciones reutilizadas (mismo contenido versión móvil)
 import 'package:vinculed_app_1/src/ui/widgets/elements/perfilAlumno/escolaridad_section.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/perfilAlumno/experiencia_section.dart';
@@ -69,7 +70,7 @@ class _PerfilState extends State<Perfil> {
       setState(() { _perfil = perfil; _loading = false; });
     } catch (e) {
       setState(() { _error = 'Excepción: $e'; _loading = false; });
-      print('Excepción al cargar perfil: $e');
+      //print('Excepción al cargar perfil: $e');
     }
   }
 
@@ -318,6 +319,19 @@ class _PerfilState extends State<Perfil> {
                   width: 300, // Ancho fijo para que no sea 100% en pantallas grandes
                   height: 50,
                   child: SimpleButton(
+                    title: 'Cerrar Sesión',
+                    backgroundColor: Colors.blue,
+                    //primaryColor: false,
+                    onTap: () => _cerrarSesion(context), // Implementa esta función
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Center(
+                child: SizedBox(
+                  width: 300, // Ancho fijo para que no sea 100% en pantallas grandes
+                  height: 50,
+                  child: SimpleButton(
                     title: 'Desactivar Cuenta',
                     backgroundColor: Colors.red,
                     primaryColor: false,
@@ -331,6 +345,23 @@ class _PerfilState extends State<Perfil> {
       ),
     );
   }
+
+  Future<void> _cerrarSesion(BuildContext context) async {
+    try {
+      // Limpia datos cacheados del usuario (rol, id, token, etc.)
+      context.read<UserDataProvider>().clearData();
+
+      await FirebaseAuth.instance.signOut();
+      // Navegar al orquestador (TrasicionPage) limpiando el stack completo.
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => TrasicionPage()),
+        (route) => false,
+      );
+    } catch (e) {
+      print("Error al cerrar sesión: $e");
+    }
+  } 
 
   Future<void> _confirmarDesactivacion() async {
     final confirmed = await showDialog<bool>(
@@ -374,11 +405,14 @@ class _PerfilState extends State<Perfil> {
       final resp = await http.delete(uri, headers: headers, body: body);
 
       if (resp.statusCode == 204) {
+        // Limpiar provider y cerrar sesión Firebase para que el StreamBuilder
+        // de TrasicionPage refleje estado sin usuario.
         context.read<UserDataProvider>().clearData();
-        // Ir al inicio de sesión
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
+        try { await FirebaseAuth.instance.signOut(); } catch (_) {}
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => TrasicionPage()),
+          (route) => false,
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
