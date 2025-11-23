@@ -262,7 +262,20 @@ class EscolaridadSection extends StatelessWidget {
                             builder: (_) => AlertDialog(
                               title: const Text('Confirmar eliminación'),
                               content: const Text('¿Eliminar este registro de escolaridad? Esta acción no se puede deshacer.'),
-                              actions: [
+                              actions: isMobile ?
+                              [
+                                Center(
+                                  child: Wrap(
+                                    alignment: WrapAlignment.center,
+                                    spacing: 12,
+                                    runSpacing: 8,
+                                    children: [SimpleButton(onTap: () => Navigator.pop(_, true), title: ('Eliminar'), backgroundColor: Colors.redAccent,icon: Icons.delete_outline, textColor: Colors.white,),
+                                    SimpleButton(onTap: () => Navigator.pop(_, false), title: ('Cancelar'), backgroundColor: Colors.blueGrey,icon: Icons.close_outlined, textColor: Colors.white,),
+                                    ]
+                                  ),
+                                ),
+                              ] :
+                              [
                                 SimpleButton(onTap: () => Navigator.pop(_, true), title: ('Eliminar'), backgroundColor: Colors.redAccent,icon: Icons.delete_outline, textColor: Colors.white,),
                                 SimpleButton(onTap: () => Navigator.pop(_, false), title: ('Cancelar'), backgroundColor: Colors.blueGrey,icon: Icons.close_outlined, textColor: Colors.white,),
                               ],

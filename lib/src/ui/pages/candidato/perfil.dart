@@ -472,7 +472,17 @@ class _PerfilState extends State<Perfil> {
       return AlertDialog(title: const Text('Editar Ciudad y Entidad'), content: Form(key: formKey, child: Column(mainAxisSize: MainAxisSize.min, children: [
         StyledTextFormField(isRequired: true, title: 'Ciudad', controller: ciudadCtrl, validator: (v) { final had = (p.ciudad != null && p.ciudad!.trim().isNotEmpty); if (had && (v == null || v.trim().isEmpty)) return 'No puede quedar vacío'; return null; }),
         StyledTextFormField(isRequired: true, title: 'Entidad', controller: entidadCtrl, validator: (v) { final had = (p.entidad != null && p.entidad!.trim().isNotEmpty); if (had && (v == null || v.trim().isEmpty)) return 'No puede quedar vacío'; return null; }),
-      ])), actions: [cancelarBtn, guardarBtn]);
+      ])), actions: [
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [cancelarBtn, guardarBtn],
+                      ),
+                    ),
+                  ]
+      );
     }));
   }
   Future<void> _openEditTelefono(AlumnoPerfil p) async {
@@ -483,7 +493,17 @@ class _PerfilState extends State<Perfil> {
         if (!formKey.currentState!.validate()) return; setState(() => saving = true);
         try { await _saveTelefono(idAlumno: p.idAlumno, telefono: telCtrl.text.trim()); Navigator.pop(dctx); await _fetchPerfil(p.idAlumno); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Teléfono actualizado'))); } catch (e) { setState(() => saving = false); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'))); }
       });
-      return AlertDialog(title: const Text('Editar Teléfono'), content: Form(key: formKey, child: StyledTextFormField(isRequired: true, title: 'Teléfono', controller: telCtrl, validator: (v) { if (v != null && v.trim().isNotEmpty && !RegExp(r'^[0-9+\-\s]{10}$').hasMatch(v.trim())) return 'Teléfono inválido'; return null; })), actions: [cancelarBtn, guardarBtn]);
+      return AlertDialog(title: const Text('Editar Teléfono'), content: Form(key: formKey, child: StyledTextFormField(isRequired: true, title: 'Teléfono', controller: telCtrl, validator: (v) { if (v != null && v.trim().isNotEmpty && !RegExp(r'^[0-9+\-\s]{10}$').hasMatch(v.trim())) return 'Teléfono inválido'; return null; })), actions: [
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [cancelarBtn, guardarBtn],
+                      ),
+                    ),
+                  ]
+      );
     }));
   }
   Future<void> _openEditSemestre(AlumnoPerfil p) async {
@@ -494,7 +514,17 @@ class _PerfilState extends State<Perfil> {
         if (selected == null || selected!.trim().isEmpty) { Navigator.pop(dctx); return; }
         setState(() => saving = true); try { await _saveSemestre(idAlumno: p.idAlumno, semestre: selected!); Navigator.pop(dctx); await _fetchPerfil(p.idAlumno); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Semestre actualizado'))); } catch (e) { setState(() => saving = false); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'))); }
       });
-      return AlertDialog(title: const Text('Editar Semestre Actual'), content: DropdownInput<String>(value: selected, title: 'Selecciona semestre (1-12)', items: [for (var i = 1; i <= 12; i++) DropdownMenuItem(value: '$i', child: Text('$i'))], onChanged: (v) => setState(() => selected = v)), actions: [cancelarBtn, guardarBtn]);
+      return AlertDialog(title: const Text('Editar Semestre Actual'), content: DropdownInput<String>(value: selected, title: 'Selecciona semestre (1-12)', items: [for (var i = 1; i <= 12; i++) DropdownMenuItem(value: '$i', child: Text('$i'))], onChanged: (v) => setState(() => selected = v)), actions: [
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [cancelarBtn, guardarBtn],
+                      ),
+                    ),
+                  ]
+      );
     }));
   }
   Future<void> _openEditDescripcion(AlumnoPerfil p) async {
@@ -503,7 +533,17 @@ class _PerfilState extends State<Perfil> {
       final guardarBtn = SimpleButton(title: saving ? 'Guardando...' : 'Guardar', icon: Icons.save_outlined, onTap: saving ? null : () async {
         if (!formKey.currentState!.validate()) return; setState(() => saving = true); try { await _saveDescripcion(idAlumno: p.idAlumno, descripcion: descCtrl.text.trim()); Navigator.pop(dctx); await _fetchPerfil(p.idAlumno); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Descripción actualizada'))); } catch (e) { setState(() => saving = false); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'))); }
       });
-      return AlertDialog(title: const Text('Editar Descripción'), content: Form(key: formKey, child: SizedBox(width: 500, child: StyledTextFormField(isRequired: true, title: 'Descripción', controller: descCtrl, maxLines: 6, validator: (v) { final had = (p.descripcion != null && p.descripcion!.trim().isNotEmpty); if (had && (v == null || v.trim().isEmpty)) return 'No puede quedar vacío'; return null; }))), actions: [cancelarBtn, guardarBtn]);
+      return AlertDialog(title: const Text('Editar Descripción'), content: Form(key: formKey, child: SizedBox(width: 500, child: StyledTextFormField(isRequired: true, title: 'Descripción', controller: descCtrl, maxLines: 6, validator: (v) { final had = (p.descripcion != null && p.descripcion!.trim().isNotEmpty); if (had && (v == null || v.trim().isEmpty)) return 'No puede quedar vacío'; return null; }))), actions: [
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [cancelarBtn, guardarBtn],
+                      ),
+                    ),
+                  ]
+      );
     }));
   }
   Future<void> _openEditFechaNacimiento(AlumnoPerfil p) async {
@@ -515,7 +555,17 @@ class _PerfilState extends State<Perfil> {
         if (selected == null) { Navigator.pop(dctx); return; }
         setState(() => saving = true); try { await _saveFechaNacimiento(idAlumno: p.idAlumno, fecha: _fmtDate(selected!)); Navigator.pop(dctx); await _fetchPerfil(p.idAlumno); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fecha de nacimiento actualizada'))); } catch (e) { setState(() => saving = false); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'))); }
       });
-      return AlertDialog(title: const Text('Editar Fecha de Nacimiento'), content: SizedBox(width: 360, child: Row(children: [Expanded(child: Text(selected != null ? _fmtDate(selected!) : 'Sin fecha', style: const TextStyle(color: Colors.black87))), IconButton(tooltip: 'Seleccionar fecha', icon: const Icon(Icons.calendar_today_outlined), onPressed: () async { final now = DateTime.now(); final init = selected ?? DateTime(now.year - 20, now.month, now.day); final picked = await showDatePicker(context: context, initialDate: init, firstDate: DateTime(1950,1,1), lastDate: DateTime(now.year, now.month, now.day)); if (picked != null) setState(() => selected = picked); })])), actions: [cancelarBtn, guardarBtn]);
+      return AlertDialog(title: const Text('Editar Fecha de Nacimiento'), content: SizedBox(width: 360, child: Row(children: [Expanded(child: Text(selected != null ? _fmtDate(selected!) : 'Sin fecha', style: const TextStyle(color: Colors.black87))), IconButton(tooltip: 'Seleccionar fecha', icon: const Icon(Icons.calendar_today_outlined), onPressed: () async { final now = DateTime.now(); final init = selected ?? DateTime(now.year - 20, now.month, now.day); final picked = await showDatePicker(context: context, initialDate: init, firstDate: DateTime(1950,1,1), lastDate: DateTime(now.year, now.month, now.day)); if (picked != null) setState(() => selected = picked); })])), actions: [
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [cancelarBtn, guardarBtn],
+                      ),
+                    ),
+                  ]
+      );
     }));
   }
   String _fmtDate(DateTime d) => '${d.year.toString().padLeft(4,'0')}-${d.month.toString().padLeft(2,'0')}-${d.day.toString().padLeft(2,'0')}';
