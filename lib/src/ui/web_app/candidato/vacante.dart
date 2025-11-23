@@ -287,6 +287,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
     final String estatusPostulacion = d['estatus_postulacion']?.toString() ?? '';
     final bool esRechazado = estatusPostulacion == 'Rechazado';
     final bool estaReclutado = estatusPostulacion == 'Reclutado';
+    final bool estaCompletado = estatusPostulacion == 'Completado';
     final bool vencida = d['estado'] != 'Activa';
     final bool perfilIncompleto = d['perfil_completo'] == 0;
     final Color? botonTextoColor;
@@ -318,18 +319,18 @@ class _JobDetailPageState extends State<JobDetailPage> {
       botonColorFondo = Colors.blueGrey;
       botonAccion = null; // Deshabilita el clic
       botonTextoColor = Colors.white;
-    } else if (estaPostulado) {
-      // CASO 3: Ya postulado (Permite cancelar)
-      botonTitulo = 'Cancelar Postulación';
-      botonColorPrimario = false;
-      botonColorFondo = Colors.redAccent;
-      botonAccion = _togglePostulacion;
-      botonTextoColor = null;
-    } else if(estaReclutado){
+    }  else if(estaReclutado){
       // CASO 5: Reclutado (Bloqueado)
       botonTitulo = 'Ya has sido reclutado para esta vacante';
       botonColorPrimario = false;
       botonColorFondo = Colors.blue;
+      botonAccion = null; // Deshabilita el clic
+      botonTextoColor = null;
+    }else if(estaCompletado){
+      // CASO 5: Completado
+      botonTitulo = 'Ya has completado las actividades de esta vacante';
+      botonColorPrimario = false;
+      botonColorFondo = Colors.green;
       botonAccion = null; // Deshabilita el clic
       botonTextoColor = null;
       }else if(vencida){
@@ -339,6 +340,13 @@ class _JobDetailPageState extends State<JobDetailPage> {
       botonColorFondo = Colors.blueGrey;
       botonAccion = null; // Deshabilita el clic
       botonTextoColor = Colors.white;
+      }else if (estaPostulado) {
+        // CASO 3: Ya postulado (Permite cancelar)
+        botonTitulo = 'Cancelar Postulación';
+        botonColorPrimario = false;
+        botonColorFondo = Colors.redAccent;
+        botonAccion = _togglePostulacion;
+        botonTextoColor = null;
       }else {
       // CASO 4: No postulado (Permite postularse)
       botonTitulo = 'Postularme a esta Vacante';
@@ -438,8 +446,14 @@ class _JobDetailPageState extends State<JobDetailPage> {
                             _Badge(d['estado'] ?? 'Activa', Icons.check_circle_outline, Colors.blue),
                             
                             // Badge de postulado
-                            if (esRechazado)
+                            if(estaReclutado)
+                              _Badge('Reclutado', Icons.verified, Colors.blueAccent)
+                            else if (esRechazado)
                               _Badge('Postulación Rechazada', Icons.cancel, Colors.red)
+                            else if(estaCompletado)
+                              _Badge('Completado', Icons.star_rounded, Colors.green)
+                            else if(vencida)
+                              _Badge('Vacante Cerrada', Icons.lock, Colors.grey)
                             else if (estaPostulado)
                               _Badge('Postulado', Icons.check_circle, Colors.blue),
                           ],
