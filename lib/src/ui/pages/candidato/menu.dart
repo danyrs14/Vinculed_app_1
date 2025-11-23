@@ -92,6 +92,10 @@ class _MenuPageState extends State<MenuPage> {
                   ),
                   onPressed: () {
                     // Acción para perfil
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Perfil()),
+                    );
                   },
                 ),
               ],

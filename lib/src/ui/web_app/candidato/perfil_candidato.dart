@@ -573,6 +573,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                       emptyText: 'Agrega tus Enlaces personales (LinkedIn, GitHub, Portafolio, etc.)',
                                       onUpdated: () => _fetchPerfil(perfil.idAlumno),
                                     ),
+                                    const SizedBox(height: 32),
+                                    Center(
+                                      child: SizedBox(
+                                        width: 300, // Ancho fijo para que no sea 100% en pantallas grandes
+                                        height: 50,
+                                        child: SimpleButton(
+                                          title: 'Desactivar Cuenta',
+                                          backgroundColor: Colors.red,
+                                          primaryColor: false,
+                                          onTap: () => _confirmarDesactivacion(), // Implementa esta función
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 )
                               : Column(
