@@ -142,7 +142,7 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
       case 'Rechazado':
         return Icons.cancel_rounded;
       case 'Completado':
-        return Icons.check_circle_rounded;
+        return Icons.star_rounded;
       default:
         return Icons.help_outline;
     }

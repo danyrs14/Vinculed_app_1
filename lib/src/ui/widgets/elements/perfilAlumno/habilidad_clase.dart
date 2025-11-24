@@ -16,12 +16,24 @@ class HabilidadItem {
     required this.habilidad,
   });
   factory HabilidadItem.fromJson(Map<String, dynamic> j) => HabilidadItem(
-        idAlumno: j['id_alumno'],
-        idHabilidad: j['id_habilidad'] ?? 0,
-        idExperiencia: j['id_experiencia'],
-        idCertificado: j['id_certificado'],
-        categoria: j['categoria'],
-        tipo: j['tipo'],
+        idAlumno: _asIntNullable(j['id_alumno']),
+        idHabilidad: _asInt(j['id_habilidad']),
+        idExperiencia: _asIntNullable(j['id_experiencia']),
+        idCertificado: _asIntNullable(j['id_certificado']),
+        categoria: (j['categoria'] ?? '') as String,
+        tipo: (j['tipo'] ?? '') as String,
         habilidad: (j['habilidad'] ?? '') as String,
       );
+}
+
+int _asInt(dynamic v) {
+  if (v is int) return v;
+  if (v is String) return int.tryParse(v) ?? 0;
+  return 0;
+}
+int? _asIntNullable(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is String) return int.tryParse(v);
+  return null;
 }

@@ -48,6 +48,7 @@ class _InicioPageState extends State<InicioPage> {
     }
 
     if (rol == 'alumno') {
+      
       return const HomeRegisteredPage(); 
     } else if (rol == 'reclutador') {
       return const HomeRecruiterPage();

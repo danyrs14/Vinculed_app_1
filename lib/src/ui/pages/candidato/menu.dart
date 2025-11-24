@@ -20,6 +20,7 @@ class _MenuPageState extends State<MenuPage> {
   int _paginaActual = 2; // Inicia en 'Inicio'
   late final List<Widget> _paginas;
   late final PageController _pageController;
+  final usuario = FirebaseAuth.instance.currentUser!;
 
   @override
   void initState() {
@@ -68,7 +69,7 @@ class _MenuPageState extends State<MenuPage> {
                 IconButton(
                   icon: Icon(Icons.search, color: theme.primario()),
                   onPressed: () {
-                    Navigator.pushReplacement(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => Busqueda()),
                     );
@@ -84,12 +85,17 @@ class _MenuPageState extends State<MenuPage> {
                   },
                 ),
                 IconButton(
-                  icon: const CircleAvatar(
-                    backgroundImage: AssetImage('assets/images/amlo.jpg'),
+                  icon: CircleAvatar(
                     radius: 18,
+                    backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
+                    child: usuario.photoURL == null ? const Icon(Icons.person, size: 18) : null,
                   ),
                   onPressed: () {
                     // Acción para perfil
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Perfil()),
+                    );
                   },
                 ),
               ],

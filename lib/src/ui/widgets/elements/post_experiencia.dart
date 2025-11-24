@@ -4,8 +4,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/comentarios_auxiliar.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/formulario_reporte.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/media.dart';
+
 
 class ExperienceComment {
   final String avatarAsset;
@@ -120,17 +122,18 @@ class _ExperiencePostState extends State<ExperiencePost> {
   // Lista interna de comentarios que se quedan en la tarjeta
   late List<ExperienceComment> _comments; // ← NUEVO
   late int _likesCount; // nuevo contador dinámico
+  late int _commentCount; // contador dinámico de comentarios (incluye respuestas)
   bool _sendingReaction = false; // bandera para evitar doble clic spam
 
   // Comentarios remotos
-  List<_RemoteReply> _remoteComments = [];
+  List<RemoteReply> _remoteComments = [];
   bool _commentsLoaded = false;
   bool _loadingComments = false;
   String _commentsError = '';
   bool _showRemoteComments = false; // permitir ocultar/mostrar
 
   // --- Respuestas de comentarios ---
-  final Map<int, List<_RemoteCommentReply>> _replies = {}; // id_comentario -> lista de respuestas
+  final Map<int, List<RemoteCommentReply>> _replies = {}; // id_comentario -> lista de respuestas
   final Set<int> _loadingReplies = {}; // ids que están cargando
   final Set<int> _expandedReplies = {}; // ids de comentarios que se expandieron
   final Map<int, String> _repliesError = {}; // errores por comentario
@@ -151,6 +154,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
     _showComposer = widget.initialShowComposer;
     _comments = List<ExperienceComment>.from(widget.initialComments ?? const []); // ← NUEVO
     _likesCount = widget.initialLikesCount; // inicializar
+    _commentCount = widget.totalComments; // inicializar con valor inicial recibido
   }
 
   @override
@@ -294,6 +298,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
         );
         setState(() {
           _comments.insert(0, newComment);
+          _commentCount++; // incrementar contador al enviar comentario
         });
         _commentCtrl.clear();
         setState(() => _showComposer = false);
@@ -330,7 +335,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = jsonDecode(res.body);
         if (data is List) {
-          _remoteComments = data.map((e) => _RemoteReply.fromJson(e as Map<String, dynamic>)).toList();
+          _remoteComments = data.map((e) => RemoteReply.fromJson(e as Map<String, dynamic>)).toList();
         } else {
           _commentsError = 'Formato inesperado';
         }
@@ -360,7 +365,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = jsonDecode(res.body);
         if (data is List) {
-          final list = data.map((e) => _RemoteCommentReply.fromJson(e as Map<String,dynamic>)).toList();
+          final list = data.map((e) => RemoteCommentReply.fromJson(e as Map<String,dynamic>)).toList();
           _replies[idComentario] = list;
         } else {
           _repliesError[idComentario] = 'Formato inesperado';
@@ -376,7 +381,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
     }
   }
 
-  void _toggleReplies(_RemoteReply rc) {
+  void _toggleReplies(RemoteReply rc) {
     final id = rc.idComentario;
     _toggleRepliesById(id);
   }
@@ -392,14 +397,14 @@ class _ExperiencePostState extends State<ExperiencePost> {
     }
   }
 
-  List<Widget> _buildReplyTree(_RemoteCommentReply reply, int depth) {
+  List<Widget> _buildReplyTree(RemoteCommentReply reply, int depth) {
     const double baseIndent = 42.0;
     final double indent = baseIndent * depth;
 
     return [
       Padding(
         padding: EdgeInsets.only(left: indent, bottom: 8),
-        child: _ReplyBubble(
+        child: ReplyBubble(
           reply: reply,
           fallbackAvatar: widget.currentUserAvatarAsset,
           showRepliesButton: reply.respuestas,
@@ -411,7 +416,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
       if (_replyingTo == reply.idComentario)
         Padding(
           padding: EdgeInsets.only(left: indent + 24, bottom: 8),
-          child: _InlineReplyComposer(
+          child: InlineReplyComposer(
             controller: _replyCtrl,
             sending: _sendingReply,
             onCancel: _cancelReply,
@@ -435,7 +440,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
               padding: EdgeInsets.only(left: indent + 24, bottom: 8),
               child: const Text('No hay respuestas'),
             )
-          else ...(_replies[reply.idComentario] ?? const <_RemoteCommentReply>[])
+          else ...(_replies[reply.idComentario] ?? const <RemoteCommentReply>[])
               .expand((child) => _buildReplyTree(child, depth + 1)),
         ],
       ],
@@ -473,15 +478,15 @@ class _ExperiencePostState extends State<ExperiencePost> {
       });
       final res = await http.post(Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentar'), headers: headers, body: body);
       if (res.statusCode >= 200 && res.statusCode < 300) {
-        _RemoteCommentReply parsed;
+        RemoteCommentReply parsed;
         try {
           final data = jsonDecode(res.body);
           if (data is Map<String, dynamic>) {
             // Parse, but the backend might not return all fields.
-            parsed = _RemoteCommentReply.fromJson(data);
+            parsed = RemoteCommentReply.fromJson(data);
           } else {
             // Non-map response, create an empty parsed to use fallbacks below.
-            parsed = _RemoteCommentReply(
+            parsed = RemoteCommentReply(
               idComentario: 0,
               idAlumno: 0,
               idComentarioPadre: 0,
@@ -494,7 +499,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
           }
         } catch (_) {
           // If response is not JSON or unexpected, fallback to local values
-          parsed = _RemoteCommentReply(
+          parsed = RemoteCommentReply(
             idComentario: 0,
             idAlumno: 0,
             idComentarioPadre: 0,
@@ -507,7 +512,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
         }
 
         // Build a normalized reply, preferring server data when available, otherwise local fallbacks
-        final normalized = _RemoteCommentReply(
+        final normalized = RemoteCommentReply(
           idComentario: parsed.idComentario != 0 ? parsed.idComentario : DateTime.now().millisecondsSinceEpoch,
           idAlumno: parsed.idAlumno != 0 ? parsed.idAlumno : widget.idAlumno,
           idComentarioPadre: parsed.idComentarioPadre != 0 ? parsed.idComentarioPadre : parentId,
@@ -524,6 +529,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
           _expandedReplies.add(parentId);
           _replyCtrl.clear();
           _replyingTo = null;
+          _commentCount++; // incrementar contador al enviar respuesta
         });
       } else {
         // ignore: avoid_print
@@ -609,6 +615,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
     final theme = ThemeController.instance;
     final accent = theme.primario(); // color de acento
     final suppressMedia = widget.hideMediaOverlays || _modalOpen;
+    final dynamicCommentLabel = _commentCount > 0 ? '$_commentCount Comentarios' : null; // etiqueta dinámica
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: widget.maxWidth),
@@ -691,42 +698,104 @@ class _ExperiencePostState extends State<ExperiencePost> {
             // ── Acciones
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                children: [
-                  _ActionIcon(
-                    icon: _isLiked ? Icons.favorite : Icons.favorite_border,
-                    selected: _isLiked,
-                    selectedColor: accent,
-                    label: 'Me gusta · $_likesCount',
-                    onTap: _toggleLike,
-                  ),
-                  const SizedBox(width: 16),
-                  _ActionIcon(
-                    icon: _isDisliked ? Icons.thumb_down_alt : Icons.thumb_down_off_alt_outlined,
-                    selected: _isDisliked,
-                    selectedColor: accent,
-                    label: widget.dislikesLabel,
-                    onTap: _toggleDislike,
-                  ),
-                  const SizedBox(width: 16),
-                  _ActionIcon(
-                    icon: Icons.mode_comment_outlined,
-                    selected: _showComposer,
-                    selectedColor: accent,
-                    label: widget.commentsLabel,
-                    onTap: _toggleComposer,
-                  ),
-                  const Spacer(),
-                  if (widget.commentCountText != null)
-                    Text(
-                      widget.commentCountText!,
-                      style: const TextStyle(color: Colors.black54, fontSize: 12),
-                    ),
-                ],
+              child: LayoutBuilder(
+                builder: (ctx, constraints) {
+                  final w = MediaQuery.of(ctx).size.width;
+                  final isMobile = w < 430; // umbral para reorganizar
+                  if (isMobile) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _ActionIcon(
+                                icon: _isLiked ? Icons.favorite : Icons.favorite_border,
+                                selected: _isLiked,
+                                selectedColor: accent,
+                                label: 'Me gusta · $_likesCount',
+                                onTap: _toggleLike,
+                              ),
+                            ),
+                            const SizedBox(width: 90),
+                            Expanded(
+                              child: _ActionIcon(
+                                icon: _isDisliked ? Icons.thumb_down_alt : Icons.thumb_down_off_alt_outlined,
+                                selected: _isDisliked,
+                                selectedColor: accent,
+                                label: 'No me gusta',
+                                onTap: _toggleDislike,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _ActionIcon(
+                                icon: Icons.mode_comment_outlined,
+                                selected: _showComposer,
+                                selectedColor: accent,
+                                label: widget.commentsLabel,
+                                onTap: _toggleComposer,
+                              ),
+                            ),
+                            if (dynamicCommentLabel != null) ...[
+                              const SizedBox(width: 130),
+                              Flexible(
+                                child: Text(
+                                  dynamicCommentLabel,
+                                  textAlign: TextAlign.right,
+                                  style: const TextStyle(color: Colors.black54, fontSize: 12),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    );
+                  }
+                  // Desktop / ancho suficiente
+                  return Row(
+                    children: [
+                      _ActionIcon(
+                        icon: _isLiked ? Icons.favorite : Icons.favorite_border,
+                        selected: _isLiked,
+                        selectedColor: accent,
+                        label: 'Me gusta · $_likesCount',
+                        onTap: _toggleLike,
+                      ),
+                      const SizedBox(width: 16),
+                      _ActionIcon(
+                        icon: _isDisliked ? Icons.thumb_down_alt : Icons.thumb_down_off_alt_outlined,
+                        selected: _isDisliked,
+                        selectedColor: accent,
+                        label: widget.dislikesLabel,
+                        onTap: _toggleDislike,
+                      ),
+                      const SizedBox(width: 16),
+                      _ActionIcon(
+                        icon: Icons.mode_comment_outlined,
+                        selected: _showComposer,
+                        selectedColor: accent,
+                        label: widget.commentsLabel,
+                        onTap: _toggleComposer,
+                      ),
+                      const Spacer(),
+                      if (dynamicCommentLabel != null)
+                        Text(
+                          dynamicCommentLabel,
+                          style: const TextStyle(color: Colors.black54, fontSize: 12),
+                        ),
+                    ],
+                  );
+                },
               ),
             ),
             // Botón Ver comentarios dentro del contenedor
-            if (widget.totalComments > 0 && !_showComposer) ...[
+            if (_commentCount > 0 && !_showComposer) ...[
               const SizedBox(height: 12),
               Align(
                 alignment: Alignment.centerLeft,
@@ -745,7 +814,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
             // ── Composer de comentario (abre al tocar "Comentar")
             if (_showComposer) ...[
               const SizedBox(height: 12),
-              _CommentComposer(
+              CommentComposer(
                 controller: _commentCtrl,
                 sending: _sending,
                 onCancel: () => setState(() => _showComposer = false),
@@ -774,8 +843,8 @@ class _ExperiencePostState extends State<ExperiencePost> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _CommentBubble(
-                            avatar: rc.urlFotoPerfil.isEmpty ? widget.currentUserAvatarAsset : rc.urlFotoPerfil,
+                          CommentBubble(
+                            avatar: rc.urlFotoPerfil.isEmpty ? '' : rc.urlFotoPerfil, // usar placeholder si null/empty
                             name: rc.nombre,
                             text: rc.comentario,
                             showRepliesButton: rc.respuestas,
@@ -786,7 +855,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
                           if (_replyingTo == rc.idComentario) ...[
                             Padding(
                               padding: const EdgeInsets.only(left: 42, top: 6, bottom: 6),
-                              child: _InlineReplyComposer(
+                              child: InlineReplyComposer(
                                 controller: _replyCtrl,
                                 sending: _sendingReply,
                                 onCancel: _cancelReply,
@@ -812,7 +881,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
                                   padding: EdgeInsets.only(left: 42, bottom: 8),
                                   child: Text('No hay respuestas'),
                                 )
-                              else ...(_replies[rc.idComentario] ?? const <_RemoteCommentReply>[])
+                              else ...(_replies[rc.idComentario] ?? const <RemoteCommentReply>[])
                                   .expand((r) => _buildReplyTree(r, 1)),
                             ],
                           ],
@@ -825,7 +894,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
             // ── Comentario destacado (si lo hubiera)
             if (widget.highlightComment != null) ...[
               const SizedBox(height: 12),
-              _CommentBubble(
+              CommentBubble(
                 avatar: widget.highlightComment!.avatarAsset,
                 name: widget.highlightComment!.author,
                 text: widget.highlightComment!.text,
@@ -837,7 +906,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
               const SizedBox(height: 12),
               ..._comments.map((c) => Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
-                child: _CommentBubble(
+                child: CommentBubble(
                   avatar: c.avatarAsset,
                   name: c.author,
                   text: c.text,
@@ -897,358 +966,6 @@ class _ActionIcon extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         child: child,
       ),
-    );
-  }
-}
-
-class _CommentComposer extends StatelessWidget {
-  const _CommentComposer({
-    required this.controller,
-    required this.onSend,
-    required this.onCancel,
-    required this.sending,
-  });
-
-  final TextEditingController controller;
-  final VoidCallback onSend;
-  final VoidCallback onCancel;
-  final bool sending;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextField(
-          controller: controller,
-          maxLines: null,
-          maxLength: 280,
-          decoration: InputDecoration(
-            hintText: 'Escribe un comentario...',
-            isDense: true,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            suffixIcon: IconButton(
-              icon: sending
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.send),
-              onPressed: sending ? null : onSend,
-              tooltip: 'Enviar',
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton.icon(
-            onPressed: sending ? null : onCancel,
-            icon: const Icon(Icons.close),
-            label: const Text('Cancelar'),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _RemoteReply { // Comentario directo a la publicación
-  final int idComentario;
-  final int idAlumno;
-  final String nombre;
-  final String urlFotoPerfil;
-  final String comentario;
-  final DateTime? fecha;
-  final bool respuestas;
-  _RemoteReply({
-    required this.idComentario,
-    required this.idAlumno,
-    required this.nombre,
-    required this.urlFotoPerfil,
-    required this.comentario,
-    required this.fecha,
-    required this.respuestas,
-  });
-  factory _RemoteReply.fromJson(Map<String, dynamic> j) => _RemoteReply(
-        idComentario: (j['id_comentario'] as num?)?.toInt() ?? 0,
-        idAlumno: (j['id_alumno'] as num?)?.toInt() ?? 0,
-        nombre: (j['nombre'] ?? '').toString(),
-        urlFotoPerfil: (j['url_foto_perfil'] ?? '').toString(),
-        comentario: (j['comentario'] ?? '').toString(),
-        fecha: DateTime.tryParse((j['fecha'] ?? '').toString()),
-        respuestas: (j['respuestas'] == true),
-      );
-}
-
-class _RemoteCommentReply { // Respuesta a un comentario
-  final int idComentario;
-  final int idAlumno;
-  final int idComentarioPadre;
-  final String nombre;
-  final String urlFotoPerfil;
-  final String comentario;
-  final DateTime? fecha;
-  final bool respuestas;
-  _RemoteCommentReply({
-    required this.idComentario,
-    required this.idAlumno,
-    required this.idComentarioPadre,
-    required this.nombre,
-    required this.urlFotoPerfil,
-    required this.comentario,
-    required this.fecha,
-    required this.respuestas,
-  });
-  factory _RemoteCommentReply.fromJson(Map<String,dynamic> j) => _RemoteCommentReply(
-    idComentario: (j['id_comentario'] as num?)?.toInt() ?? 0,
-    idAlumno: (j['id_alumno'] as num?)?.toInt() ?? 0,
-    idComentarioPadre: (j['id_comentario_padre'] as num?)?.toInt() ?? 0,
-    nombre: (j['nombre'] ?? '').toString(),
-    urlFotoPerfil: (j['url_foto_perfil'] ?? '').toString(),
-    comentario: (j['comentario'] ?? '').toString(),
-    fecha: DateTime.tryParse((j['fecha'] ?? '').toString()),
-    respuestas: (j['respuestas'] == true),
-  );
-}
-
-class _CommentBubble extends StatelessWidget {
-  const _CommentBubble({
-    required this.avatar,
-    required this.name,
-    required this.text,
-    this.showRepliesButton = false,
-    this.onShowReplies,
-    this.onReply,
-    this.repliesButtonLabel,
-  });
-
-  final String avatar;
-  final String name;
-  final String text;
-  final bool showRepliesButton;
-  final VoidCallback? onShowReplies;
-  final VoidCallback? onReply;
-  final String? repliesButtonLabel;
-
-  Widget _defaultAvatarIcon(double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFE0E0E0)),
-      alignment: Alignment.center,
-      child: Icon(Icons.person, size: size * 0.6, color: Colors.grey.shade700),
-    );
-  }
-
-  Widget _buildAvatar(String src, double radius) {
-    final size = radius * 2;
-    if (src.isEmpty) return _defaultAvatarIcon(size);
-    if (src.startsWith('http')) {
-      return ClipOval(
-        child: Image.network(src, width: size, height: size, fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _defaultAvatarIcon(size)),
-      );
-    }
-    return ClipOval(
-      child: Image.asset(src, width: size, height: size, fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _defaultAvatarIcon(size)),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 8, right: 8),
-          child: SizedBox(width: 36, height: 36, child: _buildAvatar(avatar, 18)),
-        ),
-        Flexible(
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.12),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.white),
-            ),
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.black12),
-                  ),
-                  child: Text(text)),
-                if (showRepliesButton || onReply != null) ...[
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      if (showRepliesButton)
-                        TextButton(
-                          onPressed: onShowReplies,
-                          style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
-                          child: Text(repliesButtonLabel ?? 'Mostrar respuestas'),
-                        ),
-                      TextButton(
-                        onPressed: onReply,
-                        style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
-                        child: const Text('Responder'),
-                      ),
-                    ],
-                  ),
-                ],
-              ], // cierre correcto de children
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ReplyBubble extends StatelessWidget {
-  final _RemoteCommentReply reply;
-  final String fallbackAvatar;
-  final bool showRepliesButton;
-  final VoidCallback? onShowReplies;
-  final String? repliesButtonLabel;
-  final VoidCallback? onReply;
-  const _ReplyBubble({
-    required this.reply,
-    required this.fallbackAvatar,
-    this.showRepliesButton = false,
-    this.onShowReplies,
-    this.repliesButtonLabel,
-    this.onReply,
-  });
-  Widget _defaultAvatarIcon(double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFE0E0E0)),
-      alignment: Alignment.center,
-      child: Icon(Icons.person, size: size * 0.6, color: Colors.grey.shade700),
-    );
-  }
-
-  Widget _buildAvatar(String src, double radius) {
-    final size = radius * 2;
-    if (src.isEmpty) return _defaultAvatarIcon(size);
-    if (src.startsWith('http')) {
-      return ClipOval(
-        child: Image.network(src, width: size, height: size, fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _defaultAvatarIcon(size)),
-      );
-    }
-    return ClipOval(
-      child: Image.asset(src, width: size, height: size, fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _defaultAvatarIcon(size)),
-    );
-  }
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 8, right: 8),
-          child: SizedBox(width: 32, height: 32, child: _buildAvatar(reply.urlFotoPerfil.isNotEmpty ? reply.urlFotoPerfil : '', 16)),
-        ),
-        Flexible(
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white),
-            ),
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(reply.nombre, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Colors.black12),
-                    
-                  ),
-                  child: Text(reply.comentario)),
-                if (showRepliesButton || onReply != null) ...[
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      if (showRepliesButton)
-                        TextButton(
-                          onPressed: onShowReplies,
-                          style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
-                          child: Text(repliesButtonLabel ?? 'Mostrar respuestas'),
-                        ),
-                      TextButton(
-                        onPressed: onReply,
-                        style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
-                        child: const Text('Responder'),
-                      ),
-                    ],
-                  ),
-                ],
-              ], // cierre correcto de children
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _InlineReplyComposer extends StatelessWidget {
-  final TextEditingController controller;
-  final bool sending;
-  final VoidCallback onCancel;
-  final VoidCallback onSend;
-  const _InlineReplyComposer({required this.controller, required this.sending, required this.onCancel, required this.onSend});
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextField(
-          controller: controller,
-          maxLines: null,
-          maxLength: 280,
-          decoration: InputDecoration(
-            hintText: 'Escribe una respuesta...',
-            isDense: true,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            suffixIcon: IconButton(
-              icon: sending
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.send),
-              onPressed: sending ? null : onSend,
-              tooltip: 'Enviar',
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton.icon(
-            onPressed: sending ? null : onCancel,
-            icon: const Icon(Icons.close),
-            label: const Text('Cancelar'),
-          ),
-        ),
-      ],
     );
   }
 }

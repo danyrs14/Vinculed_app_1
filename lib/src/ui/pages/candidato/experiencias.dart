@@ -1,28 +1,196 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/comentarios.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/crear_experiencia.dart';
-import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/roles_multi_dropdown.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/post_experiencia.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/crear_experiencia.dart';
 
-class Experiencias extends StatelessWidget {
+class Experiencias extends StatefulWidget {
   const Experiencias({super.key});
+  @override
+  State<Experiencias> createState() => _ExperienciasState();
+}
+
+class _ExperienciasState extends State<Experiencias> {
+  final _scrollCtrl = ScrollController();
+  final usuario = FirebaseAuth.instance.currentUser;
+
+  // Datos remotos
+  final List<Map<String, dynamic>> _items = [];
+  int _page = 1;
+  int _totalPages = 1;
+  bool _loading = false; // primera carga / recarga filtro
+  bool _loadingMore = false; // paginación incremental
+  bool _initialized = false;
+  int? _idAlumno;
+
+  // Filtro roles
+  List<int> _selectedRoleIds = [];
+
+  // Ocultar media cuando dropdown/modal abierto
+  bool _anyModalOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollCtrl.addListener(_handleScroll);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _initLoad());
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl..removeListener(_handleScroll)..dispose();
+    super.dispose();
+  }
+
+  Future<void> _initLoad() async {
+    final userProv = Provider.of<UserDataProvider>(context, listen: false);
+    final id = userProv.idRol;
+    if (id == null) return; // esperar a que esté disponible
+    _idAlumno = id;
+    setState(() { _loading = true; _items.clear(); _page = 1; });
+    await _fetchPage(1);
+    if (!mounted) return;
+    setState(() { _initialized = true; _loading = false; });
+  }
+
+  Future<void> _fetchPage(int page) async {
+    if (_idAlumno == null) return;
+    if (page > 1) setState(() => _loadingMore = true);
+    try {
+      final userProv = Provider.of<UserDataProvider>(context, listen: false);
+      final headers = await userProv.getAuthHeaders();
+      final params = <String, String>{
+        'id_alumno': '$_idAlumno',
+        'page': '$page',
+        'limit': '10',
+      };
+      if (_selectedRoleIds.isNotEmpty) {
+        params['id_roltrabajo'] = _selectedRoleIds.join(',');
+      }
+      final url = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/ver').replace(queryParameters: params);
+      final res = await http.get(url, headers: headers);
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        final pag = body['paginacion'] as Map<String, dynamic>?;
+        final list = (body['experiencias'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+        setState(() {
+          _page = page;
+          if (pag != null) {
+            _totalPages = (pag['total_paginas'] as num?)?.toInt() ?? _totalPages;
+          }
+          _items.addAll(list);
+        });
+      } else {
+        // ignore: avoid_print
+        print('Error ${res.statusCode} al cargar experiencias');
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('Excepción al cargar experiencias: $e');
+    } finally {
+      if (mounted) setState(() => _loadingMore = false);
+    }
+  }
+
+  Future<void> _applyRoleFilter(List<RoleOption> roles) async {
+    _selectedRoleIds = roles.map((r) => r.id).toList();
+    setState(() { _loading = true; _items.clear(); _page = 1; _totalPages = 1; });
+    await _fetchPage(1);
+    if (mounted) setState(() => _loading = false);
+  }
+
+  void _handleScroll() {
+    if (!_scrollCtrl.hasClients) return;
+    final pos = _scrollCtrl.position;
+    if (!pos.hasPixels || !pos.hasContentDimensions) return;
+    final atBottom = pos.pixels >= (pos.maxScrollExtent - 4);
+    if (atBottom && !_loadingMore && _page < _totalPages) {
+      _fetchPage(_page + 1);
+    }
+  }
+
+  String _two(int v) => v.toString().padLeft(2, '0');
+  String _formatDate(DateTime dt) {
+    final d = dt.toLocal();
+    return '${d.year}-${_two(d.month)}-${_two(d.day)} ${_two(d.hour)}:${_two(d.minute)}';
+  }
+
+  Widget _buildPost(Map<String, dynamic> e, bool isMobile) {
+    final autor = (e['nombre'] ?? '').toString();
+    final avatar = (e['url_foto_perfil'] ?? '').toString();
+    final contenido = (e['contenido'] ?? '').toString();
+    final titulo = (e['titulo'] ?? '').toString();
+    final fechaStr = (e['fecha_publicacion'] ?? '').toString();
+    final dt = DateTime.tryParse(fechaStr);
+    final roles = (e['roles_relacionados'] as List<dynamic>? ?? [])
+        .map((x) => (x as Map<String, dynamic>)['nombre'])
+        .whereType<String>()
+        .toList();
+    final subtitle = [
+      if (dt != null) _formatDate(dt),
+      if (roles.length == 1) 'Rol:',
+      if (roles.length > 1) 'Roles:',
+      if (roles.isNotEmpty) roles.join(', '),
+    ].join(' · ');
+
+    final reacciones = (e['reacciones'] as num?)?.toInt() ?? 0;
+    final comentarios = (e['comentarios'] as num?)?.toInt() ?? 0;
+    final miReaccion = (e['mi_reaccion'])?.toString();
+    final isLiked = miReaccion == 'upvote';
+    final isDisliked = miReaccion == 'downvote';
+
+    return Column(
+      children: [
+        ExperiencePost(
+          authorName: autor.isEmpty ? 'Anónimo' : autor,
+          avatarAsset: avatar.isEmpty ? 'assets/images/amlo.jpg' : avatar,
+          currentUserAvatarAsset: usuario?.photoURL ?? '',
+          subtitle: subtitle,
+          content: titulo.isEmpty ? contenido : '$titulo\n\n$contenido',
+          initialLikesCount: reacciones,
+          idPublicacion: (e['id_publicacion'] as num?)?.toInt() ?? 0,
+          idAlumno: _idAlumno ?? 0,
+          initialIsLiked: isLiked,
+          initialIsDisliked: isDisliked,
+          commentCountText: comentarios > 0 ? '$comentarios Comentarios' : null,
+            totalComments: comentarios,
+          maxWidth: 560,
+          mediaUrl: e['url_multimedia'] as String?,
+          hideMediaOverlays: _anyModalOpen,
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 720;
 
     return Scaffold(
       backgroundColor: theme.background(),
-      // SIN appbar y SIN menú: solo contenido
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: SingleChildScrollView(
+          controller: _scrollCtrl,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Encabezado dentro del body (flecha, título, botón +)
+              // Encabezado: back + título + crear
               Row(
                 children: [
                   IconButton(
@@ -31,12 +199,17 @@ class Experiencias extends StatelessWidget {
                     icon: const Icon(Icons.arrow_back_ios_new, size: 20),
                   ),
                   const SizedBox(width: 4),
-                  const Expanded(
-                    child: Center(
-                      child: Texto(text: 'Experiencias', fontSize: 22),
+                  Expanded(
+                    child: Text(
+                      'Experiencias',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: isMobile ? 24 : 28,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFF22313F),
+                      ),
                     ),
                   ),
-                  // Botón + para crear experiencia
                   Material(
                     color: theme.secundario(),
                     shape: const CircleBorder(),
@@ -45,9 +218,7 @@ class Experiencias extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => const CreateExperiencePage(),
-                          ),
+                          MaterialPageRoute(builder: (_) => const CreateExperiencePage()),
                         );
                       },
                       child: const Padding(
@@ -56,199 +227,46 @@ class Experiencias extends StatelessWidget {
                       ),
                     ),
                   ),
-
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
 
-              // Card de experiencia (como en la imagen)
-              Expanded(
-                child: ListView(
+              // Filtro roles y botón crear (solo filtro aquí porque botón ya arriba)
+              RolesMultiDropdown(
+                label: 'Filtrar por roles',
+                hintText: '',
+                initialSelectedIds: _selectedRoleIds,
+                onChanged: (roles) => _applyRoleFilter(roles),
+                onOpen: () => setState(() => _anyModalOpen = true),
+                onClose: () => setState(() => _anyModalOpen = false),
+              ),
+              const SizedBox(height: 20),
+
+              // Contenido dinámico
+              if (!_initialized || (_loading && _items.isEmpty))
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 32),
+                  child: CircularProgressIndicator(),
+                )
+              else if (_items.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 32),
+                  child: Text('Sin experiencias'),
+                )
+              else
+                Column(
                   children: [
-                    ExperiencePostCard(
-                      authorName: 'Raul Medina Perez',
-                      authorRole: 'Estudiante',
-                      timeAgo: '20 h',
-                      content:
-                      'Mi experiencia como becaria en el departamento de desarrollo de software fue increíblemente enriquecedora. '
-                          'Durante mi tiempo en la empresa, participé activamente en varios proyectos relacionados con la creación '
-                          'y mejora de aplicaciones móviles.',
-                      commentsCountLabel: '1 Comentario',
-                      // Al tocar "Comentar" o el contador -> abrir pantalla Comentarios
-                      onComment: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ComentariosPage(),
-                          ),
-                        );
-                      },
-                    ),
+                    for (final e in _items) _buildPost(e, isMobile),
+                    if (_loadingMore)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: LinearProgressIndicator(minHeight: 2),
+                      ),
                   ],
                 ),
-              ),
+              const SizedBox(height: 40),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Tarjeta de publicación de experiencia (estilo de la captura)
-class ExperiencePostCard extends StatelessWidget {
-  const ExperiencePostCard({
-    super.key,
-    required this.authorName,
-    required this.authorRole,
-    required this.timeAgo,
-    required this.content,
-    required this.commentsCountLabel,
-    this.onLike,
-    this.onComment,
-    this.onMore,
-  });
-
-  final String authorName;
-  final String authorRole;
-  final String timeAgo;
-  final String content;
-  final String commentsCountLabel;
-
-  final VoidCallback? onLike;
-  final VoidCallback? onComment;
-  final VoidCallback? onMore;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ThemeController.instance;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: theme.background(),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Colors.black.withOpacity(0.08)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Cabecera: avatar, nombre/rol, menú ...
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const CircleAvatar(
-                  radius: 18,
-                  backgroundImage: AssetImage('assets/images/amlo.jpg'), // coloca tu asset o cámbialo
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Texto(text: authorName, fontSize: 14),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Text(authorRole, style: const TextStyle(fontSize: 12)),
-                          const SizedBox(width: 8),
-                          Text(timeAgo, style: const TextStyle(fontSize: 12)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Más opciones',
-                  onPressed: onMore ??
-                          () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Opciones de la publicación')),
-                        );
-                      },
-                  icon: const Icon(Icons.more_horiz),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Contenido
-            Text(
-              content,
-              style: const TextStyle(fontSize: 14, height: 1.35),
-              textAlign: TextAlign.left,
-            ),
-            const SizedBox(height: 12),
-
-            // Separador fino
-            Container(height: 1, color: Colors.black.withOpacity(0.08)),
-
-            // Conteo de comentarios (alineado a la derecha y CLICKEABLE)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                children: [
-                  const Spacer(),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(6),
-                    onTap: onComment,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      child: Text(
-                        commentsCountLabel,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 6),
-
-            // Acciones: Me gusta | Comentar (ambos clickeables)
-            Row(
-              children: [
-                IconButton(
-                  onPressed: onLike ??
-                          () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Te gustó esta experiencia')),
-                        );
-                      },
-                  icon: Icon(Icons.favorite_border, color: theme.primario()),
-                ),
-                GestureDetector(
-                  onTap: onLike,
-                  child: Text(
-                    'Me gusta',
-                    style: TextStyle(color: theme.primario(), fontSize: 14),
-                  ),
-                ),
-                const SizedBox(width: 18),
-                IconButton(
-                  onPressed: onComment,
-                  icon: Icon(Icons.chat_bubble_outline, color: theme.primario()),
-                ),
-                GestureDetector(
-                  onTap: onComment,
-                  child: Text(
-                    'Comentar',
-                    style: TextStyle(color: theme.primario(), fontSize: 14),
-                  ),
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );

@@ -330,29 +330,30 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                   // SI LA LISTA ESTÁ VACÍA, MOSTRAMOS EL MENSAJE OPTIMISTA
                                   _buildEmptyState()
                                 else
-                                  // SI HAY DATOS, MOSTRAMOS LA FILA (Aun rellenando hasta 3 para mantener el layout grid)
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: List.generate(3, (index) {
-                                      // Obtenemos vacante o null si el índice excede la lista
-                                      Map<String, dynamic>? v = index < _vacantes.length ? _vacantes[index] : null;
-                                      
-                                      // Si v es null (porque hay 1 o 2 vacantes, pero pedimos 3 espacios),
-                                      // podemos mostrar una tarjeta invisible (Spacer) o una tarjeta "Coming soon".
-                                      // Para que se vea bien alineado a la izquierda, si es null usamos un Spacer o Container invisible.
-                                      if (v == null) {
-                                         return const Expanded(child: SizedBox()); 
-                                      }
-
-                                      return Expanded(
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                          child: _buildVacanteCard(v),
-                                        ),
-                                      );
-                                    }),
+                                  // SI HAY DATOS, MOSTRAMOS FILA EN DESKTOP / COLUMNA EN MÓVIL
+                                  (isMobile
+                                      ? Column(
+                                          children: _vacantes.map((v) => Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 1.0),
+                                            child: _buildVacanteCard(v),
+                                          )).toList(),
+                                        )
+                                      : Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: List.generate(3, (index) {
+                                            Map<String, dynamic>? v = index < _vacantes.length ? _vacantes[index] : null;
+                                            if (v == null) {
+                                              return const Expanded(child: SizedBox());
+                                            }
+                                            return Expanded(
+                                              child: Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                                child: _buildVacanteCard(v),
+                                              ),
+                                            );
+                                          }),
+                                        )
                                   ),
-                                // ------------------------------
 
                                 const SizedBox(height: 28),
 

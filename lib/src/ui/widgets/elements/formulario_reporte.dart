@@ -141,7 +141,15 @@ class ReportContentDialogState extends State<ReportContentDialog> {
           ),
         ),
       ),
-      actions: [
+      actions: _buildActions(context),
+    );
+  }
+
+  List<Widget> _buildActions(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 430;
+    if (!isMobile) {
+      return [
         SimpleButton(
           title: 'Cancelar',
           backgroundColor: Colors.blueGrey,
@@ -149,11 +157,32 @@ class ReportContentDialogState extends State<ReportContentDialog> {
           onTap: _sending ? null : () => Navigator.of(context).pop(false),
         ),
         SimpleButton(
-          title: _sending ? 'Enviando...':'Enviar reporte',
+          title: _sending ? 'Enviando...' : 'Enviar reporte',
           onTap: _sending ? null : _submit,
         ),
-
-      ],
-    );
+      ];
+    }
+    // En móvil: mostrar en columna (usar un único widget en actions para evitar disposición horizontal)
+    return [
+      SizedBox(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SimpleButton(
+              title: _sending ? 'Enviando...' : 'Enviar reporte',
+              onTap: _sending ? null : _submit,
+            ),
+            const SizedBox(height: 8),
+            SimpleButton(
+              title: 'Cancelar',
+              backgroundColor: Colors.blueGrey,
+              textColor: Colors.white,
+              onTap: _sending ? null : () => Navigator.of(context).pop(false),
+            ),
+          ],
+        ),
+      ),
+    ];
   }
 }
