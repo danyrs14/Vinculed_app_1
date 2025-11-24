@@ -81,6 +81,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    const double kButtonMaxWidth = 420; // ancho uniforme
     return Stack(
       children: [Scaffold(
         backgroundColor: Colors.white, // Fondo blanco
@@ -148,10 +149,16 @@ class _LoginPageState extends State<LoginPage> {
                                         SizedBox(height: 10), // Espacio entre los campos de texto y el botón
       
                                         // Botón de inicio de sesión
-                                        LargeButton(
-                                          title: "Iniciar Sesión",
-                                          primaryColor: true,
-                                          onTap: _login,
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(maxWidth: kButtonMaxWidth),
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            child: LargeButton(
+                                              title: "Iniciar Sesión",
+                                              primaryColor: true,
+                                              onTap: _login,
+                                            ),
+                                          ),
                                         ),
                                         
       
@@ -182,37 +189,49 @@ class _LoginPageState extends State<LoginPage> {
                                         SizedBox(height: 20), // Espacio entre los campos de texto y el botón
       
                                         // Botón de Registro de Alumno
-                                        LargeButton(
-                                          title: "Registrarme como Alumno",
-                                          primaryColor: true,
-                                          onTap: () {
-                                            // Redirigir a la página de registro de alumno
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => const LectorQRPage()),
-                                            );
-                                          },
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(maxWidth: kButtonMaxWidth),
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            child: LargeButton(
+                                              title: "Registrarme como Alumno",
+                                              primaryColor: true,
+                                              onTap: () {
+                                                // Redirigir a la página de registro de alumno
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(builder: (context) => const LectorQRPage()),
+                                                );
+                                              },
+                                            ),
+                                          ),
                                         ),
       
                                         SizedBox(height: 10),
       
                                         // Botón de inicio de sesión
-                                        LargeButton(
-                                          title: "Registrarme como Reclutador",
-                                          primaryColor: true,
-                                          onTap: () {
-                                            // Lógica de inicio de sesión
-                                            String email = emailController.text;
-                                            String password = passwordController.text;
-                                            // Aquí iría tu lógica de autenticación
-                                            print("Email: $email, Password: $password");
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(maxWidth: kButtonMaxWidth),
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            child: LargeButton(
+                                              title: "Registrarme como Reclutador",
+                                              primaryColor: true,
+                                              onTap: () {
+                                                // Lógica de inicio de sesión
+                                                String email = emailController.text;
+                                                String password = passwordController.text;
+                                                // Aquí iría tu lógica de autenticación
+                                                print("Email: $email, Password: $password");
       
-                                            // Navegar a la siguiente pantalla después de la autenticación
-                                            Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => MenuPage()),
-                                            );
-                                          },
+                                                // Navegar a la siguiente pantalla después de la autenticación
+                                                Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(builder: (context) => MenuPage()),
+                                                );
+                                              },
+                                            ),
+                                          ),
                                         ),
                                       ],
                                   ),
