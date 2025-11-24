@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/lector_qr.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/registrar_reclutador.dart';
 import 'package:vinculed_app_1/src/ui/pages/recpass.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
@@ -218,16 +219,9 @@ class _LoginPageState extends State<LoginPage> {
                                               title: "Registrarme como Reclutador",
                                               primaryColor: true,
                                               onTap: () {
-                                                // Lógica de inicio de sesión
-                                                String email = emailController.text;
-                                                String password = passwordController.text;
-                                                // Aquí iría tu lógica de autenticación
-                                                print("Email: $email, Password: $password");
-      
-                                                // Navegar a la siguiente pantalla después de la autenticación
-                                                Navigator.pushReplacement(
+                                                Navigator.push(
                                                   context,
-                                                  MaterialPageRoute(builder: (context) => MenuPage()),
+                                                  MaterialPageRoute(builder: (context) => RegistrarReclutadorPage()),
                                                 );
                                               },
                                             ),

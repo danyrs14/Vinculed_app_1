@@ -316,7 +316,7 @@ class _RegisterPageWebRecState extends State<RegisterPageWebRec> {
                                     items: _empresasItems,
                                     value: _empresaSeleccionada,
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) return 'La empresa es obligatoria.';
+                                      if (value == null || value.isEmpty || value == 'agregar') return 'La empresa es obligatoria.';
                                       return null;
                                     },
                                     onChanged: (valor) {
