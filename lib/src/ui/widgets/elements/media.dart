@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart' as yt_iframe;
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MediaContent extends StatelessWidget {
@@ -15,30 +17,21 @@ class MediaContent extends StatelessWidget {
     return u.endsWith('.jpg') || u.endsWith('.jpeg') || u.endsWith('.png') || u.endsWith('.gif') || u.endsWith('.webp');
   }
 
-  bool _canEmbedYoutube() {
-    if (kIsWeb) return true; // en web usa iframe
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-      case TargetPlatform.iOS:
-        return true; // móviles soportados
-      default:
-        return false; // desktop: usar fallback externo
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final isHttp = url.startsWith('http://') || url.startsWith('https://');
 
     Widget buildFromResolved(String resolved) {
       // Detectar YouTube y tipos por la URL final
-      final ytId = YoutubePlayerController.convertUrlToId(resolved);
+      final ytId = yt_iframe.YoutubePlayerController.convertUrlToId(resolved);
       if (ytId != null) {
-        return _YouTubePlayerInline(
-          videoId: ytId,
-          originalUrl: resolved,
-          canEmbed: _canEmbedYoutube(),
-        );
+        if (kIsWeb) {
+          return _YouTubePlayerWeb(videoId: ytId, originalUrl: resolved);
+        } else if (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS) {
+          return _YouTubePlayerMobile(videoId: ytId, originalUrl: resolved);
+        } else {
+          return _YouTubeExternalFallback(videoId: ytId, originalUrl: resolved);
+        }
       }
       final lower = resolved.toLowerCase();
       final isVideo = lower.endsWith('.mp4');
@@ -143,47 +136,13 @@ class MediaContent extends StatelessWidget {
   }
 }
 
-class _YouTubePlayerInline extends StatefulWidget {
+class _YouTubeExternalFallback extends StatelessWidget {
   final String videoId;
   final String originalUrl;
-  final bool canEmbed;
-  const _YouTubePlayerInline({required this.videoId, required this.originalUrl, required this.canEmbed});
+  const _YouTubeExternalFallback({required this.videoId, required this.originalUrl});
 
-  @override
-  State<_YouTubePlayerInline> createState() => _YouTubePlayerInlineState();
-}
-
-class _YouTubePlayerInlineState extends State<_YouTubePlayerInline> {
-  YoutubePlayerController? _controller;
-  bool _failed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.canEmbed) {
-      try {
-        _controller = YoutubePlayerController.fromVideoId(
-          videoId: widget.videoId,
-          params: const YoutubePlayerParams(
-            showFullscreenButton: true,
-          ),
-        );
-      } catch (_) {
-        _failed = true;
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.close();
-    super.dispose();
-  }
-
-  Future<void> _openExternally() async {
-    final uri = Uri.parse(widget.originalUrl.isNotEmpty
-        ? widget.originalUrl
-        : 'https://www.youtube.com/watch?v=${widget.videoId}');
+  Future<void> _open() async {
+    final uri = Uri.parse(originalUrl.isNotEmpty ? originalUrl : 'https://www.youtube.com/watch?v=$videoId');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -191,48 +150,149 @@ class _YouTubePlayerInlineState extends State<_YouTubePlayerInline> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.canEmbed || _failed || _controller == null) {
-      return Container(
-        decoration: BoxDecoration(
-          color: Colors.black12.withOpacity(.06),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.black12),
-        ),
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            const Icon(Icons.ondemand_video, color: Colors.black54),
-            const SizedBox(width: 8),
-            const Expanded(child: Text('El video se abrirá en YouTube.')),
-            TextButton.icon(
-              onPressed: _openExternally,
-              icon: const Icon(Icons.open_in_new),
-              label: const Text('Abrir'),
-            )
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black12.withOpacity(.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black12),
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: const [Icon(Icons.error_outline, color: Colors.redAccent), SizedBox(width: 8), Expanded(child: Text('Reproducción embebida no soportada.'))]),
+          const SizedBox(height: 8),
+          Align(alignment: Alignment.centerRight, child: TextButton.icon(onPressed: _open, icon: const Icon(Icons.open_in_new), label: const Text('Abrir en YouTube')))
+        ],
+      ),
+    );
+  }
+}
+
+class _YouTubePlayerWeb extends StatefulWidget {
+  final String videoId;
+  final String originalUrl;
+  const _YouTubePlayerWeb({required this.videoId, required this.originalUrl});
+
+  @override
+  State<_YouTubePlayerWeb> createState() => _YouTubePlayerWebState();
+}
+
+class _YouTubePlayerWebState extends State<_YouTubePlayerWeb> {
+  yt_iframe.YoutubePlayerController? _controller;
+  bool _failed = false;
+  Timer? _timer;
+
+  bool _isValidId(String id) => RegExp(r'^[A-Za-z0-9_-]{11}$').hasMatch(id);
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_isValidId(widget.videoId)) { _failed = true; return; }
+    try {
+      _controller = yt_iframe.YoutubePlayerController.fromVideoId(
+        videoId: widget.videoId,
+        params: const yt_iframe.YoutubePlayerParams(
+          showControls: true,
+          showFullscreenButton: true,
+          enableCaption: true,
+          strictRelatedVideos: true,
+          playsInline: true,
         ),
       );
-    }
+      _timer = Timer(const Duration(seconds: 4), () {
+        if (!mounted || _failed) return;
+        final v = _controller?.value;
+        if (v == null || v.metaData.duration == Duration.zero) {
+          setState(() { _failed = true; });
+        }
+      });
+    } catch (_) { _failed = true; }
+  }
 
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller?.close();
+    super.dispose();
+  }
+
+  Widget _error() => _YouTubeExternalFallback(videoId: widget.videoId, originalUrl: widget.originalUrl);
+
+  @override
+  Widget build(BuildContext context) {
+    if (_failed || _controller == null) return _error();
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: AspectRatio(aspectRatio: 16/9, child: yt_iframe.YoutubePlayer(controller: _controller!)),
+    );
+  }
+}
+
+class _YouTubePlayerMobile extends StatefulWidget {
+  final String videoId;
+  final String originalUrl;
+  const _YouTubePlayerMobile({required this.videoId, required this.originalUrl});
+
+  @override
+  State<_YouTubePlayerMobile> createState() => _YouTubePlayerMobileState();
+}
+
+class _YouTubePlayerMobileState extends State<_YouTubePlayerMobile> {
+  YoutubePlayerController? _controller;
+  bool _failed = false;
+  bool _ready = false;
+  Timer? _timer;
+
+  bool _isValidId(String id) => RegExp(r'^[A-Za-z0-9_-]{11}$').hasMatch(id);
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_isValidId(widget.videoId)) { _failed = true; return; }
+    try {
+      _controller = YoutubePlayerController(
+        initialVideoId: widget.videoId,
+        flags: const YoutubePlayerFlags(autoPlay: false, mute: false, forceHD: false, enableCaption: true, disableDragSeek: false),
+      );
+      _timer = Timer(const Duration(seconds: 4), () {
+        if (!mounted || _failed) return;
+        if (!_ready && (_controller?.metadata.duration == Duration.zero)) {
+          setState(() { _failed = true; });
+        }
+      });
+    } catch (_) { _failed = true; }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  Widget _error() => _YouTubeExternalFallback(videoId: widget.videoId, originalUrl: widget.originalUrl);
+
+  @override
+  Widget build(BuildContext context) {
+    if (_failed || _controller == null) return _error();
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Builder(
-          builder: (context) {
-            try {
-              return YoutubePlayer(controller: _controller!);
-            } catch (_) {
-              // Fallback si el widget lanza excepción por plataforma no soportada
-              return Center(
-                child: TextButton.icon(
-                  onPressed: _openExternally,
-                  icon: const Icon(Icons.open_in_new),
-                  label: const Text('Abrir en YouTube'),
-                ),
-              );
-            }
-          },
+        aspectRatio: 16/9,
+        child: YoutubePlayer(
+          controller: _controller!,
+          showVideoProgressIndicator: true,
+          progressIndicatorColor: Colors.redAccent,
+          onReady: () { setState(() { _ready = true; }); },
+          bottomActions: [
+            const CurrentPosition(),
+            const SizedBox(width: 8),
+            ProgressBar(isExpanded: true),
+            const RemainingDuration(),
+            FullScreenButton(), // quitar const para evitar queja de const inconsistente
+          ],
         ),
       ),
     );

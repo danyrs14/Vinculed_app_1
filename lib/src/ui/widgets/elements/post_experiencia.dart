@@ -122,6 +122,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
   // Lista interna de comentarios que se quedan en la tarjeta
   late List<ExperienceComment> _comments; // ← NUEVO
   late int _likesCount; // nuevo contador dinámico
+  late int _commentCount; // contador dinámico de comentarios (incluye respuestas)
   bool _sendingReaction = false; // bandera para evitar doble clic spam
 
   // Comentarios remotos
@@ -153,6 +154,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
     _showComposer = widget.initialShowComposer;
     _comments = List<ExperienceComment>.from(widget.initialComments ?? const []); // ← NUEVO
     _likesCount = widget.initialLikesCount; // inicializar
+    _commentCount = widget.totalComments; // inicializar con valor inicial recibido
   }
 
   @override
@@ -296,6 +298,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
         );
         setState(() {
           _comments.insert(0, newComment);
+          _commentCount++; // incrementar contador al enviar comentario
         });
         _commentCtrl.clear();
         setState(() => _showComposer = false);
@@ -526,6 +529,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
           _expandedReplies.add(parentId);
           _replyCtrl.clear();
           _replyingTo = null;
+          _commentCount++; // incrementar contador al enviar respuesta
         });
       } else {
         // ignore: avoid_print
@@ -611,6 +615,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
     final theme = ThemeController.instance;
     final accent = theme.primario(); // color de acento
     final suppressMedia = widget.hideMediaOverlays || _modalOpen;
+    final dynamicCommentLabel = _commentCount > 0 ? '$_commentCount Comentarios' : null; // etiqueta dinámica
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: widget.maxWidth),
@@ -736,11 +741,11 @@ class _ExperiencePostState extends State<ExperiencePost> {
                                 onTap: _toggleComposer,
                               ),
                             ),
-                            if (widget.commentCountText != null) ...[
+                            if (dynamicCommentLabel != null) ...[
                               const SizedBox(width: 130),
                               Flexible(
                                 child: Text(
-                                  widget.commentCountText!,
+                                  dynamicCommentLabel,
                                   textAlign: TextAlign.right,
                                   style: const TextStyle(color: Colors.black54, fontSize: 12),
                                   overflow: TextOverflow.ellipsis,
@@ -779,9 +784,9 @@ class _ExperiencePostState extends State<ExperiencePost> {
                         onTap: _toggleComposer,
                       ),
                       const Spacer(),
-                      if (widget.commentCountText != null)
+                      if (dynamicCommentLabel != null)
                         Text(
-                          widget.commentCountText!,
+                          dynamicCommentLabel,
                           style: const TextStyle(color: Colors.black54, fontSize: 12),
                         ),
                     ],
@@ -790,7 +795,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
               ),
             ),
             // Botón Ver comentarios dentro del contenedor
-            if (widget.totalComments > 0 && !_showComposer) ...[
+            if (_commentCount > 0 && !_showComposer) ...[
               const SizedBox(height: 12),
               Align(
                 alignment: Alignment.centerLeft,

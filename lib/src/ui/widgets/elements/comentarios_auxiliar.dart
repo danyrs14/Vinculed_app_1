@@ -188,18 +188,34 @@ class CommentBubble extends StatelessWidget {
                   child: Text(text)),
                 if (showRepliesButton || onReply != null) ...[
                   const SizedBox(height: 6),
-                  Row(
+                  // Reemplazar Row por Wrap para evitar overflow horizontal
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
+                    alignment: WrapAlignment.start,
                     children: [
                       if (showRepliesButton)
                         TextButton(
                           onPressed: onShowReplies,
-                          style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
-                          child: Text(repliesButtonLabel ?? 'Mostrar respuestas'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            minimumSize: const Size(0, 0),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            repliesButtonLabel ?? 'Mostrar respuestas',
+                            overflow: TextOverflow.fade,
+                            softWrap: true,
+                          ),
                         ),
                       TextButton(
                         onPressed: onReply,
-                        style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
-                        child: const Text('Responder'),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: const Size(0, 0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text('Responder', overflow: TextOverflow.fade, softWrap: true),
                       ),
                     ],
                   ),
@@ -285,18 +301,33 @@ class ReplyBubble extends StatelessWidget {
                   child: Text(reply.comentario)),
                 if (showRepliesButton || onReply != null) ...[
                   const SizedBox(height: 6),
-                  Row(
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
+                    alignment: WrapAlignment.start,
                     children: [
                       if (showRepliesButton)
                         TextButton(
                           onPressed: onShowReplies,
-                          style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
-                          child: Text(repliesButtonLabel ?? 'Mostrar respuestas'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            minimumSize: const Size(0, 0),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            repliesButtonLabel ?? 'Mostrar respuestas',
+                            overflow: TextOverflow.fade,
+                            softWrap: true,
+                          ),
                         ),
                       TextButton(
                         onPressed: onReply,
-                        style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
-                        child: const Text('Responder'),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: const Size(0, 0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text('Responder', overflow: TextOverflow.fade, softWrap: true),
                       ),
                     ],
                   ),
