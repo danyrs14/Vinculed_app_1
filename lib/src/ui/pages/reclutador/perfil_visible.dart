@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/pages/reclutador/estado_vacante.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/editar_vacante.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
@@ -353,7 +353,7 @@ class _HeaderPerfilPostulado extends StatelessWidget {
                 color: Colors.black87,
                 onPressed: () => Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => VacanteDetallePage()),
+                  MaterialPageRoute(builder: (context) => EditarVacantePage()),
                 ),
               ),
             ],

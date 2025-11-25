@@ -132,6 +132,19 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
     controller.text = _fmt(picked);
     onPicked(picked);
   }
+  DateTime? _tryParseInput(String? s){
+    if(s==null) return null; final t=s.trim(); if(t.isEmpty) return null;
+    final onlyDate = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+    if(onlyDate.hasMatch(t)){
+      try{ final p=t.split('-'); return DateTime(int.parse(p[0]),int.parse(p[1]),int.parse(p[2]),0,0,0);}catch(_){ }
+    }
+    final re = RegExp(r'^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$');
+    final m = re.firstMatch(t);
+    if(m!=null){
+      try{ return DateTime(int.parse(m.group(1)!),int.parse(m.group(2)!),int.parse(m.group(3)!),int.parse(m.group(4)!),int.parse(m.group(5)!),int.parse(m.group(6)!)); }catch(_){ }
+    }
+    try{ return DateTime.parse(t).toLocal(); }catch(_){ return null; }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -575,6 +588,24 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
   void _publicar() async {
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Corrige los errores del formulario')));
+      return;
+    }
+    // Validaciones de fechas
+    final ahora = DateTime.now();
+    final hoy = DateTime(ahora.year, ahora.month, ahora.day);
+    final fInicio = _tryParseInput(_fechaInicioCtrl.text);
+    final fFin = _tryParseInput(_fechaFinCtrl.text);
+    final fLimite = _tryParseInput(_fechaLimiteCtrl.text);
+    DateTime? only(DateTime? d)=> d==null? null: DateTime(d.year,d.month,d.day);
+    final oInicio = only(fInicio); final oFin = only(fFin); final oLimite = only(fLimite);
+    final errores = <String>[];
+    if (oInicio != null && oInicio.isBefore(hoy)) errores.add('La fecha de inicio no puede ser menor que hoy.');
+    if (oFin != null && oFin.isBefore(hoy)) errores.add('La fecha de fin no puede ser menor que hoy.');
+    if (oLimite != null && oInicio != null && oLimite.isAfter(oInicio)) errores.add('La fecha límite debe ser anterior o igual a la fecha de inicio.');
+    if (oLimite != null && oLimite.isBefore(hoy)) errores.add('La fecha límite no puede ser menor que hoy.');
+    if (oFin != null && oInicio != null && oFin.isBefore(oInicio)) errores.add('La fecha de fin no puede ser menor que la fecha de inicio.');
+    if(errores.isNotEmpty){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errores.join('\n'))));
       return;
     }
     try {

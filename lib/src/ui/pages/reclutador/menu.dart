@@ -76,7 +76,7 @@ class _MenuPageRecState extends State<MenuPageRec> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CrearVacantePage()),
+                      MaterialPageRoute(builder: (context) => const CrearVacantePage()),
                     );
                   },
                 ),

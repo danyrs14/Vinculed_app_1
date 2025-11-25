@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
-import 'package:vinculed_app_1/src/ui/pages/reclutador/menu.dart';
+// REMOVED unused import menu.dart
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/roles_multi_dropdown.dart';
@@ -77,7 +77,6 @@ class _CrearVacantePageState extends State<CrearVacantePage> {
     String two(int v) => v.toString().padLeft(2, '0');
     return '${dt.year}-${two(dt.month)}-${two(dt.day)} ${two(dt.hour)}:${two(dt.minute)}:00';
   }
-
   Future<void> _pickDateTime({required TextEditingController controller}) async {
     final now = DateTime.now();
     final d = await showDatePicker(
@@ -91,10 +90,39 @@ class _CrearVacantePageState extends State<CrearVacantePage> {
     final picked = DateTime(d.year, d.month, d.day, t?.hour ?? 0, t?.minute ?? 0);
     controller.text = _fmt(picked);
   }
+  DateTime? _tryParseInput(String? s){
+    if(s==null) return null; final t=s.trim(); if(t.isEmpty) return null;
+    final onlyDate = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+    if(onlyDate.hasMatch(t)){
+      try{ final p=t.split('-'); return DateTime(int.parse(p[0]),int.parse(p[1]),int.parse(p[2]),0,0,0);}catch(_){ }
+    }
+    final re = RegExp(r'^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$');
+    final m = re.firstMatch(t);
+    if(m!=null){ try{ return DateTime(int.parse(m.group(1)!),int.parse(m.group(2)!),int.parse(m.group(3)!),int.parse(m.group(4)!),int.parse(m.group(5)!),int.parse(m.group(6)!)); }catch(_){ } }
+    try{ return DateTime.parse(t).toLocal(); }catch(_){ return null; }
+  }
 
   void _publicar() async {
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Corrige los errores del formulario')));
+      return;
+    }
+    // Validaciones de fechas (igual que EditarVacantePage)
+    final ahora = DateTime.now();
+    final hoy = DateTime(ahora.year, ahora.month, ahora.day);
+    final fInicio = _tryParseInput(_fechaInicioCtrl.text);
+    final fFin = _tryParseInput(_fechaFinCtrl.text);
+    final fLimite = _tryParseInput(_fechaLimiteCtrl.text);
+    DateTime? only(DateTime? d)=> d==null? null: DateTime(d.year,d.month,d.day);
+    final oInicio = only(fInicio); final oFin = only(fFin); final oLimite = only(fLimite);
+    final errores = <String>[];
+    if (oInicio != null && oInicio.isBefore(hoy)) errores.add('La fecha de inicio no puede ser menor que hoy.');
+    if (oFin != null && oFin.isBefore(hoy)) errores.add('La fecha de fin no puede ser menor que hoy.');
+    if (oLimite != null && oInicio != null && oLimite.isAfter(oInicio)) errores.add('La fecha límite debe ser anterior o igual a la fecha de inicio.');
+    if (oLimite != null && oLimite.isBefore(hoy)) errores.add('La fecha límite no puede ser menor que hoy.');
+    if (oFin != null && oInicio != null && oFin.isBefore(oInicio)) errores.add('La fecha de fin no puede ser menor que la fecha de inicio.');
+    if(errores.isNotEmpty){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errores.join('\n'))));
       return;
     }
     try {
@@ -312,7 +340,7 @@ class _CrearVacantePageState extends State<CrearVacantePage> {
 
                     StyledTextFormField(
                       controller: _escolaridadCtrl,
-                      title: 'Escolaridad (obligatoria)',
+                      title: 'Escolaridad (obligatoria, ej. Mínimo 6º semestre de Ing. en Sistemas)',
                       isRequired: true,
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'La escolaridad es obligatoria' : null,
                     ),
