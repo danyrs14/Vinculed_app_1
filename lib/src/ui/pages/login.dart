@@ -122,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                                               return 'Por favor, ingresa tu correo electrónico';
                                             }
                                             // Expresión regular simple para validar el formato del correo electrónico
-                                            final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
+                                            final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
                                             if (!emailRegex.hasMatch(value)) {
                                               return 'Ingresa un correo electrónico válido';
                                             }

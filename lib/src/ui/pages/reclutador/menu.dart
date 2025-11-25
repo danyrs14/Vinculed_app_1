@@ -74,7 +74,7 @@ class _MenuPageRecState extends State<MenuPageRec> {
                 IconButton(
                   icon: Icon(Icons.add, color: theme.primario()),
                   onPressed: () {
-                    Navigator.pushReplacement(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => CrearVacantePage()),
                     );
@@ -138,6 +138,15 @@ class _MenuPageRecState extends State<MenuPageRec> {
                 width: 26, height: 26,
               ),
               label: 'Perfil',
+            ),
+            BottomNavigationBarItem(
+              backgroundColor: theme.background(),
+              icon: Icon(
+                Icons.work_outline,
+                color: _paginaActual == 1 ? theme.fuente() : Colors.grey,
+                size: 26,
+              ),
+              label: 'Mis Vacantes',
             ),
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
