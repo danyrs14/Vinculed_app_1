@@ -8,6 +8,7 @@ import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/editar_vacante.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/new_vacancy.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil_cand.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 
 class VacantesRec extends StatefulWidget {
@@ -531,20 +532,31 @@ class _PostulanteCard extends StatelessWidget {
             child: (fotoUrl == null || fotoUrl!.isEmpty) ? Icon(Icons.person, size:32, color: theme.fuente()) : null,
           ),
           const SizedBox(width:12),
+          // Allow name and email to wrap so they're fully visible on small screens
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children:[
-                Text(nombre, maxLines:1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
-                const SizedBox(height:4),
-                Text(correo, maxLines:1, overflow: TextOverflow.ellipsis),
+                Text(
+                  nombre,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                  maxLines: 4,
+                  overflow: TextOverflow.visible,
+                ),
+                // const SizedBox(height:4),
+                // Text(
+                //   correo,
+                //   style: const TextStyle(color: Colors.black87),
+                //   maxLines: 2,
+                //   overflow: TextOverflow.visible,
+                // ),
               ],
             ),
           ),
           const SizedBox(width:12),
           _Badge(text: estatus, color: theme.secundario()),
           const SizedBox(width:12),
-          SizedBox( child: SimpleButton(title: 'Ver perfil', onTap: ()=> context.go('/reclutador/perfil_candidato/$idAlumno'))),
+          SizedBox( child: SimpleButton(title: 'Ver perfil', onTap: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => PerfilPostuladoPage(idAlumno: idAlumno))); } )),
         ],
       ),
     );
