@@ -136,23 +136,44 @@ class _FaqPageRecState extends State<FaqPageRec> {
                               // Lista de preguntas (FAQ) usando tu FaqItem
                               ConstrainedBox(
                                 constraints: BoxConstraints(maxWidth: 560),
-                                child: Column(
+                                child: const Column(
                                   children: [
                                     FaqItem(
-                                      question: '¿Cómo postularme?',
-                                      answer:
-                                      'Entra a "Mis Vacantes" o usa la búsqueda, abre la vacante y presiona "Postularme". '
-                                          'Sigue los pasos para enviar tu solicitud.',
+                                      question: '¿Cómo ver el detalle de una vacante publicada?',
+                                      answer: 'En "Mis Vacantes" toca la vacante de la lista para ver toda su información y las personas que se han postulado.',
+                                      initiallyExpanded: true,
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Cómo editar una vacante y refrescar los datos?',
+                                      answer: 'Dentro del detalle pulsa "Editar", realiza los cambios y guarda. Volverás a la vista anterior y la información se mostrará actualizada automáticamente.',
                                       initiallyExpanded: false,
                                     ),
                                     SizedBox(height: 16),
                                     FaqItem(
-                                      question: '¿Cómo edito mi perfil?',
-                                      answer:
-                                      'Accede a la sección "Mi Perfil" para actualizar tu información personal, académica y profesional. '
-                                          'No olvides guardar los cambios.',
-                                      initiallyExpanded: true,
+                                      question: '¿Por qué veo "No hay vacantes publicadas"?',
+                                      answer: 'Todavía no has creado vacantes. Para publicar la primera, usa el botón con el símbolo "+" en la barra superior.',
+                                      initiallyExpanded: false,
                                     ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Cómo eliminar una vacante?',
+                                      answer: 'Abre la vacante y elige la opción de eliminar. Confirma en el cuadro de diálogo y la vacante desaparecerá del listado. Esta acción no se puede deshacer.',
+                                      initiallyExpanded: false,
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Cómo cambiar el estado (Activa / Expirada)?',
+                                      answer: 'En el detalle de la vacante usa el botón para cambiar estado. Puedes alternar entre Activa y Expirada según corresponda, para permitir o impedir nuevas postulaciones.',
+                                      initiallyExpanded: false,
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Dónde veo las postulaciones de una vacante?',
+                                      answer: 'Al abrir el detalle de la vacante verás la sección de postulaciones en la parte inferior. Si aún no hay, aparecerá un mensaje indicándolo.',
+                                      initiallyExpanded: false,
+                                    ),
+                                    SizedBox(height: 16),
                                   ],
                                 ),
                               ),
@@ -203,8 +224,13 @@ class AyudaRec extends StatefulWidget {
 }
 
 class _AyudaRecState extends State<AyudaRec> {
-  bool _open1 = false; // ¿Cómo elegir?
-  bool _open2 = true;  // ¿Cómo edito mi perfil?
+  int? _openIndex; // índice de la tarjeta abierta, null si ninguna
+
+  void _toggleCard(int index) {
+    setState(() {
+      _openIndex = (_openIndex == index) ? null : index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -243,23 +269,61 @@ class _AyudaRecState extends State<AyudaRec> {
               const SizedBox(height: 16),
 
               _FaqCard(
-                title: '¿Como elegir?',
-                isOpen: _open1,
-                onToggle: () => setState(() => _open1 = !_open1),
+                title: '¿Cómo ver el detalle de una vacante publicada?',
+                isOpen: _openIndex == 0,
+                onToggle: () => _toggleCard(0),
                 child: const Text(
-                  'Revisa la descripcion de cada vacante, compara '
-                      'requisitos y postulate a las que mejor se ajusten a tu perfil.',
+                  'En "Mis Vacantes" toca el boton "Ver detalle" de una vacante de la lista para ver toda su información y las personas que se han postulado.',
                   style: TextStyle(fontSize: 13.5, height: 1.45),
                 ),
               ),
               const SizedBox(height: 12),
               _FaqCard(
-                title: '¿Como edito mi perfil?',
-                isOpen: _open2,
-                onToggle: () => setState(() => _open2 = !_open2),
+                title: '¿Cómo editar una vacante?',
+                isOpen: _openIndex == 1,
+                onToggle: () => _toggleCard(1),
                 child: const Text(
-                  'Accede a la sección de \'Configuración de cuenta\' para '
-                      'actualizar tu información personal y profesional.',
+                  'Dentro del detalle pulsa "Editar", realiza los cambios y guarda. Volverás a la vista anterior y la información se mostrará actualizada automáticamente.',
+                  style: TextStyle(fontSize: 13.5, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FaqCard(
+                title: '¿Por qué veo "No hay vacantes publicadas"?',
+                isOpen: _openIndex == 2,
+                onToggle: () => _toggleCard(2),
+                child: const Text(
+                  'Todavía no has creado vacantes. Para publicar la primera, usa el botón con el símbolo "+" en la barra superior.',
+                  style: TextStyle(fontSize: 13.5, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FaqCard(
+                title: '¿Cómo eliminar una vacante?',
+                isOpen: _openIndex == 3,
+                onToggle: () => _toggleCard(3),
+                child: const Text(
+                  'Abre la vacante y elige la opción de eliminar. Confirma en el cuadro de diálogo y la vacante desaparecerá del listado. Esta acción no se puede deshacer.',
+                  style: TextStyle(fontSize: 13.5, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FaqCard(
+                title: '¿Cómo cambiar el estado (Activa / Expirada)?',
+                isOpen: _openIndex == 4,
+                onToggle: () => _toggleCard(4),
+                child: const Text(
+                  'En el detalle de la vacante usa el botón para cambiar estado. Puedes alternar entre Activa y Expirada según corresponda, para permitir o impedir nuevas postulaciones.',
+                  style: TextStyle(fontSize: 13.5, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FaqCard(
+                title: '¿Dónde veo los alumnos que se postularon a una vacante?',
+                isOpen: _openIndex == 5,
+                onToggle: () => _toggleCard(5),
+                child: const Text(
+                  'Al abrir el detalle de la vacante verás la sección de postulaciones en la parte inferior. Si aún no hay, aparecerá un mensaje indicándolo.',
                   style: TextStyle(fontSize: 13.5, height: 1.45),
                 ),
               ),
