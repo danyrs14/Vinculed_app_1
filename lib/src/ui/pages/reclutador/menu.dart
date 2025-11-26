@@ -1,12 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/busqueda.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/experiencias.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/home.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/mensajes.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/notificaciones.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/perfil.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/postulaciones.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/ajustes.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/home.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/mensajes.dart';
@@ -23,6 +17,7 @@ class MenuPageRec extends StatefulWidget {
 }
 
 class _MenuPageRecState extends State<MenuPageRec> {
+  final usuario = FirebaseAuth.instance.currentUser!;
   int _paginaActual = 2; // Inicia en 'Inicio'
   late final List<Widget> _paginas;
   late final PageController _pageController;
@@ -83,19 +78,25 @@ class _MenuPageRecState extends State<MenuPageRec> {
                 IconButton(
                   icon: Icon(Icons.notifications_none, color: theme.primario()),
                   onPressed: () {
-                    Navigator.pushReplacement(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => NotificacionesRec()),
                     );
                   },
                 ),
                 IconButton(
-                  icon: const CircleAvatar(
-                    backgroundImage: AssetImage('assets/images/amlo.jpg'),
+                  icon: CircleAvatar(
                     radius: 18,
+                    backgroundColor: Colors.blue[50],
+                    backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
+                    child: usuario.photoURL == null ? const Icon(Icons.person, size: 18, color: Colors.blueGrey) : null,
                   ),
                   onPressed: () {
                     // Acción para perfil
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PerfilRec()),
+                    );
                   },
                 ),
               ],

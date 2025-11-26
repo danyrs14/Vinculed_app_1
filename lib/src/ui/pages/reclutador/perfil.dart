@@ -1,100 +1,282 @@
 import 'package:flutter/material.dart';
-import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:http/http.dart' as http; // Necesario para la petición HTTP
+import 'dart:convert'; // Necesario para decodificar JSON
+import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart' as fs;
+import 'package:firebase_auth/firebase_auth.dart';
 
-class PerfilRec extends StatelessWidget {
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart';
+
+class PerfilRec extends StatefulWidget {
   const PerfilRec({super.key});
 
   @override
+  State<PerfilRec> createState() => _PerfilRecState();
+}
+
+class _PerfilRecState extends State<PerfilRec> {
+  final usuario = FirebaseAuth.instance.currentUser!;
+  final _scrollCtrl = ScrollController();
+
+  // NUEVOS ESTADOS para manejar la carga de la API
+  Map<String, dynamic>? _perfilData;
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchPerfilReclutador(); // Llama a la nueva función de carga
+    });
+  }
+
+  // ──────────────────── FUNCIÓN DE CARGA ────────────────────
+  Future<void> _fetchPerfilReclutador() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final userProv = context.read<UserDataProvider>();
+      final headers = await userProv.getAuthHeaders();
+      final idRol = userProv.idRol; // Obtenemos el ID del rol/reclutador
+      
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/perfil')
+          .replace(queryParameters: {'id_reclutador': '$idRol'});
+      
+      final resp = await http.get(uri, headers: headers);
+      
+      if (resp.statusCode != 200) {
+        throw Exception('Error al obtener perfil: ${resp.statusCode}');
+      }
+      
+      final data = jsonDecode(resp.body);
+      setState(() {
+        _perfilData = data is Map<String, dynamic> ? data : null;
+        _loading = false;
+      });
+      
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _error = 'Error al cargar el perfil. Asegúrese de que el servidor esté activo. $e';
+      });
+    }
+  }
+
+  Future<String> _uploadRecruiterPhoto(Uint8List bytes, String ext, String ownerId) async {
+    final storage = fs.FirebaseStorage.instance;
+    final baseFolder = 'foto_perfil/${usuario.uid}';
+    final folderRef = storage.ref().child(baseFolder);
+    try {
+      final existing = await folderRef.listAll();
+      for (final item in existing.items) {
+        await item.delete();
+      }
+    } catch (_) {}
+    final path = '$baseFolder/avatar.$ext';
+    final ref = storage.ref().child(path);
+    final contentType = (ext == 'png') ? 'image/png' : 'image/jpeg';
+    await ref.putData(bytes, fs.SettableMetadata(contentType: contentType));
+    final url = await ref.getDownloadURL();
+    return url;
+  }
+
+  Future<void> _changePhoto() async {
+    try {
+      final picked = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: false, withData: true);
+      if (picked == null || picked.files.isEmpty) return;
+      final file = picked.files.single;
+      final bytes = file.bytes;
+      if (bytes == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo leer la imagen seleccionada')));
+        return;
+      }
+      String ext = 'jpg';
+      final name = (file.name).toLowerCase();
+      if (name.endsWith('.png')) ext = 'png';
+      if (name.endsWith('.jpeg')) ext = 'jpeg';
+
+      final userProv = context.read<UserDataProvider>();
+      final idRol = userProv.idRol;
+      final owner = FirebaseAuth.instance.currentUser?.uid ?? '${idRol ?? 'reclutador'}';
+
+      // Subir a Storage y obtener URL pública
+      final photoUrl = await _uploadRecruiterPhoto(bytes, ext, owner);
+
+      // Enviar al backend del reclutador
+      final headers = await userProv.getAuthHeaders();
+      final resp = await http.put(
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/perfil/actualizar_foto'),
+        headers: headers,
+        body: jsonEncode({'id_reclutador': idRol, 'url_foto_perfil': photoUrl}),
+      );
+
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        setState(() {
+          _perfilData = _perfilData ?? <String, dynamic>{};
+          _perfilData!['url_foto_perfil'] = photoUrl;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Foto actualizada correctamente')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode}: ${resp.body}')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No se pudo actualizar la foto: $e')));
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  // ──────────────────── CONSTRUCCIÓN DE DATOS ────────────────────
+
+  List<_InfoItem> _leftItems() {
+    final data = _perfilData ?? {};
+    final empresa = data['empresa'] ?? {};
+    
+    return [
+      _InfoItem(
+        label: 'Correo Electronico:',
+        value: data['correo'] ?? 'Sin correo',
+        icon: Icons.email_outlined,
+        circle: true,
+      ),
+      _InfoItem(
+        label: 'Nombre de la Empresa:',
+        value: empresa['nombre_empresa'] ?? 'Sin datos',
+        icon: Icons.business,
+      ),
+      _InfoItem(
+        label: 'Sitio Web:',
+        value: empresa['sitio_web'] ?? 'No disponible',
+        icon: Icons.link,
+      ),
+    ];
+  }
+
+  List<_InfoItem> _rightItems() {
+    final empresa = _perfilData?['empresa'] ?? {};
+    
+    return [
+      _InfoItem(
+        label: 'Descripción de la Empresa:',
+        value: empresa['descripcion_empresa'] ?? 'Aún no se ha añadido una descripción.',
+        icon: Icons.edit_note,
+        multiLine: true,
+      ),
+    ];
+  }
+
+  // ──────────────────── MÉTODO BUILD ────────────────────
+
+  @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 900;
+    
+    // Extracción segura para el encabezado
+    final perfil = _perfilData ?? {};
+    final nombre = perfil['nombre'] ?? context.select((UserDataProvider u) => u.nombreUsuario ?? 'Reclutador');
+    final fotoUrl = perfil['url_foto_perfil'];
 
     return Scaffold(
       backgroundColor: theme.background(),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Column(
-            children: [
-              // Encabezado (conserva tu estilo actual)
-              const _Header(),
-              const SizedBox(height: 16),
+      body: SingleChildScrollView(
+        controller: _scrollCtrl,
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1100),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  // minHeight sin footer
+                  minHeight: (MediaQuery.of(context).size.height - 16).clamp(0, double.infinity),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ───────── Banner + Avatar (Usando datos del perfil) ─────────
+                    _Banner(
+                      avatarUrl: fotoUrl,
+                      logoUrl: perfil['empresa']?['url_logo_empresa'],
+                      onChangePhoto: _changePhoto,
+                    ),
+                    
+                    const SizedBox(height: 18),
 
-              // Usuario + rol (según imagen)
-              const Texto(text: '@Reclutador_Registrado', fontSize: 18, fontWeight: FontWeight.w700),
-              const SizedBox(height: 4),
-              const Texto(text: 'Reclutador', fontSize: 14),
-              const SizedBox(height: 16),
+                    // ───────── Nombre y Rol ─────────
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            nombre,
+                            style: const TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF1F2A36),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            perfil['empresa']?['nombre_empresa'] ?? 'Reclutador independiente',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
-              // Secciones con la información de la imagen
-              _ProfileSection(
-                label: 'Correo Electronico:',
-                value: 'eminemrs14@gmail.com',
-                actionIcon: Icons.edit,
-                onAction: () {},
-              ),
-              _ProfileSection(
-                label: 'Empresa:',
-                value: 'BBVA Mexico',
-                actionIcon: Icons.edit,
-                onAction: () {},
-              ),
-              _ProfileSection(
-                label: 'Direccion de la Empresa :',
-                value:
-                'Av. Miguel Othón de Mendizábal Ote. 343-\n'
-                    'Locales 2-5, Industrial Vallejo, Gustavo A.\n'
-                    'Madero, 07700 Ciudad de México, CDMX',
-                actionIcon: Icons.edit,
-                onAction: () {},
-              ),
-              _ProfileSection(
-                label: 'Numero de Telefono:',
-                value: '+52 55478963210',
-                actionIcon: Icons.add_circle_outline,
-                onAction: () {},
-              ),
-              _ProfileSection(
-                label: 'Puesto en la Empresa',
-                value: 'Jefe de Recursos Humanos',
-                actionIcon: Icons.add_circle_outline,
-                onAction: () {},
-              ),
-              _ProfileSection(
-                label: 'Area de Especialidad:',
-                value: 'TI, Frontend, UI/UX',
-                actionIcon: Icons.add_circle_outline,
-                onAction: () {},
-              ),
-              _ProfileSection(
-                label: 'Idiomas:',
-                value: 'Ingles C1, Español Nativo',
-                actionIcon: Icons.add_circle_outline,
-                onAction: () {},
-              ),
+                    const SizedBox(height: 22),
 
-              const SizedBox(height: 24),
+                    // ───────── Carga de datos o Contenido ─────────
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: _loading
+                        ? const Center(child: Padding(padding: EdgeInsets.only(top: 40), child: CircularProgressIndicator()))
+                        : (_error != null)
+                            ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
+                            : isMobile
+                                ? Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _InfoColumn(items: _leftItems()),
+                                      const SizedBox(height: 24),
+                                      _InfoColumn(items: _rightItems()),
+                                    ],
+                                  )
+                                : Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(child: _InfoColumn(items: _leftItems())),
+                                      const SizedBox(width: 24),
+                                      Expanded(child: _InfoColumn(items: _rightItems())),
+                                    ],
+                                  ),
+                    ),
 
-              // Botón rojo centrado: Desactivar cuenta
-              Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                  onPressed: () => _confirmarDesactivacion(context),
-                  child: const Text('Desactivar cuenta'),
+                    const SizedBox(height: 28),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
         ),
       ),
@@ -102,184 +284,151 @@ class PerfilRec extends StatelessWidget {
   }
 }
 
-Future<void> _confirmarDesactivacion(BuildContext context) async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Confirmar acción'),
-      content: const Text('¿Seguro que deseas desactivar tu cuenta? Esta acción no se puede deshacer.'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(false),
-          child: const Text('Cancelar'),
+/* ════════════════════════ Secciones / Widgets internos ═══════════════════════ */
+
+class _Banner extends StatelessWidget {
+  final String? avatarUrl;
+  final String? logoUrl;
+  final VoidCallback? onChangePhoto;
+  
+  const _Banner({this.avatarUrl, this.logoUrl, this.onChangePhoto});
+
+  @override
+  Widget build(BuildContext context) {
+    // Usamos el logo de la empresa como banner de fondo si está disponible
+    final backgroundImageUrl = logoUrl; 
+
+    return Stack(
+      children: [
+        // Banner (Color Sólido o Imagen de la Empresa)
+        AspectRatio(
+          aspectRatio: 16 / 4.5,
+          child: backgroundImageUrl != null
+              ? Image.network(
+                  backgroundImageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (ctx, err, stack) => Container(color: Colors.blueGrey.shade100),
+                )
+              : Container(color: Colors.blueGrey.shade100), // Color de fondo si no hay URL
         ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-          onPressed: () => Navigator.of(ctx).pop(true),
-          child: const Text('Sí, desactivar'),
+        
+        // Avatar del Reclutador
+        Positioned(
+          left: 24,
+          bottom: 18,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              CircleAvatar(
+                radius: 58,
+                backgroundColor: Colors.white,
+                child: CircleAvatar(
+                  radius: 54,
+                  backgroundColor: Colors.blue[50],
+                  backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
+                  child: avatarUrl == null ? const Icon(Icons.person, size: 54, color: Colors.blueGrey) : null,
+                ),
+              ),
+              if (onChangePhoto != null)
+                Positioned(
+                  right: -6,
+                  bottom: -6,
+                  child: Material(
+                    color: Colors.white,
+                    shape: const CircleBorder(),
+                    elevation: 1,
+                    child: IconButton(
+                      tooltip: 'Cambiar foto',
+                      icon: const Icon(Icons.edit, size: 18),
+                      onPressed: onChangePhoto,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ],
-    ),
-  );
-
-  if (confirmed != true) return;
-
-  try {
-    final userProv = context.read<UserDataProvider>();
-    final headers = await userProv.getAuthHeaders();
-    final idUsuario = userProv.idUsuario;
-    final idRol = userProv.idRol; // solicitado como id_alumno
-
-    if (idUsuario == null || idRol == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo obtener el usuario actual.')));
-      return;
-    }
-
-    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/perfil/eliminar_cuenta');
-    final body = jsonEncode({
-      'id_usuario': idUsuario,
-      'id_alumno': idRol,
-    });
-
-    final resp = await http.delete(uri, headers: headers, body: body);
-
-    if (resp.statusCode == 204) {
-      // Ir al inicio de sesión
-      context.go('/login');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al desactivar: ${resp.statusCode}')),
-      );
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error: $e')),
     );
   }
 }
 
-/// ---------- Widgets auxiliares ----------
+class _InfoColumn extends StatelessWidget {
+  const _InfoColumn({required this.items});
 
-class _Header extends StatelessWidget {
-  const _Header();
+  final List<_InfoItem> items;
 
   @override
   Widget build(BuildContext context) {
-    // Encabezado limpio: engrane arriba a la derecha, título centrado y avatar
+    if (items.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Column(
       children: [
-        // Fila con botón de ajustes alineado a la derecha
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {},
-              tooltip: 'Ajustes',
-            ),
-          ],
-        ),
-        const Texto(text: 'Perfil', fontSize: 22, fontWeight: FontWeight.w700),
-        const SizedBox(height: 12),
-        const CircleAvatar(
-          radius: 42,
-          backgroundImage: AssetImage('assets/images/amlo.jpg'), // reemplaza por tu asset/foto
-          // Si usas red: backgroundImage: NetworkImage('https://...'),
-        ),
-        const SizedBox(height: 8),
+        for (final it in items) ...[
+          _InfoRow(item: it),
+          const SizedBox(height: 16),
+        ],
       ],
     );
   }
 }
 
-/*
-// Lo dejo por si después lo vuelves a mostrar
-class _CvBox extends StatelessWidget {
-  const _CvBox({required this.fileName});
-  final String fileName;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ThemeController.instance;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: theme.background(),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.black87, width: 1.1),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.attachment),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              fileName,
-              style: const TextStyle(fontSize: 14),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.more_vert),
-          ),
-        ],
-      ),
-    );
-  }
-}
-*/
-
-class _ProfileSection extends StatelessWidget {
-  const _ProfileSection({
-    required this.label,
-    required this.value,
-    required this.actionIcon,
-    this.onAction,
-  });
-
+// Mantiene la estructura de datos pero añade URL opcional
+class _InfoItem {
   final String label;
   final String value;
-  final IconData actionIcon;
-  final VoidCallback? onAction;
+  final IconData icon;
+  final bool multiLine;
+  final bool circle;
+
+  const _InfoItem({
+    required this.label,
+    required this.value,
+    required this.icon,
+    this.multiLine = false,
+    this.circle = false,
+  });
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.item});
+  final _InfoItem item;
 
   @override
   Widget build(BuildContext context) {
-    final theme = ThemeController.instance;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Título + acción a la derecha
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              IconButton(
-                onPressed: onAction,
-                icon: Icon(actionIcon, size: 20, color: theme.primario()),
-                tooltip: label,
-              ),
-            ],
+    return Row(
+      crossAxisAlignment: item.multiLine ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+      children: [
+        // Etiqueta
+        SizedBox(
+          width: 210,
+          child: Text(
+            item.label,
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
-          // Valor
-          Text(
-            value,
-            style: const TextStyle(fontSize: 14, height: 1.35),
+        ),
+        // Valor
+        Expanded(
+          child: Text(
+            item.value,
+            style: const TextStyle(color: Colors.black87, height: 1.4),
           ),
-        ],
-      ),
+        ),
+        // Acción (icono en círculo)
+        const SizedBox(width: 10),
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: item.circle ? Border.all(color: Colors.black54, width: 1.2) : null,
+          ),
+          alignment: Alignment.center,
+          child: Icon(item.icon, size: 14, color: Colors.black87),
+        ),
+      ],
     );
   }
 }
