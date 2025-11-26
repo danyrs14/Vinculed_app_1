@@ -182,7 +182,7 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
         errorBuilder: (_, __, ___) {
           return CircleAvatar(
             radius: 28,
-            backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            backgroundColor: Colors.blue[50],
             child: Text(
               r.nombre.isNotEmpty ? r.nombre[0].toUpperCase() : '?',
               style: TextStyle(color: Theme.of(context).colorScheme.primary),
@@ -193,7 +193,7 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
     )
         : CircleAvatar(
       radius: 28,
-      backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+      backgroundColor: Colors.blue[50],
       child: Text(
         r.nombre.isNotEmpty ? r.nombre[0].toUpperCase() : '?',
         style: TextStyle(color: Theme.of(context).colorScheme.primary),

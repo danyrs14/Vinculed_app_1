@@ -38,6 +38,7 @@ class NotificacionesRec extends StatelessWidget {
                 ),
                 IconButton(
                   icon: CircleAvatar(
+                    backgroundColor: Colors.blue[50],
                     backgroundImage: AssetImage('assets/images/amlo.jpg'), // Foto de perfil
                     radius: 18, // Tamaño del avatar
                   ),

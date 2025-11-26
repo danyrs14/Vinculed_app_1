@@ -527,7 +527,7 @@ class _PostulanteCard extends StatelessWidget {
         children:[
           CircleAvatar(
             radius:28,
-            backgroundColor: Colors.transparent,
+            backgroundColor: Colors.blue[50],
             backgroundImage: (fotoUrl != null && fotoUrl!.isNotEmpty) ? NetworkImage(fotoUrl!) : null,
             child: (fotoUrl == null || fotoUrl!.isEmpty) ? Icon(Icons.person, size:32, color: theme.fuente()) : null,
           ),

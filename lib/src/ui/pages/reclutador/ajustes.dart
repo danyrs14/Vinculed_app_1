@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/comentarios.dart';
@@ -10,6 +12,7 @@ class AjustesRec extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final usuario = FirebaseAuth.instance.currentUser!;
     final theme = ThemeController.instance;
 
     return Scaffold(
@@ -52,15 +55,16 @@ class AjustesRec extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
                         child: Row(
                           children: [
-                            const CircleAvatar(
-                              radius: 24,
-                              backgroundImage:
-                              AssetImage('assets/images/amlo.jpg'),
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: Colors.blue[50],
+                              backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
+                              child: usuario.photoURL == null ? const Icon(Icons.person, size: 18, color: Colors.blueGrey) : null,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                '@Reclutad_Registrado',
+                                usuario.displayName ?? 'Reclutador',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,

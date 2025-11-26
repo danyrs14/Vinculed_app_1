@@ -201,6 +201,7 @@ class _HomeState extends State<Home> {
                   const SizedBox(width: 10),
                   CircleAvatar(
                     radius: 26,
+                    backgroundColor: Colors.blue[50],
                     backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
                     child: usuario.photoURL == null ? const Icon(Icons.person, size: 26) : null,
                   ),
