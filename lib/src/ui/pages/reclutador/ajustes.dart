@@ -1,14 +1,42 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/comentarios.dart';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/ayuda.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/preferecnias.dart';
+import 'package:vinculed_app_1/src/ui/pages/transicionInicial.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
-class AjustesRec extends StatelessWidget {
+class AjustesRec extends StatefulWidget {
   const AjustesRec({super.key});
+
+  @override
+  State<AjustesRec> createState() => _AjustesRecState();
+}
+
+class _AjustesRecState extends State<AjustesRec> {
+  Future<void> _cerrarSesion(BuildContext context) async {
+    try {
+      // Limpia datos cacheados del usuario (rol, id, token, etc.)
+      context.read<UserDataProvider>().clearData();
+
+      await FirebaseAuth.instance.signOut();
+      // Navegar al orquestador (TrasicionPage) limpiando el stack completo.
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => TrasicionPage()),
+        (route) => false,
+      );
+    } catch (e) {
+      debugPrint("Error al cerrar sesión: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ocurrió un error al cerrar sesión')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,8 +110,6 @@ class AjustesRec extends StatelessWidget {
                       _SettingsItem(
                         title: 'Obtener Ayuda',
                         onTap: () {
-                          // Navega a tu pantalla de ayuda/comentarios si la tienes
-                          // Si no quieres navegar, cambia por un SnackBar.
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => AyudaRec(),
@@ -105,12 +131,7 @@ class AjustesRec extends StatelessWidget {
                         title: 'Cerrar Sesion',
                         isDestructive: true,
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Cerrando sesión...'),
-                            ),
-                          );
-                          // Aquí conecta tu lógica de signOut cuando la tengas
+                          _cerrarSesion(context);
                         },
                       ),
                     ],
