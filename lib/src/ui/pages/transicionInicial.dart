@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:vinculed_app_1/src/ui/pages/admin_menu.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
 import 'package:vinculed_app_1/src/ui/pages/login.dart';
 import 'package:vinculed_app_1/src/ui/pages/reclutador/menu.dart';
@@ -50,7 +51,7 @@ class _TrasicionPageState extends State<TrasicionPage> {
             } 
             final user = snapshot.data!;
             if(!user.emailVerified){
-              return verificarEmailPage();
+              return const verificarEmailPage();
             }
 
             // Disparar carga de provider una sola vez por uid
@@ -66,7 +67,7 @@ class _TrasicionPageState extends State<TrasicionPage> {
             } else if(prov.rol == 'reclutador'){
               return const MenuPageRec();
             }else if(prov.rol == 'admin'){
-              return const MenuPage();
+              return const MenuPageAdmin();
             }
             return const Scaffold(
               body: Center(child: Text("Error: Rol de usuario desconocido.")),
