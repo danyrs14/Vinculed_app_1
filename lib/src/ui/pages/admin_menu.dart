@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/pages/admin_ajustes.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_empresas.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_reclutador.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_reportes.dart';
@@ -27,7 +28,7 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
       ReportesAdminMovilPage(),  // 1
       InicioAdminPageMovil(),           // 2
       AdminGestionEmpresasPageMovil(),   // 3
-      //MensajesRec(),       // 4
+      AjustesAdmin(),       // 4
     ];
     _pageController = PageController(initialPage: _paginaActual);
   }
@@ -118,7 +119,15 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
               ),
               label: 'Empresas',
             ),
-            
+            BottomNavigationBarItem(
+              backgroundColor: theme.background(),
+              icon: Icon(
+                Icons.settings_outlined,
+                color: _paginaActual == 3 ? theme.fuente() : Colors.grey,
+                size: 26,
+              ),
+              label: 'Ajustes',
+            ),
           ],
         ),
       ),
