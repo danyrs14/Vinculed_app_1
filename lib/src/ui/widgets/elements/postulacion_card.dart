@@ -24,6 +24,13 @@ class ApplicationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
+    // Calculamos el ancho disponible en pantalla restando un padding horizontal estimado
+    // (en la vista padre se usan 24 px a cada lado). Así las tarjetas ocupan el ancho
+    // disponible hasta alcanzar el maxWidth configurado.
+    final screenWidth = MediaQuery.of(context).size.width;
+    double availableWidth = screenWidth - 48; // padding 24 * 2 utilizado en la página padre
+    if (availableWidth > maxWidth) availableWidth = maxWidth; // respetar maxWidth
+    if (availableWidth < 0) availableWidth = screenWidth; // fallback por seguridad
 
     final card = Container(
       padding: const EdgeInsets.fromLTRB(24, 22, 24, 18),
@@ -67,17 +74,19 @@ class ApplicationCard extends StatelessWidget {
       ),
     );
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: maxWidth),
-      child: onTap == null
-          ? card
-          : Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onTap,
-          child: card,
-        ),
+    return Center(
+      child: SizedBox(
+        width: availableWidth,
+        child: onTap == null
+            ? card
+            : Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: onTap,
+                  child: card,
+                ),
+              ),
       ),
     );
   }
