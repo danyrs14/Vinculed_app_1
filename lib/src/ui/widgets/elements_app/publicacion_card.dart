@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/pages/reclutador/estado_vacante.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/editar_vacante.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
@@ -138,7 +138,7 @@ class PublicacionCard extends StatelessWidget {
         onTap: onTap ?? () => Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => VacanteDetallePage(),
+            builder: (context) => EditarVacantePage(),
           ),
         ),
         onLongPress:

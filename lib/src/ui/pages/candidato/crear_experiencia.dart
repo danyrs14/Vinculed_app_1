@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:file_picker/file_picker.dart';
+// removed: import 'package:go_router/go_router.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/busqueda.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/notificaciones.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
+import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+// removed: import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/roles_multi_dropdown.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/experience_text_area.dart';
 
 class CreateExperiencePage extends StatefulWidget {
@@ -21,77 +23,55 @@ class CreateExperiencePage extends StatefulWidget {
 class _CreateExperiencePageState extends State<CreateExperiencePage> {
   final _scrollCtrl = ScrollController();
   final _contentCtrl = TextEditingController();
+  // Nuevos controladores para paridad con web
+  final _titleCtrl = TextEditingController();
+  final _youtubeCtrl = TextEditingController();
+  YoutubePlayerController? _ytController;
+  bool _hideYoutube = false; // ocultar preview cuando dropdown está abierto
 
-  bool _showFooter = false;
+  // Roles múltiples seleccionados
+  List<RoleOption> _selectedRoles = [];
 
-  static const double _footerReservedSpace = EscomFooter.height;
-  static const double _extraBottomPadding = 24.0;
-  static const double _atEndThreshold = 4.0;
-
-  // --- Dropdown de rol ---
-  final List<String> _roles = const <String>[
-    'Desarrollador/a',
-    'Analista',
-    'QA / Tester',
-    'Project Manager',
-    'Diseñador/a UI/UX',
-    'DevOps',
-    'Data Engineer',
-    'Soporte Técnico',
-    'Otro',
-  ];
-  String? _selectedRole;
-
-  // --- Archivos adjuntos ---
-  List<PlatformFile> _pickedFiles = [];
-
-  // --- Límite de caracteres ---
+  // Límite de caracteres
   static const int _maxChars = 5000;
 
   @override
   void initState() {
     super.initState();
-    _scrollCtrl.addListener(_handleScroll);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _handleScroll());
-    _contentCtrl.addListener(() {
-      if (mounted) setState(() {});
-    });
+    // removed scroll listener related to footer visibility
+    _contentCtrl.addListener(() { if (mounted) setState(() {}); });
   }
 
-  void _handleScroll() {
-    final pos = _scrollCtrl.position;
-    if (!pos.hasPixels || !pos.hasContentDimensions) return;
-
-    // Si el contenido cabe en la pantalla, oculta el footer
-    if (pos.maxScrollExtent <= 0) {
-      if (_showFooter) setState(() => _showFooter = false);
-      return;
-    }
-
-    final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
-    if (atBottom != _showFooter) setState(() => _showFooter = atBottom);
-  }
+  // removed _handleScroll()
 
   @override
   void dispose() {
-    _scrollCtrl
-      ..removeListener(_handleScroll)
-      ..dispose();
+    // simplified dispose
+    _scrollCtrl.dispose();
     _contentCtrl.dispose();
+    _titleCtrl.dispose();
+    _youtubeCtrl.dispose();
+    _ytController?.dispose();
     super.dispose();
   }
 
-  Future<void> _pickFiles() async {
-    final result = await FilePicker.platform.pickFiles(
-      allowMultiple: true,
-      withReadStream: false,
-      withData: false,
-    );
-    if (result != null) {
-      setState(() {
-        _pickedFiles = result.files;
-      });
+  void _initYoutube(String url) {
+    final id = YoutubePlayer.convertUrlToId(url);
+    if (id == null) {
+      setState(() => _ytController = null);
+      return;
     }
+    _ytController = YoutubePlayerController(
+      initialVideoId: id,
+      flags: const YoutubePlayerFlags(
+        autoPlay: false,
+        mute: false,
+        disableDragSeek: false,
+        enableCaption: true,
+        forceHD: false,
+      ),
+    );
+    setState(() {});
   }
 
   @override
@@ -101,294 +81,202 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
 
     return Scaffold(
       backgroundColor: theme.background(),
-      appBar: AppBar(
-        backgroundColor: theme.background(),
-        automaticallyImplyLeading: false,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Image.asset('assets/images/escom.png', width: 50, height: 50),
-
-            Row(
-              children: [
-                IconButton(
-                  icon: Icon(Icons.search, color: theme.primario()),
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => Busqueda()),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.notifications_none, color: theme.primario()),
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => Notificaciones()),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const CircleAvatar(
-                    backgroundImage: AssetImage('assets/images/amlo.jpg'),
-                    radius: 18,
+      // removed AppBar (header)
+      body: SafeArea(
+        child: SingleChildScrollView(
+          controller: _scrollCtrl,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 900),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  
+                  Row(
+                    children: [
+                      IconButton(
+                        tooltip: 'Regresar',
+                        onPressed: () => Navigator.maybePop(context),
+                        icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                      ),
+                      Text(
+                        'Crear Experiencia',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: isMobile ? 24 : 34,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFF22313F),
+                        ),
+                      ),
+                    ],
                   ),
-                  onPressed: () {
-                    // Acción para perfil
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-        elevation: 0,
-      ),
-      body: Stack(
-        children: [
-          // Contenido scrolleable
-          Positioned.fill(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final minBodyHeight =
-                    constraints.maxHeight - _footerReservedSpace - _extraBottomPadding;
-
-                return SingleChildScrollView(
-                  controller: _scrollCtrl,
-                  padding: const EdgeInsets.only(
-                    bottom: _footerReservedSpace + _extraBottomPadding,
+                  const SizedBox(height: 20),
+                  // Título
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 560),
+                    child: StyledTextFormField(
+                      isRequired: true,
+                      controller: _titleCtrl,
+                      title: 'Título',
+                      maxLength: 120,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Ingresa un título';
+                        return null;
+                      },
+                    ),
                   ),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 900),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20), // móvil
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: minBodyHeight > 0 ? minBodyHeight : 0,
+                  const SizedBox(height: 14),
+                  // Roles múltiples
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 560),
+                    child: RolesMultiDropdown(
+                      label: 'Roles relacionados',
+                      hintText: '',
+                      initialSelectedIds: _selectedRoles.map((r) => r.id).toList(),
+                      onChanged: (roles) => setState(() => _selectedRoles = roles),
+                      onOpen: () => setState(() => _hideYoutube = true),
+                      onClose: () => setState(() => _hideYoutube = false),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // URL YouTube
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 560),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: StyledTextFormField(
+                            isRequired: false,
+                            controller: _youtubeCtrl,
+                            title: 'URL de YouTube (opcional)',
+                            keyboardType: TextInputType.url,
+                            onChanged: (val) => _initYoutube(val.trim()),
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              // Título
-                              Text(
-                                'Crear Experiencia',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: isMobile ? 24 : 34,
-                                  fontWeight: FontWeight.w900,
-                                  color: const Color(0xFF22313F),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-
-                              // Dropdown de Rol (arriba del textarea)
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 560),
-                                child: DropdownButtonFormField<String>(
-                                  value: _selectedRole,
-                                  decoration: InputDecoration(
-                                    labelText: 'Rol de trabajo',
-                                    hintText: 'Selecciona el rol para esta experiencia',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 12,
-                                    ),
-                                  ),
-                                  items: _roles
-                                      .map((r) => DropdownMenuItem(
-                                    value: r,
-                                    child: Text(r),
-                                  ))
-                                      .toList(),
-                                  onChanged: (v) => setState(() => _selectedRole = v),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-
-                              // TextArea con límite 5000 + contador
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 560),
-                                child: Column(
-                                  children: [
-                                    ExperienceTextArea(
-                                      controller: _contentCtrl,
-                                      hintText: '¿Qué nos quieres compartir?',
-                                      height: 220,
-                                      maxLength: _maxChars,
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        '${_contentCtrl.text.length}/$_maxChars',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade700,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-
-                              // Botón para adjuntar archivos + lista
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 560),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    OutlinedButton.icon(
-                                      onPressed: _pickFiles,
-                                      icon: const Icon(Icons.attach_file),
-                                      label: const Text('Adjuntar archivos'),
-                                    ),
-                                    if (_pickedFiles.isNotEmpty) ...[
-                                      const SizedBox(height: 8),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: theme.secundario(),
-                                            width: 1.0,
-                                          ),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 10,
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              'Archivos seleccionados:',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            ..._pickedFiles.map(
-                                                  (f) => Padding(
-                                                padding: const EdgeInsets.symmetric(vertical: 2),
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.insert_drive_file, size: 16),
-                                                    const SizedBox(width: 6),
-                                                    Expanded(
-                                                      child: Text(
-                                                        f.name,
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow.ellipsis,
-                                                      ),
-                                                    ),
-                                                    if (f.size != null)
-                                                      Text(
-                                                        _fmtSize(f.size),
-                                                        style: const TextStyle(fontSize: 12),
-                                                      ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 18),
-
-                              // Botón "Publicar"
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 360),
-                                child: SimpleButton(
-                                  title: 'Publicar',
-                                  onTap: _onPublish,
-                                ),
-                              ),
-
-                              const SizedBox(height: 32),
+                        ),
+                        const SizedBox(width: 8),
+                        const Tooltip(
+                          message: 'Puedes añadir un enlace a un video de YouTube si quieres compartir más detalles de tu experiencia.',
+                          //waitDuration: Duration(milliseconds: 300),
+                          child: Icon(Icons.info_outline, color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_ytController != null) ...[
+                    const SizedBox(height: 12),
+                    Offstage(
+                      offstage: _hideYoutube,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 560, minHeight: 200),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: YoutubePlayer(
+                            controller: _ytController!,
+                            showVideoProgressIndicator: true,
+                            progressIndicatorColor: Colors.redAccent,
+                            bottomActions: const [
+                              CurrentPosition(),
+                              SizedBox(width: 8),
+                              ProgressBar(isExpanded: true),
+                              RemainingDuration(),
+                              FullScreenButton(),
                             ],
                           ),
                         ),
                       ),
                     ),
+                  ],
+                  const SizedBox(height: 14),
+                  // Contenido
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 560),
+                    child: Column(
+                      children: [
+                        ExperienceTextArea(
+                          controller: _contentCtrl,
+                          hintText: '¿Qué nos quieres compartir?',
+                          height: 220,
+                          maxLength: _maxChars,
+                        ),
+                        const SizedBox(height: 6),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            '${_contentCtrl.text.length}/$_maxChars',
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                );
-              },
-            ),
-          ),
-
-          // Footer animado
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: AnimatedSlide(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOut,
-              offset: _showFooter ? Offset.zero : const Offset(0, 1),
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 220),
-                opacity: _showFooter ? 1 : 0,
-                child: EscomFooter(isMobile: isMobile),
+                  const SizedBox(height: 18),
+                  // Publicar
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 360),
+                    child: SimpleButton(title: 'Publicar', onTap: _onPublish),
+                  ),
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  void _onPublish() {
-    final text = _contentCtrl.text.trim();
-
-    if (_selectedRole == null || _selectedRole!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecciona el rol de trabajo.')),
-      );
+  Future<void> _onPublish() async {
+    final titulo = _titleCtrl.text.trim();
+    final contenido = _contentCtrl.text.trim();
+    final url = _youtubeCtrl.text.trim();
+    if (titulo.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ingresa un título.')));
       return;
     }
-
-    if (text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Escribe algo para publicar.')),
-      );
+    if (contenido.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ingresa contenido.')));
       return;
     }
-
-    if (text.length > _maxChars) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('El máximo es de $_maxChars caracteres.')),
-      );
+    if (contenido.length > _maxChars) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Máximo $_maxChars caracteres.')));
       return;
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Experiencia publicada')),
-    );
-    _contentCtrl.clear();
-    setState(() {
-      _selectedRole = null;
-      _pickedFiles = [];
-    });
-  }
-
-  // util tamaño legible
-  String _fmtSize(int? bytes) {
-    if (bytes == null) return '';
-    const units = ['B', 'KB', 'MB', 'GB'];
-    double size = bytes.toDouble();
-    int idx = 0;
-    while (size >= 1024 && idx < units.length - 1) {
-      size /= 1024;
-      idx++;
+    if (_selectedRoles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Selecciona al menos un rol.')));
+      return;
     }
-    return '${size.toStringAsFixed(1)} ${units[idx]}';
+    try {
+      final userProv = Provider.of<UserDataProvider>(context, listen: false);
+      final idAlumno = userProv.idRol;
+      if (idAlumno == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se encontró id_alumno')));
+        return;
+      }
+      final headers = await userProv.getAuthHeaders();
+      final body = jsonEncode({
+        'id_alumno': idAlumno,
+        'titulo': titulo,
+        'contenido': contenido,
+        if (url.isNotEmpty) 'url_multimedia': url,
+        'roles_relacionados': _selectedRoles.map((r) => {'id_roltrabajo': r.id}).toList(),
+      });
+      final resp = await http.post(
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/crear_experiencia'),
+        headers: headers,
+        body: body,
+      );
+      if (resp.statusCode == 201 || (resp.statusCode >= 200 && resp.statusCode < 300)) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Experiencia publicada')));
+        if (mounted) Navigator.maybePop(context);
+        return;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode} al publicar')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
+    }
   }
 }

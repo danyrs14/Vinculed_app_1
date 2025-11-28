@@ -87,8 +87,9 @@ class _MenuPageState extends State<MenuPage> {
                 IconButton(
                   icon: CircleAvatar(
                     radius: 18,
+                    backgroundColor: Colors.blue[50],
                     backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
-                    child: usuario.photoURL == null ? const Icon(Icons.person, size: 18) : null,
+                    child: usuario.photoURL == null ? const Icon(Icons.person, size: 18, color: Colors.blueGrey) : null,
                   ),
                   onPressed: () {
                     // Acción para perfil

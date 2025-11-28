@@ -9,6 +9,7 @@ import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/dropdown.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/habilidades_multi_dropdown.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/roles_multi_dropdown.dart';
@@ -53,12 +54,22 @@ class _LocalDateTimePickerField extends StatelessWidget {
   }
 }
 class _LocalHabilidadesBlandas extends StatefulWidget {
-  const _LocalHabilidadesBlandas({required this.onSelected});
+  const _LocalHabilidadesBlandas({required this.onSelected, required this.initialSelectedIds});
   final ValueChanged<List<HabilidadOption>> onSelected;
+  final List<int> initialSelectedIds;
   @override State<_LocalHabilidadesBlandas> createState()=> _LocalHabilidadesBlandasState();
 }
 class _LocalHabilidadesBlandasState extends State<_LocalHabilidadesBlandas>{
   List<int> _ids = [];
+  @override void initState(){ super.initState(); _ids = List<int>.from(widget.initialSelectedIds); }
+  @override void didUpdateWidget(covariant _LocalHabilidadesBlandas oldWidget){
+    super.didUpdateWidget(oldWidget);
+    final oldSet = Set<int>.from(oldWidget.initialSelectedIds);
+    final newSet = Set<int>.from(widget.initialSelectedIds);
+    if(oldSet.length != newSet.length || !oldSet.containsAll(newSet)){
+      setState(()=> _ids = List<int>.from(widget.initialSelectedIds));
+    }
+  }
   @override Widget build(BuildContext context){
     return _LocalCardBox(title: 'HABILIDADES BLANDAS:', child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
       HabilidadesMultiDropdown(label: 'Selecciona habilidades blandas e idiomas', hintText: '', allowedTipos: const ['blanda','idioma'], initialSelectedIds: _ids, onChanged: (list){ _ids = list.map((e)=> e.id).toList(); widget.onSelected(list); }),
@@ -180,9 +191,9 @@ class _EditVacancyPageState extends State<EditVacancyPage> {
     _habBlandasIds = [];
     for (var h in habs) {
       if (h is Map<String,dynamic>) {
-        final tipo = (h['tipo']?.toString() ?? '').toLowerCase();
+        final tipo = (h['tipo']?.toString() ?? '');
         final idH = h['id_habilidad'] ?? h['id'] ?? 0;
-        if (tipo.contains('tecnica')) _habTecnicasIds.add(idH);
+        if (tipo.contains('Técnicas')) _habTecnicasIds.add(idH);
         else _habBlandasIds.add(idH);
       }
     }
@@ -191,6 +202,17 @@ class _EditVacancyPageState extends State<EditVacancyPage> {
   String _fmt(DateTime dt) {
     String two(int v) => v.toString().padLeft(2,'0');
     return '${dt.year}-${two(dt.month)}-${two(dt.day)} ${two(dt.hour)}:${two(dt.minute)}:00';
+  }
+  DateTime? _tryParseInput(String? s){
+    if(s==null) return null; final t=s.trim(); if(t.isEmpty) return null;
+    final onlyDate = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+    if(onlyDate.hasMatch(t)){
+      try{ final p=t.split('-'); return DateTime(int.parse(p[0]),int.parse(p[1]),int.parse(p[2]),0,0,0);}catch(_){ }
+    }
+    final re = RegExp(r'^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$');
+    final m = re.firstMatch(t);
+    if(m!=null){ try{ return DateTime(int.parse(m.group(1)!),int.parse(m.group(2)!),int.parse(m.group(3)!),int.parse(m.group(4)!),int.parse(m.group(5)!),int.parse(m.group(6)!)); }catch(_){ } }
+    try{ return DateTime.parse(t).toLocal(); }catch(_){ return null; }
   }
 
   Future<void> _pickDateTime({required TextEditingController controller}) async {
@@ -333,7 +355,7 @@ class _EditVacancyPageState extends State<EditVacancyPage> {
                           ]),
                           const SizedBox(height:12),
                           isMobile? Column(children:[
-                            DropdownButtonFormField<String>(value: _modalidad, items: const [DropdownMenuItem(value:'Remoto',child: Text('Remoto')), DropdownMenuItem(value:'Híbrido',child: Text('Híbrido')), DropdownMenuItem(value:'Presencial',child: Text('Presencial'))], onChanged:(v)=> setState(()=> _modalidad=v), decoration: const InputDecoration(labelText:'Modalidad', border: OutlineInputBorder())),
+                            DropdownInput(value: _modalidad, items: const [DropdownMenuItem(value:'Remoto',child: Text('Remoto')), DropdownMenuItem(value:'Híbrido',child: Text('Híbrido')), DropdownMenuItem(value:'Presencial',child: Text('Presencial'))], onChanged:(v)=> setState(()=> _modalidad=v),title: 'Modalidad', required: true,),
                             const SizedBox(height:12),
                             _LocalDateTimePickerField(label: 'Fecha límite', controller: _fechaLimiteCtrl, onTap: ()=> _pickDateTime(controller: _fechaLimiteCtrl)),
                           ]) : Row(children:[
@@ -344,7 +366,7 @@ class _EditVacancyPageState extends State<EditVacancyPage> {
                           const SizedBox(height:12),
                           StyledTextFormField(controller: _escolaridadCtrl, title: 'Escolaridad', isRequired:true, validator:(v)=> (v==null||v.trim().isEmpty)?'Obligatorio':null),
                           const SizedBox(height:18),
-                          _LocalHabilidadesBlandas(onSelected: (list){ _habBlandasIds = list.map((e)=> e.id).toList(); }),
+                          _LocalHabilidadesBlandas(initialSelectedIds: _habBlandasIds, onSelected: (list){ _habBlandasIds = list.map((e)=> e.id).toList(); }),
                           const SizedBox(height:12),
                           StyledTextFormField(controller: _observacionesCtrl, title: 'Observaciones (opcional)', maxLines:3, maxLength:400, isRequired:false),
                           const SizedBox(height:12),
@@ -373,6 +395,24 @@ class _EditVacancyPageState extends State<EditVacancyPage> {
   Future<void> _guardarCambios() async {
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Corrige los errores antes de guardar')));
+      return;
+    }
+    // Validaciones de fechas
+    final ahora = DateTime.now();
+    final hoy = DateTime(ahora.year, ahora.month, ahora.day);
+    final fInicio = _tryParseInput(_fechaInicioCtrl.text);
+    final fFin = _tryParseInput(_fechaFinCtrl.text);
+    final fLimite = _tryParseInput(_fechaLimiteCtrl.text);
+    DateTime? only(DateTime? d)=> d==null? null: DateTime(d.year,d.month,d.day);
+    final oInicio = only(fInicio); final oFin = only(fFin); final oLimite = only(fLimite);
+    final errores = <String>[];
+    if (oInicio != null && oInicio.isBefore(hoy)) errores.add('La fecha de inicio no puede ser menor que hoy.');
+    if (oFin != null && oFin.isBefore(hoy)) errores.add('La fecha de fin no puede ser menor que hoy.');
+    if (oLimite != null && oInicio != null && oLimite.isAfter(oInicio)) errores.add('La fecha límite debe ser anterior o igual a la fecha de inicio.');
+    if (oLimite != null && oLimite.isBefore(hoy)) errores.add('La fecha límite no puede ser menor que hoy.');
+    if (oFin != null && oInicio != null && oFin.isBefore(oInicio)) errores.add('La fecha de fin no puede ser menor que la fecha de inicio.');
+    if(errores.isNotEmpty){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errores.join('\n'))));
       return;
     }
     try {

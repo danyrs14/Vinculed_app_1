@@ -150,9 +150,10 @@ class _CommentTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const CircleAvatar(
+          CircleAvatar(
+            backgroundColor: Colors.blue[50],
             radius: 18,
-            backgroundImage: AssetImage('assets/images/amlo.jpg'), // reemplaza por tu asset
+            backgroundImage: const AssetImage('assets/images/amlo.jpg'), // reemplaza por tu asset
           ),
           const SizedBox(width: 10),
           // Burbuja de comentario

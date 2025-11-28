@@ -157,6 +157,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                   children: [
                                     CircleAvatar(
                                       radius: 58,
+                                      backgroundColor: Colors.blue[50],
                                       backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
                                       child: usuario.photoURL == null ? const Icon(Icons.person, size: 58) : null,
                                     ),

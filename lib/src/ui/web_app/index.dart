@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/auth_notifier.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
-import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil_visible.dart';
+//import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil_visible.dart';
 import 'package:vinculed_app_1/src/ui/web_app/admin_gestion_empresas.dart';
 
 // Candidato

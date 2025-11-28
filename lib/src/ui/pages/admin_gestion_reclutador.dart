@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:go_router/go_router.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
@@ -46,14 +44,14 @@ class RecruiterItem {
   }
 }
 
-class InicioAdminPage extends StatefulWidget {
-  const InicioAdminPage({Key? key}) : super(key: key);
+class InicioAdminPageMovil extends StatefulWidget {
+  const InicioAdminPageMovil({Key? key}) : super(key: key);
 
   @override
-  State<InicioAdminPage> createState() => _InicioAdminPageState();
+  State<InicioAdminPageMovil> createState() => _InicioAdminPageMovilState();
 }
 
-class _InicioAdminPageState extends State<InicioAdminPage> {
+class _InicioAdminPageMovilState extends State<InicioAdminPageMovil> {
   static const String apiUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/reclutadores_pendientes';
   static const String acceptUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/aceptar_reclutador';
   static const String denyUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/rechazar_reclutador';
@@ -61,43 +59,18 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
 
   // === Footer estilo "Dashboard" ===
   final ScrollController _scrollCtrl = ScrollController();
-  bool _showFooter = false;
-
-  // Reservamos SIEMPRE espacio para que no tape contenido
-  static const double _footerReservedSpace = EscomFooter.height;
   static const double _extraBottomPadding  = 24.0;
-  static const double _atEndThreshold      = 4.0;
 
   @override
   void initState() {
     super.initState();
-    _scrollCtrl.addListener(_onScroll);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
     _futureList = fetchPending();
   }
-
-  void _onScroll() {
-    if (!_scrollCtrl.hasClients) return;
-    final pos = _scrollCtrl.position;
-    if (!pos.hasPixels || !pos.hasContentDimensions) return;
-
-    if (pos.maxScrollExtent <= 0) {
-      // Como en tu Dashboard: si no hay scroll, oculto el footer
-      if (_showFooter) setState(() => _showFooter = false);
-      return;
-    }
-
-    final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
-    if (atBottom != _showFooter) {
-      setState(() => _showFooter = atBottom);
-    }
-  }
+  // Footer logic removed
 
   @override
   void dispose() {
-    _scrollCtrl
-      ..removeListener(_onScroll)
-      ..dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
@@ -123,8 +96,7 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
   Future<void> _refresh() async {
     setState(() { _futureList = fetchPending(); });
     await _futureList;
-    // Recalcular visibilidad tras redibujar
-    WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
+    // Footer logic removed; no post-frame recalculation needed
   }
 
   Future<void> _acceptRecruiter(int idReclutador) async {
@@ -381,111 +353,81 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
   // ...existing code...
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final isMobile = width < 700;
+  // Removed mobile footer usage
 
     return Scaffold(
-      appBar: EscomHeader4(
-        onLoginTap: () => context.go('/admin/reportes'),
-        onNotifTap: () {},
-        onMenuSelected: (label) {
-          switch (label) {
-            case "Inicio":
-              context.go('/inicio');
-              break;
-            case "Empresas":
-            context.go('/admin/empresas');
-            break;
-          }
-        },
-      ),
+
       body: Stack(
         children: [
           // === CONTENIDO estilo "Dashboard" ===
           Positioned.fill(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // Reservamos SIEMPRE el espacio del footer para que el final no "salte"
-                final minBodyHeight =
-                    constraints.maxHeight - _footerReservedSpace - _extraBottomPadding;
+                // Reservamos espacio inferior básico para evitar salto visual
+                final minBodyHeight = constraints.maxHeight - _extraBottomPadding;
 
-                return NotificationListener<ScrollNotification>(
-                  onNotification: (n) {
-                    if (n is ScrollUpdateNotification ||
-                        n is UserScrollNotification ||
-                        n is ScrollEndNotification) {
-                      _onScroll();
-                    }
-                    return false;
-                  },
-                  child: RefreshIndicator(
-                    onRefresh: _refresh,
-                    child: SingleChildScrollView(
-                      controller: _scrollCtrl,
-                      physics: const ClampingScrollPhysics(),
-                      padding: const EdgeInsets.only(
-                        top: 12,
-                        bottom: _footerReservedSpace + _extraBottomPadding,
-                      ),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 900),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minHeight: minBodyHeight > 0 ? minBodyHeight : 0,
-                              ),
-                              child: FutureBuilder<List<RecruiterItem>>(
-                                future: _futureList,
-                                builder: (context, snap) {
-                                  if (snap.connectionState == ConnectionState.waiting) {
-                                    return Column(
-                                      children: const [
-                                        SizedBox(height: 200),
-                                        Center(child: CircularProgressIndicator()),
-                                      ],
-                                    );
-                                  }
-                                  if (snap.hasError) {
-                                    return Column(
-                                      children: [
-                                        const SizedBox(height: 200),
-                                        Center(
-                                          child: Text(
-                                            'Error: ',
-                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
-                                          ),
-                                        ),
-                                        Center(
-                                          child: Text(
-                                            '${snap.error}',
-                                            textAlign: TextAlign.center,
-                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.red),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  }
-
-                                  final list = snap.data ?? [];
-                                  if (list.isEmpty) {
-                                    return Column(
-                                      children: const [
-                                        SizedBox(height: 200),
-                                        Center(child: Text('No hay reclutadores pendientes')),
-                                      ],
-                                    );
-                                  }
-
-                                  // Renderizamos tarjetas en Column para usar el mismo scroll padre
+                return RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: SingleChildScrollView(
+                    controller: _scrollCtrl,
+                    physics: const ClampingScrollPhysics(),
+                    padding: const EdgeInsets.only(top: 12, bottom: _extraBottomPadding),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 900),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(minHeight: minBodyHeight > 0 ? minBodyHeight : 0),
+                            child: FutureBuilder<List<RecruiterItem>>(
+                              future: _futureList,
+                              builder: (context, snap) {
+                                if (snap.connectionState == ConnectionState.waiting) {
                                   return Column(
-                                    children: [
-                                      for (final r in list) _buildCard(r),
+                                    children: const [
+                                      SizedBox(height: 200),
+                                      Center(child: CircularProgressIndicator()),
                                     ],
                                   );
-                                },
-                              ),
+                                }
+                                if (snap.hasError) {
+                                  return Column(
+                                    children: [
+                                      const SizedBox(height: 200),
+                                      Center(
+                                        child: Text(
+                                          'Error: ',
+                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+                                        ),
+                                      ),
+                                      Center(
+                                        child: Text(
+                                          '${snap.error}',
+                                          textAlign: TextAlign.center,
+                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.red),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+
+                                final list = snap.data ?? [];
+                                if (list.isEmpty) {
+                                  return Column(
+                                    children: const [
+                                      SizedBox(height: 200),
+                                      Center(child: Text('No hay reclutadores pendientes')),
+                                    ],
+                                  );
+                                }
+
+                                // Renderizamos tarjetas en Column para usar el mismo scroll padre
+                                return Column(
+                                  children: [
+                                    for (final r in list) _buildCard(r),
+                                  ],
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -496,23 +438,7 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
               },
             ),
           ),
-
-          // === FOOTER ANIMADO (igual que Dashboard) ===
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: AnimatedSlide(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOut,
-              offset: _showFooter ? Offset.zero : const Offset(0, 1),
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 220),
-                opacity: _showFooter ? 1 : 0,
-                child: EscomFooter(isMobile: isMobile),
-              ),
-            ),
-          ),
+          // Footer removed
         ],
       ),
     );

@@ -8,14 +8,14 @@ import 'package:vinculed_app_1/src/ui/pages/reclutador/preferecnias.dart';
 import 'package:vinculed_app_1/src/ui/pages/transicionInicial.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
-class AjustesRec extends StatefulWidget {
-  const AjustesRec({super.key});
+class AjustesAdmin extends StatefulWidget {
+  const AjustesAdmin({super.key});
 
   @override
-  State<AjustesRec> createState() => _AjustesRecState();
+  State<AjustesAdmin> createState() => _AjustesAdminState();
 }
 
-class _AjustesRecState extends State<AjustesRec> {
+class _AjustesAdminState extends State<AjustesAdmin> {
   Future<void> _cerrarSesion(BuildContext context) async {
     try {
       // Limpia datos cacheados del usuario (rol, id, token, etc.)
@@ -92,7 +92,7 @@ class _AjustesRecState extends State<AjustesRec> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                usuario.displayName ?? 'Reclutador',
+                                usuario.displayName ?? 'Administrador',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -107,26 +107,17 @@ class _AjustesRecState extends State<AjustesRec> {
                       const Divider(height: 1),
 
                       // Items
-                      _SettingsItem(
-                        title: 'Obtener Ayuda',
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => AyudaRec(),
-                            ),
-                          );
-                        },
-                      ),
-                      _SettingsItem(
-                        title: 'Preferencias',
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => PreferenciasRec(),
-                            ),
-                          );
-                        },
-                      ),
+                      
+                      // _SettingsItem(
+                      //   title: 'Preferencias',
+                      //   onTap: () {
+                      //     Navigator.of(context).push(
+                      //       MaterialPageRoute(
+                      //         builder: (_) => PreferenciasRec(),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
                       _SettingsItem(
                         title: 'Cerrar Sesion',
                         isDestructive: true,

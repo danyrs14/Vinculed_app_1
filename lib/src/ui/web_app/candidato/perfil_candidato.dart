@@ -1419,6 +1419,7 @@ class _BannerSection extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 58,
+                    backgroundColor: Colors.blue[50],
                     backgroundImage: urlFoto != null ? NetworkImage(urlFoto!) : null,
                     child: urlFoto == null ? const Icon(Icons.person, size: 58) : null,
                   ),
@@ -1472,6 +1473,7 @@ class _BannerSection extends StatelessWidget {
                       children: [
                         CircleAvatar(
                           radius: 58,
+                          backgroundColor: Colors.blue[50],
                           backgroundImage: urlFoto != null ? NetworkImage(urlFoto!) : null,
                           child: urlFoto == null ? const Icon(Icons.person, size: 58) : null,
                         ),

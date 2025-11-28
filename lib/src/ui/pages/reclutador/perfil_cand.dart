@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart';
+// removed footer/header imports to keep this page footer-free
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/perfilAlumno/habilidad_clase.dart';
@@ -20,22 +18,17 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_storage/firebase_storage.dart' as fs;
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 
-class RecruiterCandidateProfilePage extends StatefulWidget {
-  const RecruiterCandidateProfilePage({super.key, this.idAlumno});
+class PerfilPostuladoPage extends StatefulWidget {
+  const PerfilPostuladoPage({super.key, this.idAlumno});
   final int? idAlumno;
 
   @override
-  State<RecruiterCandidateProfilePage> createState() => _RecruiterCandidateProfilePage();
+  State<PerfilPostuladoPage> createState() => _PerfilPostuladoPage();
 }
 
-class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage> {
+class _PerfilPostuladoPage extends State<PerfilPostuladoPage> {
   final _scrollCtrl = ScrollController();
-  bool _showFooter = false;
   final usuario = FirebaseAuth.instance.currentUser!;
-
-  static const double _footerReservedSpace = EscomFooter.height;
-  static const double _extraBottomPadding = 24.0;
-  static const double _atEndThreshold = 4.0;
 
 
   // Estado de carga
@@ -52,11 +45,11 @@ class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage
   @override
   void initState() {
     super.initState();
-    _scrollCtrl.addListener(_handleScroll);
+    //_scrollCtrl.addListener(_handleScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchPerfil();
       _fetchPostulacionesRevision();
-      _handleScroll();
+      //_handleScroll();
     });
   }
 
@@ -142,21 +135,12 @@ class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage
     }
   }
 
-  void _handleScroll() {
-    final pos = _scrollCtrl.position;
-    if (!pos.hasPixels || !pos.hasContentDimensions) return;
-    if (pos.maxScrollExtent <= 0) {
-      if (_showFooter) setState(() => _showFooter = false);
-      return;
-    }
-    final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
-    if (atBottom != _showFooter) setState(() => _showFooter = atBottom);
-  }
+  // footer-related scroll handling removed for mobile view
 
   @override
   void dispose() {
     _scrollCtrl
-      ..removeListener(_handleScroll)
+      //..removeListener(_handleScroll)
       ..dispose();
     super.dispose();
   }
@@ -169,49 +153,10 @@ class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage
 
     return Scaffold(
       backgroundColor: theme.background(),
-      appBar: EscomHeader3(
-        onLoginTap: () => context.go('/reclutador/perfil_rec'),
-        onNotifTap: () {},
-        onMenuSelected: (label) {
-          switch (label) {
-            case "Inicio":
-              context.go('/inicio');
-              break;
-            case "Crear Vacante":
-              context.go('/reclutador/new_vacancy');
-              break;
-            case "Mis Vacantes":
-              context.go('/reclutador/postulaciones');
-              break;
-            case "FAQ":
-              context.go('/reclutador/faq_rec');
-              break;
-            case "Mensajes":
-              context.go('/reclutador/msg_rec');
-              break;
-          }
-        },
+      appBar: AppBar(
+        title: const Text('Perfil del Alumno'),
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(child: _buildBody(isMobile, w)),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: AnimatedSlide(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOut,
-              offset: _showFooter ? Offset.zero : const Offset(0, 1),
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 220),
-                opacity: _showFooter ? 1 : 0,
-                child: EscomFooter(isMobile: w < 700),
-              ),
-            ),
-          ),
-        ],
-      ),
+      body: _buildBody(isMobile, w),
     );
   }
 
@@ -304,20 +249,20 @@ class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage
         return NotificationListener<ScrollNotification>(
           onNotification: (n) {
             if (n is ScrollUpdateNotification || n is UserScrollNotification || n is ScrollEndNotification) {
-              _handleScroll();
+              //_handleScroll();
             }
             return false;
           },
           child: SingleChildScrollView(
             controller: _scrollCtrl,
-            padding: const EdgeInsets.only(bottom: _footerReservedSpace + _extraBottomPadding),
+            padding: const EdgeInsets.only(bottom: 24),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1100),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.height - _footerReservedSpace - _extraBottomPadding),
+                    constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.height - 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -755,8 +700,8 @@ class AlumnoPerfil {
   });
 
   factory AlumnoPerfil.fromJson(Map<String, dynamic> j) => AlumnoPerfil(
-        idAlumno: j['id_alumno'] ?? 0,
-        idUsuario: j['id_usuario'] ?? 0,
+        idAlumno: _asInt(j['id_alumno']),
+        idUsuario: _asInt(j['id_usuario']),
         nombre: j['nombre'],
         correo: j['correo'],
         fechaNacimiento: j['fecha_nacimiento'],
@@ -765,10 +710,10 @@ class AlumnoPerfil {
         entidad: j['entidad'],
         descripcion: j['descripcion'],
         urlCv: j['url_cv'],
-        semestreActual: j['semestre_actual'],
-        visualizaciones: j['visualizaciones'],
+        semestreActual: _asIntNullable(j['semestre_actual']),
+        visualizaciones: _asIntNullable(j['visualizaciones']),
         urlFotoPerfil: j['url_foto_perfil'],
-        completado: j['completado'],
+        completado: _asIntNullable(j['completado']),
         escolaridad: (j['escolaridad'] as List? ?? []).map((e) => EscolaridadItem.fromJson(e)).toList(),
         experienciaLaboral: (j['experiencia_laboral'] as List? ?? []).map((e) => ExperienciaItem.fromJson(e)).toList(),
         cursos: (j['cursos'] as List? ?? []).map((e) => CursoItem.fromJson(e)).toList(),
@@ -778,11 +723,18 @@ class AlumnoPerfil {
       );
 }
 
-
-
-
-
-
+// ==== Safe parsing helpers (avoid type 'String' is not subtype of 'int') ====
+int _asInt(dynamic v) {
+  if (v is int) return v;
+  if (v is String) return int.tryParse(v) ?? 0;
+  return 0;
+}
+int? _asIntNullable(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is String) return int.tryParse(v);
+  return null;
+}
 
 
 /* ════════════════════════ Secciones Visuales existentes adaptadas ════════════════════════ */

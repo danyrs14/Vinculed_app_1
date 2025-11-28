@@ -178,9 +178,10 @@ class _ChatHeader extends StatelessWidget {
             onPressed: onBack,
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           ),
-          const CircleAvatar(
+          CircleAvatar(
+            backgroundColor: Colors.blue[50],
             radius: 18,
-            backgroundImage: AssetImage('assets/images/amlo.jpg'), // usa tu asset o cámbialo por iniciales
+            backgroundImage: const AssetImage('assets/images/amlo.jpg'), // usa tu asset o cámbialo por iniciales
           ),
           const SizedBox(width: 10),
           Expanded(

@@ -193,11 +193,11 @@ class _ExperienciasState extends State<Experiencias> {
               // Encabezado: back + título + crear
               Row(
                 children: [
-                  IconButton(
-                    tooltip: 'Regresar',
-                    onPressed: () => Navigator.maybePop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                  ),
+                  // IconButton(
+                  //   tooltip: 'Regresar',
+                  //   onPressed: () => Navigator.maybePop(context),
+                  //   icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                  // ),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(

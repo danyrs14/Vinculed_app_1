@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/lector_qr.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/registrar_reclutador.dart';
 import 'package:vinculed_app_1/src/ui/pages/recpass.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
@@ -81,6 +82,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    const double kButtonMaxWidth = 420; // ancho uniforme
     return Stack(
       children: [Scaffold(
         backgroundColor: Colors.white, // Fondo blanco
@@ -120,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                                               return 'Por favor, ingresa tu correo electrónico';
                                             }
                                             // Expresión regular simple para validar el formato del correo electrónico
-                                            final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
+                                            final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
                                             if (!emailRegex.hasMatch(value)) {
                                               return 'Ingresa un correo electrónico válido';
                                             }
@@ -148,10 +150,16 @@ class _LoginPageState extends State<LoginPage> {
                                         SizedBox(height: 10), // Espacio entre los campos de texto y el botón
       
                                         // Botón de inicio de sesión
-                                        LargeButton(
-                                          title: "Iniciar Sesión",
-                                          primaryColor: true,
-                                          onTap: _login,
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(maxWidth: kButtonMaxWidth),
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            child: LargeButton(
+                                              title: "Iniciar Sesión",
+                                              primaryColor: true,
+                                              onTap: _login,
+                                            ),
+                                          ),
                                         ),
                                         
       
@@ -182,37 +190,42 @@ class _LoginPageState extends State<LoginPage> {
                                         SizedBox(height: 20), // Espacio entre los campos de texto y el botón
       
                                         // Botón de Registro de Alumno
-                                        LargeButton(
-                                          title: "Registrarme como Alumno",
-                                          primaryColor: true,
-                                          onTap: () {
-                                            // Redirigir a la página de registro de alumno
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => const LectorQRPage()),
-                                            );
-                                          },
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(maxWidth: kButtonMaxWidth),
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            child: LargeButton(
+                                              title: "Registrarme como Alumno",
+                                              primaryColor: true,
+                                              onTap: () {
+                                                // Redirigir a la página de registro de alumno
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(builder: (context) => const LectorQRPage()),
+                                                );
+                                              },
+                                            ),
+                                          ),
                                         ),
       
                                         SizedBox(height: 10),
       
                                         // Botón de inicio de sesión
-                                        LargeButton(
-                                          title: "Registrarme como Reclutador",
-                                          primaryColor: true,
-                                          onTap: () {
-                                            // Lógica de inicio de sesión
-                                            String email = emailController.text;
-                                            String password = passwordController.text;
-                                            // Aquí iría tu lógica de autenticación
-                                            print("Email: $email, Password: $password");
-      
-                                            // Navegar a la siguiente pantalla después de la autenticación
-                                            Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => MenuPage()),
-                                            );
-                                          },
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(maxWidth: kButtonMaxWidth),
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            child: LargeButton(
+                                              title: "Registrarme como Reclutador",
+                                              primaryColor: true,
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(builder: (context) => RegistrarReclutadorPage()),
+                                                );
+                                              },
+                                            ),
+                                          ),
                                         ),
                                       ],
                                   ),
