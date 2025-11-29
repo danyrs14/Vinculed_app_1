@@ -1309,8 +1309,8 @@ class AlumnoPerfil {
   });
 
   factory AlumnoPerfil.fromJson(Map<String, dynamic> j) => AlumnoPerfil(
-        idAlumno: j['id_alumno'] ?? 0,
-        idUsuario: j['id_usuario'] ?? 0,
+        idAlumno: _asInt(j['id_alumno']),
+        idUsuario: _asInt(j['id_usuario']),
         nombre: j['nombre'],
         correo: j['correo'],
         fechaNacimiento: j['fecha_nacimiento'],
@@ -1319,10 +1319,10 @@ class AlumnoPerfil {
         entidad: j['entidad'],
         descripcion: j['descripcion'],
         urlCv: j['url_cv'],
-        semestreActual: j['semestre_actual'],
-        visualizaciones: j['visualizaciones'],
+        semestreActual: _asIntNullable(j['semestre_actual']),
+        visualizaciones: _asIntNullable(j['visualizaciones']),
         urlFotoPerfil: j['url_foto_perfil'],
-        completado: j['completado'],
+        completado: _asIntNullable(j['completado']),
         escolaridad: (j['escolaridad'] as List? ?? []).map((e) => EscolaridadItem.fromJson(e)).toList(),
         experienciaLaboral: (j['experiencia_laboral'] as List? ?? []).map((e) => ExperienciaItem.fromJson(e)).toList(),
         cursos: (j['cursos'] as List? ?? []).map((e) => CursoItem.fromJson(e)).toList(),
@@ -1332,12 +1332,17 @@ class AlumnoPerfil {
       );
 }
 
-
-
-
-
-
-
+int _asInt(dynamic v) {
+  if (v is int) return v;
+  if (v is String) return int.tryParse(v) ?? 0;
+  return 0;
+}
+int? _asIntNullable(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is String) return int.tryParse(v);
+  return null;
+}
 
 /* ════════════════════════ Secciones Visuales existentes adaptadas ════════════════════════ */
 
