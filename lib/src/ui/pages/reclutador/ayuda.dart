@@ -269,9 +269,69 @@ class _AyudaRecState extends State<AyudaRec> {
               const SizedBox(height: 16),
 
               _FaqCard(
-                title: '¿Cómo ver el detalle de una vacante publicada?',
+                title: '¿Cómo elijo el rol de trabajo de una vacante?',
                 isOpen: _openIndex == 0,
                 onToggle: () => _toggleCard(0),
+                child: const Text(
+                  'Usa "Selecciona el rol o roles" para asociar la vacante a uno o varios roles. Esto ayuda a que candidatos adecuados la encuentren.',
+                  style: TextStyle(fontSize: 13.5, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FaqCard(
+                title: '¿Cómo agrego habilidades a la vacante?',
+                isOpen: _openIndex == 1,
+                onToggle: () => _toggleCard(1),
+                child: const Text(
+                  'En "Requisitos específicos" elige habilidades técnicas. En "Habilidades blandas" agrega habilidades blandas e idiomas. Puedes combinar ambas.',
+                  style: TextStyle(fontSize: 13.5, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FaqCard(
+                title: '¿Qué formato uso para el monto de beca?',
+                isOpen: _openIndex == 2,
+                onToggle: () => _toggleCard(2),
+                child: const Text(
+                  'Ingresa un número válido (ej. 1500.00). Se valida automáticamente; evita símbolos y texto.',
+                  style: TextStyle(fontSize: 13.5, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FaqCard(
+                title: '¿Cómo capturo la dirección de la vacante?',
+                isOpen: _openIndex == 3,
+                onToggle: () => _toggleCard(3),
+                child: const Text(
+                  'Completa calle y número, municipio/ciudad y entidad. El código postal es opcional, pero recomendado.',
+                  style: TextStyle(fontSize: 13.5, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FaqCard(
+                title: '¿Para qué sirven las fechas de la vacante?',
+                isOpen: _openIndex == 4,
+                onToggle: () => _toggleCard(4),
+                child: const Text(
+                  'Inicio/fin describen el periodo de la vacante. "Fecha límite" define hasta cuándo se reciben postulaciones.',
+                  style: TextStyle(fontSize: 13.5, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FaqCard(
+                title: '¿Qué extensión debe tener la descripción?',
+                isOpen: _openIndex == 5,
+                onToggle: () => _toggleCard(5),
+                child: const Text(
+                  'Hasta 4000 caracteres. Sé claro con responsabilidades, requisitos y beneficios.',
+                  style: TextStyle(fontSize: 13.5, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FaqCard(
+                title: '¿Cómo ver el detalle de una vacante publicada?',
+                isOpen: _openIndex == 6,
+                onToggle: () => _toggleCard(6),
                 child: const Text(
                   'En "Mis Vacantes" toca el boton "Ver detalle" de una vacante de la lista para ver toda su información y las personas que se han postulado.',
                   style: TextStyle(fontSize: 13.5, height: 1.45),
@@ -280,8 +340,8 @@ class _AyudaRecState extends State<AyudaRec> {
               const SizedBox(height: 12),
               _FaqCard(
                 title: '¿Cómo editar una vacante?',
-                isOpen: _openIndex == 1,
-                onToggle: () => _toggleCard(1),
+                isOpen: _openIndex == 7,
+                onToggle: () => _toggleCard(7),
                 child: const Text(
                   'Dentro del detalle pulsa "Editar", realiza los cambios y guarda. Volverás a la vista anterior y la información se mostrará actualizada automáticamente.',
                   style: TextStyle(fontSize: 13.5, height: 1.45),
@@ -290,8 +350,8 @@ class _AyudaRecState extends State<AyudaRec> {
               const SizedBox(height: 12),
               _FaqCard(
                 title: '¿Por qué veo "No hay vacantes publicadas"?',
-                isOpen: _openIndex == 2,
-                onToggle: () => _toggleCard(2),
+                isOpen: _openIndex == 8,
+                onToggle: () => _toggleCard(8),
                 child: const Text(
                   'Todavía no has creado vacantes. Para publicar la primera, usa el botón con el símbolo "+" en la barra superior.',
                   style: TextStyle(fontSize: 13.5, height: 1.45),
@@ -300,18 +360,18 @@ class _AyudaRecState extends State<AyudaRec> {
               const SizedBox(height: 12),
               _FaqCard(
                 title: '¿Cómo eliminar una vacante?',
-                isOpen: _openIndex == 3,
-                onToggle: () => _toggleCard(3),
+                isOpen: _openIndex == 9,
+                onToggle: () => _toggleCard(9),
                 child: const Text(
-                  'Abre la vacante y elige la opción de eliminar. Confirma en el cuadro de diálogo y la vacante desaparecerá del listado. Esta acción no se puede deshacer.',
+                  'Ve los detalles de la vacante y elige la opción de eliminar. Confirma en el cuadro de diálogo y la vacante desaparecerá del listado. Esta acción no se puede deshacer.',
                   style: TextStyle(fontSize: 13.5, height: 1.45),
                 ),
               ),
               const SizedBox(height: 12),
               _FaqCard(
                 title: '¿Cómo cambiar el estado (Activa / Expirada)?',
-                isOpen: _openIndex == 4,
-                onToggle: () => _toggleCard(4),
+                isOpen: _openIndex == 10,
+                onToggle: () => _toggleCard(10),
                 child: const Text(
                   'En el detalle de la vacante usa el botón para cambiar estado. Puedes alternar entre Activa y Expirada según corresponda, para permitir o impedir nuevas postulaciones.',
                   style: TextStyle(fontSize: 13.5, height: 1.45),
@@ -320,10 +380,30 @@ class _AyudaRecState extends State<AyudaRec> {
               const SizedBox(height: 12),
               _FaqCard(
                 title: '¿Dónde veo los alumnos que se postularon a una vacante?',
-                isOpen: _openIndex == 5,
-                onToggle: () => _toggleCard(5),
+                isOpen: _openIndex == 11,
+                onToggle: () => _toggleCard(11),
                 child: const Text(
                   'Al abrir el detalle de la vacante verás la sección de postulaciones en la parte inferior. Si aún no hay, aparecerá un mensaje indicándolo.',
+                  style: TextStyle(fontSize: 13.5, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FaqCard(
+                title: '¿Dónde veo los alumnos que se postularon a una vacante?',
+                isOpen: _openIndex == 12,
+                onToggle: () => _toggleCard(12),
+                child: const Text(
+                  'Al abrir el detalle de la vacante verás la sección de postulaciones en la parte inferior. Si aún no hay, aparecerá un mensaje indicándolo. Puedes revisar los perfiles de los alumnos que se postularon, contactarlos por los mensajes de la plataforma y reclutarlos o rechazarlos para una vacante específica, según tu criterio.',
+                  style: TextStyle(fontSize: 13.5, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FaqCard(
+                title: '¿Para qué sirve el botón "Marcar como Completado"?',
+                isOpen: _openIndex == 13,
+                onToggle: () => _toggleCard(13),
+                child: const Text(
+                  'Usa este botón para indicar que el alumno ya cumplió con las actividades de la vacante en el periodo acordado. Esto ayuda a mantener tu lista de alumnos reclutados organizada.',
                   style: TextStyle(fontSize: 13.5, height: 1.45),
                 ),
               ),

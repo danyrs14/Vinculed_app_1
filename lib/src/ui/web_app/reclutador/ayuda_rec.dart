@@ -137,18 +137,12 @@ class _FaqPageRecState extends State<FaqPageRec> {
                                 child: const Column(
                                   children: [
                                     FaqItem(
-                                      question: '¿Qué campos son obligatorios para publicar?',
-                                      answer: 'Título, monto de beca, dirección (calle y número, municipio y entidad), horario, escolaridad, número de vacantes y descripción. Si falta alguno, el formulario mostrará el error.',
-                                      initiallyExpanded: true,
-                                    ),
-                                    SizedBox(height: 16),
-                                    FaqItem(
-                                      question: '¿Cómo elijo el rol de trabajo?',
+                                      question: '¿Cómo elijo el rol de trabajo de una vacante?',
                                       answer: 'Usa "Selecciona el rol o roles" para asociar la vacante a uno o varios roles. Esto ayuda a que candidatos adecuados la encuentren.',
                                     ),
                                     SizedBox(height: 16),
                                     FaqItem(
-                                      question: '¿Cómo agrego habilidades?',
+                                      question: '¿Cómo agrego habilidades a la vacante?',
                                       answer: 'En "Requisitos específicos" elige habilidades técnicas. En "Habilidades blandas" agrega habilidades blandas e idiomas. Puedes combinar ambas.',
                                     ),
                                     SizedBox(height: 16),
@@ -158,23 +152,13 @@ class _FaqPageRecState extends State<FaqPageRec> {
                                     ),
                                     SizedBox(height: 16),
                                     FaqItem(
-                                      question: '¿Cómo capturo la dirección?',
+                                      question: '¿Cómo capturo la dirección de la vacante?',
                                       answer: 'Completa calle y número, municipio/ciudad y entidad. El código postal es opcional, pero recomendado.',
                                     ),
                                     SizedBox(height: 16),
                                     FaqItem(
-                                      question: '¿Para qué sirven las fechas?',
-                                      answer: 'Inicio/fin describen el periodo de la beca. "Fecha límite" define hasta cuándo se reciben postulaciones.',
-                                    ),
-                                    SizedBox(height: 16),
-                                    FaqItem(
-                                      question: '¿Qué modalidad debo elegir?',
-                                      answer: 'Selecciona Remoto, Híbrido o Presencial según corresponda. Esta información se mostrará al candidato.',
-                                    ),
-                                    SizedBox(height: 16),
-                                    FaqItem(
-                                      question: '¿Cómo defino el número de vacantes?',
-                                      answer: 'Ingresa un entero (ej. 3). El campo valida que sea numérico.',
+                                      question: '¿Para qué sirven las fechas de la vacante?',
+                                      answer: 'Inicio/fin describen el periodo de la vacante. "Fecha límite" define hasta cuándo se reciben postulaciones.',
                                     ),
                                     SizedBox(height: 16),
                                     FaqItem(
@@ -183,8 +167,33 @@ class _FaqPageRecState extends State<FaqPageRec> {
                                     ),
                                     SizedBox(height: 16),
                                     FaqItem(
-                                      question: '¿Qué ocurre al publicar?',
-                                      answer: 'Al presionar "Publicar Vacante", si todo es válido se envía al servidor. Al crearla (201) se redirige a "Mis Vacantes" para administrarla.',
+                                      question: '¿Cómo ver el detalle de una vacante publicada?',
+                                      answer: 'En "Mis Vacantes" toca el boton "Ver detalle" de una vacante de la lista para ver toda su información y las personas que se han postulado.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Cómo editar una vacante?',
+                                      answer: 'Dentro del detalle pulsa "Editar", realiza los cambios y guarda. Volverás a la vista anterior y la información se mostrará actualizada automáticamente.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Cómo eliminar una vacante?',
+                                      answer: 'Ve los detalles de la vacante y elige la opción de eliminar. Confirma en el cuadro de diálogo y la vacante desaparecerá del listado. Esta acción no se puede deshacer.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Cómo cambiar el estado (Activa / Expirada)?',
+                                      answer: 'En el detalle de la vacante usa el botón para cambiar estado. Puedes alternar entre Activa y Expirada según corresponda, para permitir o impedir nuevas postulaciones.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Dónde veo los alumnos que se postularon a una vacante?',
+                                      answer: 'Al abrir el detalle de la vacante verás la sección de postulaciones en la parte inferior. Si aún no hay, aparecerá un mensaje indicándolo. Puedes revisar los perfiles de los alumnos que se postularon, contactarlos por los mensajes de la plataforma y reclutarlos o rechazarlos para una vacante específica, según tu criterio.',
+                                    ),
+                                    SizedBox(height: 16),
+                                    FaqItem(
+                                      question: '¿Para qué sirve el botón "Marcar como Completado"?',
+                                      answer: 'Usa este botón para indicar que el alumno ya cumplió con las actividades de la vacante en el periodo acordado. Esto ayuda a mantener tu lista de alumnos reclutados organizada.',
                                     ),
                                   ],
                                 ),
