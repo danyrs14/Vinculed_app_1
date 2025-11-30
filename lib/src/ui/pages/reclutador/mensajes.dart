@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/models/chat_thread.dart';
 import 'package:vinculed_app_1/src/core/services/chat_service.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/chat.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/chat.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements_app/chat_preview.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
@@ -172,7 +171,7 @@ class _MensajesRecState extends State<MensajesRec> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => ChatConversationPage(
+                                    builder: (_) => ChatConversation(
                                       contactName: displayName,
                                       peerUid: peerUid,
                                       isTyping: false,

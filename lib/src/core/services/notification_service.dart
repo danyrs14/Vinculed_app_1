@@ -10,32 +10,62 @@ class NotificationService {
   final _db = FirebaseFirestore.instance;
 
   Future<void> initPush() async {
-    final user = _auth.currentUser;
-    if (user == null) return;
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        print('initPush(): No hay usuario autenticado, no se puede registrar FCM.');
+        return;
+      }
 
-    final settings = await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+      print('Usuario autenticado: ${user.uid}');
 
-    if (settings.authorizationStatus == AuthorizationStatus.denied) {
-      return;
-    }
+      final settings = await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
-    final token = await FirebaseMessaging.instance.getToken();
-    if (token != null) {
+      print('Permisos FCM: ${settings.authorizationStatus}');
+
+      if (settings.authorizationStatus == AuthorizationStatus.denied) {
+        print('Usuario denegó permisos de notificación');
+        return;
+      }
+
+      final token = await FirebaseMessaging.instance.getToken();
+
+      print('Token FCM obtenido: $token');
+
+      if (token == null) {
+        print('No se pudo obtener token FCM');
+        return;
+      }
+
       await _db.collection('users').doc(user.uid).set(
-        {'fcmToken': token},
+        {
+          'fcmToken': token,
+        },
         SetOptions(merge: true),
       );
-    }
 
-    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
-      await _db.collection('users').doc(user.uid).set(
-        {'fcmToken': newToken},
-        SetOptions(merge: true),
-      );
-    });
+      print('Token FCM guardado correctamente en users/${user.uid}');
+
+      FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+        print('Token FCM actualizado: $newToken');
+
+        await _db.collection('users').doc(user.uid).set(
+          {
+            'fcmToken': newToken,
+          },
+          SetOptions(merge: true),
+        );
+
+        print('Token FCM actualizado en Firestore.');
+      });
+
+    } catch (e, st) {
+      print('ERROR en initPush(): $e');
+      print('STACK TRACE: $st');
+    }
   }
 }
