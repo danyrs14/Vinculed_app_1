@@ -8,12 +8,25 @@ import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/pages/transicionInicial.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:vinculed_app_1/src/core/services/notification_service.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // importante para que funcione con firebase
+    options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  await NotificationService.instance.initPush();
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => UserDataProvider(),
@@ -71,20 +84,20 @@ class MyApp extends StatelessWidget {
             ),
           ),
           textTheme: ThemeData.light().textTheme.apply(
-                fontFamily: 'Montserrat',
-                bodyColor: fuente,
-                displayColor: fuente,
-              ),
+            fontFamily: 'Montserrat',
+            bodyColor: fuente,
+            displayColor: fuente,
+          ),
           iconTheme: IconThemeData(color: fuente),
           dividerColor: secondary.withOpacity(.3),
         );
         return kIsWeb
             ? const AdminApp()
             : MaterialApp(
-                debugShowCheckedModeBanner: false,
-                theme: globalTheme,
-                home: TrasicionPage(),
-              );
+          debugShowCheckedModeBanner: false,
+          theme: globalTheme,
+          home: TrasicionPage(),
+        );
       },
     );
   }

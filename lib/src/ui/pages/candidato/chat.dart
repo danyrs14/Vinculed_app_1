@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/core/models/chat_model.dart';
+import 'package:vinculed_app_1/src/core/services/chat_service.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
-/// Pantalla de conversación (contenido completo).
-/// Llama a esta pantalla al tocar un ChatPreviewTile.
 class ChatConversationPage extends StatefulWidget {
   const ChatConversationPage({
     super.key,
     required this.contactName,
+    required this.peerUid,
     this.isTyping = false,
   });
 
   final String contactName;
+  final String peerUid;
   final bool isTyping;
 
   @override
@@ -23,19 +27,23 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
   final _scrollCtrl = ScrollController();
   final _inputCtrl = TextEditingController();
 
-  // Mensajes de ejemplo (adáptalos a tu modelo real)
-  late List<_Msg> _messages = [
-    _Msg(text: 'Sam, are you ready? 😂😂', me: false, time: '15:18 PM'),
-    _Msg(text: 'Actually yes, lemme see..', me: true, time: ''),
-    _Msg(text: 'Done, I just finished it!', me: true, time: ''),
-    _Msg(text: '🥺🥺', me: true, time: '15:19 PM'),
-    _Msg(text: 'Nah, it\'s crazy 😁', me: false, time: ''),
-    _Msg(text: 'Cheating?', me: false, time: '15:20 PM'),
-    _Msg(text: 'No way, lol', me: true, time: ''),
-    _Msg(text: 'I\'m a pro, that\'s why 😎', me: true, time: '15:20 PM'),
-    _Msg(text: 'Still, can\'t believe 🤣', me: false, time: '15:21 PM'),
-    _Msg(text: 'Read about inflation news, now!!', me: true, time: '15:22 PM'),
-  ];
+  late final String _myUid;
+  late final String _chatId;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final user = FirebaseAuth.instance.currentUser;
+    _myUid = user?.uid ?? '';
+
+    _chatId = ChatService.instance.buildChatId(_myUid, widget.peerUid);
+
+    // Opcional: marcar como leído el chat cuando se abre
+    if (_myUid.isNotEmpty) {
+      ChatService.instance.markChatAsRead(chatId: _chatId, userUid: _myUid);
+    }
+  }
 
   @override
   void dispose() {
@@ -44,20 +52,25 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
     super.dispose();
   }
 
-  void _send() {
+  /// Enviar mensaje usando ChatService (Firestore)
+  Future<void> _send() async {
     final txt = _inputCtrl.text.trim();
-    if (txt.isEmpty) return;
-    setState(() {
-      _messages.add(_Msg(text: txt, me: true, time: _nowLabel()));
-    });
+    if (txt.isEmpty || _myUid.isEmpty) return;
+
     _inputCtrl.clear();
+
+    await ChatService.instance.sendMessage(
+      senderUid: _myUid,
+      receiverUid: widget.peerUid,
+      text: txt,
+    );
+
     _jumpToEnd();
   }
 
-  String _nowLabel() {
-    final now = DateTime.now();
-    final hh = now.hour.toString().padLeft(2, '0');
-    final mm = now.minute.toString().padLeft(2, '0');
+  String _formatTime(DateTime dt) {
+    final hh = dt.hour.toString().padLeft(2, '0');
+    final mm = dt.minute.toString().padLeft(2, '0');
     return '$hh:$mm';
   }
 
@@ -88,12 +101,13 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
               onBack: () => Navigator.maybePop(context),
             ),
 
-            // Separador de fecha ("TODAY, JULY 15")
+            // Separador de fecha ("TODAY, JULY 15") – lo dejamos fijo como en tu diseño
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.grey.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
@@ -106,29 +120,69 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
               ),
             ),
 
-            // Lista de mensajes
+            // Lista de mensajes (desde Firestore)
             Expanded(
-              child: ListView.builder(
-                controller: _scrollCtrl,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                itemCount: _messages.length,
-                itemBuilder: (context, i) {
-                  final m = _messages[i];
-                  // Mostrar hora debajo de ciertos mensajes como en la captura
-                  final showTime = m.time.isNotEmpty;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Column(
-                      crossAxisAlignment:
-                      m.me ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                      children: [
-                        _Bubble(msg: m),
-                        if (showTime) ...[
-                          const SizedBox(height: 4),
-                          Text(m.time, style: const TextStyle(fontSize: 11)),
-                        ],
-                      ],
-                    ),
+              child: StreamBuilder<List<ChatMessage>>(
+                stream: ChatService.instance.streamMessages(_chatId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final msgs = snapshot.data ?? [];
+
+                  if (msgs.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'Comienza la conversación ✨',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }
+
+                  // Auto-scroll al final cuando hay nuevos mensajes
+                  WidgetsBinding.instance
+                      .addPostFrameCallback((_) => _jumpToEnd());
+
+                  return ListView.builder(
+                    controller: _scrollCtrl,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 8),
+                    itemCount: msgs.length,
+                    itemBuilder: (context, i) {
+                      final chatMsg = msgs[i];
+
+                      final isMe = chatMsg.senderUid == _myUid;
+                      final timeLabel = _formatTime(chatMsg.createdAt);
+
+                      // Adaptamos el modelo real a tu modelo visual _Msg
+                      final m = _Msg(
+                        text: chatMsg.text,
+                        me: isMe,
+                        time: timeLabel,
+                      );
+
+                      final showTime = m.time.isNotEmpty;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Column(
+                          crossAxisAlignment: m.me
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
+                          children: [
+                            _Bubble(msg: m),
+                            if (showTime) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                m.time,
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -146,13 +200,17 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
   }
 }
 
-/// Modelo interno de mensaje (ajústalo a tu dominio si ya lo tienes)
+/// Modelo interno de mensaje (solo para la parte visual)
 class _Msg {
   final String text;
   final bool me; // true: enviado por mí (derecha). false: recibido (izquierda).
   final String time; // etiqueta visible bajo algunos bubbles.
 
-  _Msg({required this.text, required this.me, required this.time});
+  _Msg({
+    required this.text,
+    required this.me,
+    required this.time,
+  });
 }
 
 /// Encabezado del chat (dentro del body)
@@ -181,7 +239,9 @@ class _ChatHeader extends StatelessWidget {
           CircleAvatar(
             backgroundColor: Colors.blue[50],
             radius: 18,
-            backgroundImage: const AssetImage('assets/images/amlo.jpg'), // usa tu asset o cámbialo por iniciales
+            backgroundImage: const AssetImage(
+              'assets/images/amlo.jpg',
+            ), // usa tu asset o cámbialo por iniciales/NetworkImage si luego usas fotos
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -192,7 +252,8 @@ class _ChatHeader extends StatelessWidget {
                 if ((subtitle ?? '').isNotEmpty)
                   Text(
                     subtitle!,
-                    style: TextStyle(fontSize: 12, color: theme.secundario()),
+                    style:
+                    TextStyle(fontSize: 12, color: theme.secundario()),
                   ),
               ],
             ),
@@ -207,7 +268,7 @@ class _ChatHeader extends StatelessWidget {
   }
 }
 
-/// Burbuja de chat
+/// Burbuja de chat (diseño igual al que ya tenías)
 class _Bubble extends StatelessWidget {
   const _Bubble({required this.msg});
 
@@ -217,7 +278,8 @@ class _Bubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
 
-    final bg = msg.me ? theme.secundario() : Colors.blueGrey.withOpacity(0.25);
+    final bg =
+    msg.me ? theme.secundario() : Colors.blueGrey.withOpacity(0.25);
     final fg = msg.me ? Colors.white : Colors.black87;
 
     final radius = BorderRadius.only(
@@ -227,16 +289,19 @@ class _Bubble extends StatelessWidget {
       bottomRight: Radius.circular(msg.me ? 3 : 14),
     );
 
-    final tickColor = msg.me ? Colors.white.withOpacity(0.9) : Colors.transparent;
+    final tickColor =
+    msg.me ? Colors.white.withOpacity(0.9) : Colors.transparent;
 
     return Row(
-      mainAxisAlignment: msg.me ? MainAxisAlignment.end : MainAxisAlignment.start,
+      mainAxisAlignment:
+      msg.me ? MainAxisAlignment.end : MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         if (!msg.me) const SizedBox(width: 32), // sangría ligera como en apps reales
         Flexible(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(color: bg, borderRadius: radius),
             child: Text(
               msg.text,
@@ -276,12 +341,12 @@ class _InputBar extends StatelessWidget {
           children: [
             Expanded(
               child: TextInput(
-                  controller: controller,
-                  minLines: 1,
-                  maxLines: 4,
+                controller: controller,
+                minLines: 1,
+                maxLines: 4,
                 title: 'Escribe un mensaje',
-                ),
               ),
+            ),
             const SizedBox(width: 10),
             GestureDetector(
               onTap: onSend,
