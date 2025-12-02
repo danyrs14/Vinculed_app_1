@@ -115,14 +115,14 @@ class _LoginPageState extends State<LoginPage> {
                                         StyledTextFormField(
                                           isRequired: true,
                                           controller: emailController,
-                                          title: "Correo institucional",
+                                          title: "Correo electrónico",
                                           keyboardType: TextInputType.emailAddress,
                                           validator: (value) {
                                             if (value == null || value.isEmpty) {
                                               return 'Por favor, ingresa tu correo electrónico';
                                             }
                                             // Expresión regular simple para validar el formato del correo electrónico
-                                            final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                                            final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
                                             if (!emailRegex.hasMatch(value)) {
                                               return 'Ingresa un correo electrónico válido';
                                             }
@@ -130,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
                                           },
                                         ),
       
-                                        SizedBox(height: 5), // Espacio entre los campos de texto
+                                        const SizedBox(height: 5), // Espacio entre los campos de texto
       
                                         // Campo de texto para la contraseña
                                         StyledTextFormField(
