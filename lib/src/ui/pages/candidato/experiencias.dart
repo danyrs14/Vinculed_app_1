@@ -23,15 +23,14 @@ class _ExperienciasState extends State<Experiencias> {
   final List<Map<String, dynamic>> _items = [];
   int _page = 1;
   int _totalPages = 1;
-  bool _loading = false; // primera carga / recarga filtro
-  bool _loadingMore = false; // paginación incremental
+  bool _loading = false;
+  bool _loadingMore = false;
   bool _initialized = false;
   int? _idAlumno;
 
   // Filtro roles
   List<int> _selectedRoleIds = [];
 
-  // Ocultar media cuando dropdown/modal abierto
   bool _anyModalOpen = false;
 
   @override
