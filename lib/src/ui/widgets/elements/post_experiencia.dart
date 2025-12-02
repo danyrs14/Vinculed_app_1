@@ -236,10 +236,8 @@ class _ExperiencePostState extends State<ExperiencePost> {
     });
     widget.onLike?.call();
     _postReaction(tipo: 'upvote', accion: accion);
-    // Si antes estaba en downvote y ahora pasamos a upvote, opcionalmente podríamos quitar el downvote explícitamente.
     if (wasDisliked && !wasLiked) {
-      // Dependiendo backend puede no ser necesario. Opcional: enviar quitar downvote.
-      // _postReaction(tipo: 'downvote', accion: 'quitar');
+      // opcional: quitar downvote en backend
     }
   }
 
@@ -290,9 +288,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
         body: body,
       );
       if (res.statusCode >= 200 && res.statusCode < 300) {
-        // Notifica hacia fuera (opcional)
         widget.onSubmitComment?.call(text);
-        // Agrega comentario local para feedback inmediato
         final newComment = ExperienceComment(
           avatarAsset: widget.currentUserAvatarAsset,
           author: widget.currentUserName,
@@ -506,10 +502,8 @@ class _ExperiencePostState extends State<ExperiencePost> {
         try {
           final data = jsonDecode(res.body);
           if (data is Map<String, dynamic>) {
-            // Parse, pero el backend podría no regresar todos los campos.
             parsed = RemoteCommentReply.fromJson(data);
           } else {
-            // Respuesta que no es un map, crea un parsed vacío para usar fallbacks.
             parsed = RemoteCommentReply(
               idComentario: 0,
               idAlumno: 0,
@@ -522,7 +516,6 @@ class _ExperiencePostState extends State<ExperiencePost> {
             );
           }
         } catch (_) {
-          // Si la respuesta no es JSON o es inesperada, usa valores locales
           parsed = RemoteCommentReply(
             idComentario: 0,
             idAlumno: 0,
@@ -535,7 +528,6 @@ class _ExperiencePostState extends State<ExperiencePost> {
           );
         }
 
-        // Respuesta normalizada, usando datos del server cuando haya, si no locales
         final normalized = RemoteCommentReply(
           idComentario: parsed.idComentario != 0
               ? parsed.idComentario
@@ -748,103 +740,69 @@ class _ExperiencePostState extends State<ExperiencePost> {
                 builder: (ctx, constraints) {
                   final w = MediaQuery.of(ctx).size.width;
                   final isMobile = w < 430; // umbral para reorganizar
-                  if (isMobile) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _ActionIcon(
-                                icon: _isLiked
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                selected: _isLiked,
-                                selectedColor: accent,
-                                label: 'Me gusta · $_likesCount',
-                                onTap: _toggleLike,
-                              ),
-                            ),
-                            const SizedBox(width: 90),
-                            Expanded(
-                              child: _ActionIcon(
-                                icon: _isDisliked
-                                    ? Icons.thumb_down_alt
-                                    : Icons.thumb_down_off_alt_outlined,
-                                selected: _isDisliked,
-                                selectedColor: accent,
-                                label: 'No me gusta',
-                                onTap: _toggleDislike,
-                              ),
-                            ),
-                          ],
+
+                  // misma estructura para mobile y desktop, solo íconos
+                  final actionsRow = Row(
+                    children: [
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: _ActionIcon(
+                            icon: _isLiked
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            selected: _isLiked,
+                            selectedColor: accent,
+                            label: 'Me gusta · $_likesCount',
+                            onTap: _toggleLike,
+                          ),
                         ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _ActionIcon(
-                                icon: Icons.mode_comment_outlined,
-                                selected: _showComposer,
-                                selectedColor: accent,
-                                label: widget.commentsLabel,
-                                onTap: _toggleComposer,
-                              ),
-                            ),
-                            if (dynamicCommentLabel != null) ...[
-                              const SizedBox(width: 130),
-                              Flexible(
-                                child: Text(
-                                  dynamicCommentLabel,
-                                  textAlign: TextAlign.right,
-                                  style: const TextStyle(
-                                      color: Colors.black54, fontSize: 12),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ],
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: _ActionIcon(
+                            icon: Icons.mode_comment_outlined,
+                            selected: _showComposer,
+                            selectedColor: accent,
+                            label: widget.commentsLabel,
+                            onTap: _toggleComposer,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: _ActionIcon(
+                            icon: _isDisliked
+                                ? Icons.thumb_down_alt
+                                : Icons.thumb_down_off_alt_outlined,
+                            selected: _isDisliked,
+                            selectedColor: accent,
+                            label: widget.dislikesLabel,
+                            onTap: _toggleDislike,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      actionsRow,
+                      if (dynamicCommentLabel != null) ...[
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            dynamicCommentLabel,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                                color: Colors.black54, fontSize: 12),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
-                    );
-                  }
-                  // Desktop / ancho suficiente
-                  return Row(
-                    children: [
-                      _ActionIcon(
-                        icon: _isLiked
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        selected: _isLiked,
-                        selectedColor: accent,
-                        label: 'Me gusta · $_likesCount',
-                        onTap: _toggleLike,
-                      ),
-                      const SizedBox(width: 16),
-                      _ActionIcon(
-                        icon: _isDisliked
-                            ? Icons.thumb_down_alt
-                            : Icons.thumb_down_off_alt_outlined,
-                        selected: _isDisliked,
-                        selectedColor: accent,
-                        label: widget.dislikesLabel,
-                        onTap: _toggleDislike,
-                      ),
-                      const SizedBox(width: 16),
-                      _ActionIcon(
-                        icon: Icons.mode_comment_outlined,
-                        selected: _showComposer,
-                        selectedColor: accent,
-                        label: widget.commentsLabel,
-                        onTap: _toggleComposer,
-                      ),
-                      const Spacer(),
-                      if (dynamicCommentLabel != null)
-                        Text(
-                          dynamicCommentLabel,
-                          style: const TextStyle(
-                              color: Colors.black54, fontSize: 12),
-                        ),
                     ],
                   );
                 },
@@ -1015,7 +973,7 @@ class _ActionIcon extends StatelessWidget {
   });
 
   final IconData icon;
-  final String label;
+  final String label; // se mantiene por compatibilidad / Semantics
   final VoidCallback? onTap;
   final bool selected;
   final Color? selectedColor;
@@ -1024,37 +982,26 @@ class _ActionIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final baseColor = Colors.black87;
     final color = selected ? (selectedColor ?? baseColor) : baseColor;
-    final fontWeight = selected ? FontWeight.w700 : FontWeight.w600;
 
-    // 🔧 FIX: el texto ahora es Flexible para evitar overflow en anchos pequeños
-    final child = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 20, color: color),
-        const SizedBox(width: 6),
-        Flexible(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 13.5,
-              color: color,
-              fontWeight: fontWeight,
-            ),
-            overflow: TextOverflow.ellipsis,
-            softWrap: false,
-          ),
-        ),
-      ],
+    final iconWidget = Semantics(
+      label: label, // accesibilidad, no se muestra en UI
+      button: true,
+      child: Icon(icon, size: 22, color: color),
     );
 
-    if (onTap == null) return child;
+    if (onTap == null) {
+      return SizedBox(
+        height: 40,
+        child: Center(child: iconWidget),
+      );
+    }
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        child: child,
+      borderRadius: BorderRadius.circular(20),
+      child: SizedBox(
+        height: 40,
+        child: Center(child: iconWidget),
       ),
     );
   }
