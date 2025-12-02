@@ -263,7 +263,6 @@ class _HomeState extends State<Home> {
 
               const SizedBox(height: 24),
 
-              // Botones grandes inferior (versión móvil en columna)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(

@@ -22,11 +22,22 @@ class _MensajesState extends State<Mensajes> {
 
   String _myUid = '';
 
+  // 👉 NUEVO: controllers para iniciar chat manualmente (para pruebas)
+  final TextEditingController _newChatUidCtrl = TextEditingController();
+  final TextEditingController _newChatNameCtrl = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     final user = _auth.currentUser;
     _myUid = user?.uid ?? '';
+  }
+
+  @override
+  void dispose() {
+    _newChatUidCtrl.dispose();
+    _newChatNameCtrl.dispose();
+    super.dispose();
   }
 
   String _formatTimeLabel(DateTime? dt) {
@@ -70,6 +81,102 @@ class _MensajesState extends State<Mensajes> {
     return 'Usuario ${uid.substring(0, 6)}';
   }
 
+  // 👉 DIÁLOGO: ahora muestra lista de UIDs disponibles desde Firestore
+  Future<void> _openNewChatDialog() async {
+    if (_myUid.isEmpty) return;
+
+    _newChatUidCtrl.clear();
+    _newChatNameCtrl.clear();
+
+    final theme = ThemeController.instance;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Selecciona un usuario'),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 320,
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _db.collection('users').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'No hay usuarios disponibles',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  );
+                }
+
+                // Filtramos en cliente para no mostrarme a mí mismo
+                final docs = snapshot.data!.docs
+                    .where((d) => d.id != _myUid)
+                    .toList();
+
+                if (docs.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'No hay otros usuarios para chatear',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+                  itemCount: docs.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final doc = docs[index];
+                    final peerUid = doc.id;
+
+                    return ListTile(
+                      title: Text(
+                        peerUid,
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                      subtitle: Text(
+                        _fallbackName(peerUid),
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      onTap: () {
+                        final name = _fallbackName(peerUid);
+
+                        Navigator.pop(ctx); // cerrar el diálogo
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChatConversationPage(
+                              contactName: name,
+                              peerUid: peerUid,
+                              isTyping: false,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
@@ -86,9 +193,7 @@ class _MensajesState extends State<Mensajes> {
     return Scaffold(
       backgroundColor: theme.background(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Acción para iniciar nuevo chat (opcional)
-        },
+        onPressed: _openNewChatDialog, // 👉 AHORA abre lista de UIDs
         backgroundColor: theme.secundario(),
         child: const Icon(Icons.chat_bubble_outline),
       ),
