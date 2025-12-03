@@ -158,7 +158,6 @@ class _HomeRecState extends State<HomeRec> {
                         ),
                         const SizedBox(height: 14),
                         SizedBox(
-                          height: 48,
                           child: SimpleButton(
                             title: 'Actualizar',
                             onTap: _fetchRecruitedStudents,
