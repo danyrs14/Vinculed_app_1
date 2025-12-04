@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/models/chat_thread.dart';
 import 'package:vinculed_app_1/src/core/services/chat_service.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/chat.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/chat.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements_app/chat_preview.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
@@ -22,22 +22,11 @@ class _MensajesState extends State<Mensajes> {
 
   String _myUid = '';
 
-  // 👉 NUEVO: controllers para iniciar chat manualmente (para pruebas)
-  final TextEditingController _newChatUidCtrl = TextEditingController();
-  final TextEditingController _newChatNameCtrl = TextEditingController();
-
   @override
   void initState() {
     super.initState();
     final user = _auth.currentUser;
     _myUid = user?.uid ?? '';
-  }
-
-  @override
-  void dispose() {
-    _newChatUidCtrl.dispose();
-    _newChatNameCtrl.dispose();
-    super.dispose();
   }
 
   String _formatTimeLabel(DateTime? dt) {
@@ -49,14 +38,12 @@ class _MensajesState extends State<Mensajes> {
     final diff = today.difference(day).inDays;
 
     if (diff == 0) {
-      // Hoy: mostrar hora
       final hh = dt.hour.toString().padLeft(2, '0');
       final mm = dt.minute.toString().padLeft(2, '0');
       return '$hh:$mm';
     } else if (diff == 1) {
       return 'ayer';
     } else if (diff < 7) {
-      // Mismo rango de semana: día de la semana (muy simple)
       const weekdays = [
         'Lunes',
         'Martes',
@@ -68,7 +55,6 @@ class _MensajesState extends State<Mensajes> {
       ];
       return weekdays[dt.weekday - 1];
     } else {
-      // Fecha dd/MM/yyyy
       final d = dt.day.toString().padLeft(2, '0');
       final m = dt.month.toString().padLeft(2, '0');
       final y = dt.year.toString();
@@ -77,103 +63,80 @@ class _MensajesState extends State<Mensajes> {
   }
 
   String _fallbackName(String uid) {
+    if (uid.isEmpty) return 'Usuario';
     if (uid.length <= 8) return uid;
     return 'Usuario ${uid.substring(0, 6)}';
   }
 
-  // 👉 DIÁLOGO: ahora muestra lista de UIDs disponibles desde Firestore
-  Future<void> _openNewChatDialog() async {
+  /// Lógica para iniciar un chat nuevo desde el FAB
+  Future<void> _startNewChat() async {
     if (_myUid.isEmpty) return;
 
-    _newChatUidCtrl.clear();
-    _newChatNameCtrl.clear();
+    final controller = TextEditingController();
 
-    final theme = ThemeController.instance;
-
-    await showDialog<void>(
+    final peerUid = await showDialog<String>(
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Selecciona un usuario'),
-          content: SizedBox(
-            width: double.maxFinite,
-            height: 320,
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _db.collection('users').snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'No hay usuarios disponibles',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  );
-                }
-
-                // Filtramos en cliente para no mostrarme a mí mismo
-                final docs = snapshot.data!.docs
-                    .where((d) => d.id != _myUid)
-                    .toList();
-
-                if (docs.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'No hay otros usuarios para chatear',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  );
-                }
-
-                return ListView.separated(
-                  itemCount: docs.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    final doc = docs[index];
-                    final peerUid = doc.id;
-
-                    return ListTile(
-                      title: Text(
-                        peerUid,
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                      subtitle: Text(
-                        _fallbackName(peerUid),
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                      onTap: () {
-                        final name = _fallbackName(peerUid);
-
-                        Navigator.pop(ctx); // cerrar el diálogo
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ChatConversationPage(
-                              contactName: name,
-                              peerUid: peerUid,
-                              isTyping: false,
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                );
-              },
+          title: const Text('Nuevo chat'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              labelText: 'UID del usuario',
+              hintText: 'Pega o escribe el UID del usuario',
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cerrar'),
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                final value = controller.text.trim();
+                Navigator.of(ctx).pop(value.isEmpty ? null : value);
+              },
+              child: const Text('Iniciar'),
             ),
           ],
         );
       },
+    );
+
+    if (peerUid == null || peerUid.trim().isEmpty) {
+      return;
+    }
+
+    final trimmedPeerUid = peerUid.trim();
+
+    // Obtenemos el nombre del usuario (si existe en /users)
+    String displayName = _fallbackName(trimmedPeerUid);
+    try {
+      final userDoc =
+      await _db.collection('users').doc(trimmedPeerUid).get();
+      if (userDoc.exists) {
+        final data = userDoc.data() as Map<String, dynamic>? ?? {};
+        displayName = (data['fullName'] ??
+            data['displayName'] ??
+            data['name'] ??
+            displayName)
+            .toString();
+      }
+    } catch (_) {
+      // Si falla la consulta, usamos el fallback y ya
+    }
+
+    // Navegamos a la conversación; el hilo se crea solo al mandar el primer mensaje
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatConversation(
+          contactName: displayName,
+          peerUid: trimmedPeerUid,
+          isTyping: false,
+        ),
+      ),
     );
   }
 
@@ -193,7 +156,7 @@ class _MensajesState extends State<Mensajes> {
     return Scaffold(
       backgroundColor: theme.background(),
       floatingActionButton: FloatingActionButton(
-        onPressed: _openNewChatDialog, // 👉 AHORA abre lista de UIDs
+        onPressed: _startNewChat,
         backgroundColor: theme.secundario(),
         child: const Icon(Icons.chat_bubble_outline),
       ),
@@ -212,6 +175,19 @@ class _MensajesState extends State<Mensajes> {
                 child: StreamBuilder<List<ChatThread>>(
                   stream: ChatService.instance.streamUserChats(_myUid),
                   builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      // Para que veas el error real en la consola
+                      debugPrint(
+                          'Error en streamUserChats: ${snapshot.error}');
+                      return const Center(
+                        child: Text(
+                          'Ocurrió un error al cargar tus chats',
+                          style: TextStyle(fontSize: 14),
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    }
+
                     if (snapshot.connectionState ==
                         ConnectionState.waiting) {
                       return const Center(
@@ -243,11 +219,16 @@ class _MensajesState extends State<Mensajes> {
                           orElse: () => '',
                         );
 
+                        // Si por alguna razón no hay peerUid válido, no pintamos nada
+                        if (peerUid.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+
                         final timeLabel =
                         _formatTimeLabel(thread.lastMessageAt);
 
-                        // Usamos otro widget pequeño para resolver el nombre desde Firestore
-                        return StreamBuilder<DocumentSnapshot>(
+                        return StreamBuilder<
+                            DocumentSnapshot<Map<String, dynamic>>>(
                           stream: _db
                               .collection('users')
                               .doc(peerUid)
@@ -258,23 +239,19 @@ class _MensajesState extends State<Mensajes> {
                             if (userSnap.hasData &&
                                 userSnap.data != null &&
                                 userSnap.data!.data() != null) {
-                              final data = userSnap.data!.data()
-                              as Map<String, dynamic>;
-
-                              // Tratamos de obtener el nombre de varios campos posibles
+                              final data = userSnap.data!.data()!;
                               displayName = (data['fullName'] ??
                                   data['displayName'] ??
                                   data['name'] ??
-                                  displayName) as String;
+                                  displayName)
+                                  .toString();
                             }
 
-                            // Construimos el modelo que ya usa tu diseño
                             final preview = ChatPreview(
                               name: displayName,
                               lastMessage: thread.lastMessage,
                               timeLabel: timeLabel,
                               unreadCount: thread.unreadCount,
-                              // isTyping no lo consultamos aún, así que lo dejamos en false
                               isTyping: false,
                             );
 
@@ -284,7 +261,7 @@ class _MensajesState extends State<Mensajes> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => ChatConversationPage(
+                                    builder: (_) => ChatConversation(
                                       contactName: displayName,
                                       peerUid: peerUid,
                                       isTyping: false,

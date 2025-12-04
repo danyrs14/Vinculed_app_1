@@ -30,7 +30,7 @@ class _MenuPageState extends State<MenuPage> {
       const Postulaciones(),  // 1
       Home(),           // 2
       const Experiencias(),   // 3
-      const Mensajes(),       // 4
+      Mensajes(),       // 4
     ];
     _pageController = PageController(initialPage: _paginaActual);
   }

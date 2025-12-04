@@ -37,11 +37,15 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
     final user = FirebaseAuth.instance.currentUser;
     _myUid = user?.uid ?? '';
 
+    // Construye el chatId determinístico (uid1_uid2)
     _chatId = ChatService.instance.buildChatId(_myUid, widget.peerUid);
 
-    // Opcional: marcar como leído el chat cuando se abre
+    // Marcar como leído el chat cuando se abre (si hay usuario)
     if (_myUid.isNotEmpty) {
-      ChatService.instance.markChatAsRead(chatId: _chatId, userUid: _myUid);
+      ChatService.instance.markChatAsRead(
+        chatId: _chatId,
+        userUid: _myUid,
+      );
     }
   }
 
@@ -59,13 +63,22 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
 
     _inputCtrl.clear();
 
-    await ChatService.instance.sendMessage(
-      senderUid: _myUid,
-      receiverUid: widget.peerUid,
-      text: txt,
-    );
-
-    _jumpToEnd();
+    try {
+      await ChatService.instance.sendMessage(
+        senderUid: _myUid,
+        receiverUid: widget.peerUid,
+        text: txt,
+      );
+      _jumpToEnd();
+    } catch (e) {
+      // Si hay algún error (reglas, conexión, etc.), lo mostramos
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al enviar mensaje: $e'),
+        ),
+      );
+    }
   }
 
   String _formatTime(DateTime dt) {
@@ -89,6 +102,34 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
 
+    // Misma protección que en la otra pantalla:
+    if (_myUid.isEmpty) {
+      return Scaffold(
+        backgroundColor: theme.background(),
+        body: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.lock_outline, size: 40),
+                const SizedBox(height: 12),
+                const Text(
+                  'Debes iniciar sesión para usar el chat',
+                  style: TextStyle(fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => Navigator.maybePop(context),
+                  child: const Text('Volver'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: theme.background(),
       body: SafeArea(
@@ -106,8 +147,10 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Center(
                 child: Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
@@ -125,6 +168,15 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
               child: StreamBuilder<List<ChatMessage>>(
                 stream: ChatService.instance.streamMessages(_chatId),
                 builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return const Center(
+                      child: Text(
+                        'Ocurrió un error al cargar el chat',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }
+
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
@@ -147,7 +199,9 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                   return ListView.builder(
                     controller: _scrollCtrl,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 8),
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     itemCount: msgs.length,
                     itemBuilder: (context, i) {
                       final chatMsg = msgs[i];
@@ -252,8 +306,10 @@ class _ChatHeader extends StatelessWidget {
                 if ((subtitle ?? '').isNotEmpty)
                   Text(
                     subtitle!,
-                    style:
-                    TextStyle(fontSize: 12, color: theme.secundario()),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.secundario(),
+                    ),
                   ),
               ],
             ),
@@ -300,12 +356,21 @@ class _Bubble extends StatelessWidget {
         if (!msg.me) const SizedBox(width: 32), // sangría ligera como en apps reales
         Flexible(
           child: Container(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(color: bg, borderRadius: radius),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: radius,
+            ),
             child: Text(
               msg.text,
-              style: TextStyle(color: fg, fontSize: 14, height: 1.25),
+              style: TextStyle(
+                color: fg,
+                fontSize: 14,
+                height: 1.25,
+              ),
             ),
           ),
         ),
