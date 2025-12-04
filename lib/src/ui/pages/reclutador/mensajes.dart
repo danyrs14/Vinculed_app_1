@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/models/chat_thread.dart';
 import 'package:vinculed_app_1/src/core/services/chat_service.dart';
@@ -62,8 +63,81 @@ class _MensajesRecState extends State<MensajesRec> {
   }
 
   String _fallbackName(String uid) {
+    if (uid.isEmpty) return 'Usuario';
     if (uid.length <= 8) return uid;
     return 'Usuario ${uid.substring(0, 6)}';
+  }
+
+  /// Lógica para iniciar un chat nuevo desde el FAB
+  Future<void> _startNewChat() async {
+    if (_myUid.isEmpty) return;
+
+    final controller = TextEditingController();
+
+    final peerUid = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Nuevo chat'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              labelText: 'UID del usuario',
+              hintText: 'Pega o escribe el UID del usuario',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                final value = controller.text.trim();
+                Navigator.of(ctx).pop(value.isEmpty ? null : value);
+              },
+              child: const Text('Iniciar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (peerUid == null || peerUid.trim().isEmpty) {
+      return;
+    }
+
+    final trimmedPeerUid = peerUid.trim();
+
+    // Obtenemos el nombre del usuario (si existe en /users)
+    String displayName = _fallbackName(trimmedPeerUid);
+    try {
+      final userDoc =
+      await _db.collection('users').doc(trimmedPeerUid).get();
+      if (userDoc.exists) {
+        final data = userDoc.data() as Map<String, dynamic>? ?? {};
+        displayName = (data['fullName'] ??
+            data['displayName'] ??
+            data['name'] ??
+            displayName)
+            .toString();
+      }
+    } catch (_) {
+      // Si falla la consulta, usamos el fallback y ya
+    }
+
+    // Navegamos a la conversación; el hilo se crea solo al mandar el primer mensaje
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatConversation(
+          contactName: displayName,
+          peerUid: trimmedPeerUid,
+          isTyping: false,
+        ),
+      ),
+    );
   }
 
   @override
@@ -82,9 +156,7 @@ class _MensajesRecState extends State<MensajesRec> {
     return Scaffold(
       backgroundColor: theme.background(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Acción para iniciar nuevo chat (opcional)
-        },
+        onPressed: _startNewChat,
         backgroundColor: theme.secundario(),
         child: const Icon(Icons.chat_bubble_outline),
       ),
@@ -103,6 +175,19 @@ class _MensajesRecState extends State<MensajesRec> {
                 child: StreamBuilder<List<ChatThread>>(
                   stream: ChatService.instance.streamUserChats(_myUid),
                   builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      // Para que veas el error real en la consola
+                      debugPrint(
+                          'Error en streamUserChats: ${snapshot.error}');
+                      return const Center(
+                        child: Text(
+                          'Ocurrió un error al cargar tus chats',
+                          style: TextStyle(fontSize: 14),
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    }
+
                     if (snapshot.connectionState ==
                         ConnectionState.waiting) {
                       return const Center(
@@ -134,10 +219,16 @@ class _MensajesRecState extends State<MensajesRec> {
                           orElse: () => '',
                         );
 
+                        // Si por alguna razón no hay peerUid válido, no pintamos nada
+                        if (peerUid.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+
                         final timeLabel =
                         _formatTimeLabel(thread.lastMessageAt);
 
-                        return StreamBuilder<DocumentSnapshot>(
+                        return StreamBuilder<
+                            DocumentSnapshot<Map<String, dynamic>>>(
                           stream: _db
                               .collection('users')
                               .doc(peerUid)
@@ -148,13 +239,12 @@ class _MensajesRecState extends State<MensajesRec> {
                             if (userSnap.hasData &&
                                 userSnap.data != null &&
                                 userSnap.data!.data() != null) {
-                              final data = userSnap.data!.data()
-                              as Map<String, dynamic>;
-
+                              final data = userSnap.data!.data()!;
                               displayName = (data['fullName'] ??
                                   data['displayName'] ??
                                   data['name'] ??
-                                  displayName) as String;
+                                  displayName)
+                                  .toString();
                             }
 
                             final preview = ChatPreview(

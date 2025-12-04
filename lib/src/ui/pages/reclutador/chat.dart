@@ -37,11 +37,15 @@ class _ChatConversationState extends State<ChatConversation> {
     final user = FirebaseAuth.instance.currentUser;
     _myUid = user?.uid ?? '';
 
+    // Construye el chatId determinístico (uid1_uid2)
     _chatId = ChatService.instance.buildChatId(_myUid, widget.peerUid);
 
-    // Opcional: marcar como leído el chat cuando se abre
+    // Marcar como leído el chat cuando se abre (si hay usuario)
     if (_myUid.isNotEmpty) {
-      ChatService.instance.markChatAsRead(chatId: _chatId, userUid: _myUid);
+      ChatService.instance.markChatAsRead(
+        chatId: _chatId,
+        userUid: _myUid,
+      );
     }
   }
 
@@ -59,13 +63,22 @@ class _ChatConversationState extends State<ChatConversation> {
 
     _inputCtrl.clear();
 
-    await ChatService.instance.sendMessage(
-      senderUid: _myUid,
-      receiverUid: widget.peerUid,
-      text: txt,
-    );
-
-    _jumpToEnd();
+    try {
+      await ChatService.instance.sendMessage(
+        senderUid: _myUid,
+        receiverUid: widget.peerUid,
+        text: txt,
+      );
+      _jumpToEnd();
+    } catch (e) {
+      // Si hay algún error (reglas, conexión, etc.), lo mostramos
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al enviar mensaje: $e'),
+        ),
+      );
+    }
   }
 
   String _formatTime(DateTime dt) {
@@ -89,6 +102,34 @@ class _ChatConversationState extends State<ChatConversation> {
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
 
+    // Si por alguna razón no hay usuario autenticado, evita romper el chat
+    if (_myUid.isEmpty) {
+      return Scaffold(
+        backgroundColor: theme.background(),
+        body: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.lock_outline, size: 40),
+                const SizedBox(height: 12),
+                const Text(
+                  'Debes iniciar sesión para usar el chat',
+                  style: TextStyle(fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => Navigator.maybePop(context),
+                  child: const Text('Volver'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: theme.background(),
       body: SafeArea(
@@ -101,13 +142,15 @@ class _ChatConversationState extends State<ChatConversation> {
               onBack: () => Navigator.maybePop(context),
             ),
 
-            // Separador de fecha ("TODAY, JULY 15") – lo dejamos fijo como en tu diseño
+            // Separador de fecha (diseño fijo como lo tenías)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Center(
                 child: Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
@@ -125,6 +168,15 @@ class _ChatConversationState extends State<ChatConversation> {
               child: StreamBuilder<List<ChatMessage>>(
                 stream: ChatService.instance.streamMessages(_chatId),
                 builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return const Center(
+                      child: Text(
+                        'Ocurrió un error al cargar el chat',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }
+
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
@@ -147,7 +199,9 @@ class _ChatConversationState extends State<ChatConversation> {
                   return ListView.builder(
                     controller: _scrollCtrl,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 8),
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     itemCount: msgs.length,
                     itemBuilder: (context, i) {
                       final chatMsg = msgs[i];
@@ -241,7 +295,7 @@ class _ChatHeader extends StatelessWidget {
             radius: 18,
             backgroundImage: const AssetImage(
               'assets/images/amlo.jpg',
-            ), // usa tu asset o cámbialo por iniciales/NetworkImage si luego usas fotos
+            ), // tu asset actual
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -252,8 +306,10 @@ class _ChatHeader extends StatelessWidget {
                 if ((subtitle ?? '').isNotEmpty)
                   Text(
                     subtitle!,
-                    style:
-                    TextStyle(fontSize: 12, color: theme.secundario()),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.secundario(),
+                    ),
                   ),
               ],
             ),
@@ -297,7 +353,7 @@ class _Bubble extends StatelessWidget {
       msg.me ? MainAxisAlignment.end : MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        if (!msg.me) const SizedBox(width: 32), // sangría ligera como en apps reales
+        if (!msg.me) const SizedBox(width: 32), // sangría ligera
         Flexible(
           child: Container(
             padding:
@@ -311,7 +367,7 @@ class _Bubble extends StatelessWidget {
         ),
         if (msg.me) ...[
           const SizedBox(width: 6),
-          // "palomitas" estilo simple
+          // "palomitas" simple
           Icon(Icons.done_all, size: 16, color: tickColor),
         ],
       ],

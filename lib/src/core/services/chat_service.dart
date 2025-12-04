@@ -35,10 +35,19 @@ class ChatService {
     return _db
         .collection(chatsCollection)
         .where('participants', arrayContains: uid)
-        .orderBy('lastMessageAt', descending: true)
         .snapshots()
         .map((snap) {
-      return snap.docs.map(ChatThread.fromDoc).toList();
+      final threads = snap.docs.map(ChatThread.fromDoc).toList();
+
+      threads.sort((a, b) {
+        final aDate =
+            a.lastMessageAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bDate =
+            b.lastMessageAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bDate.compareTo(aDate);
+      });
+
+      return threads;
     });
   }
 
