@@ -51,7 +51,6 @@ class ChatService {
     if (trimmed.isEmpty) return;
 
     final chatId = buildChatId(senderUid, receiverUid);
-    final now = DateTime.now();
 
     final chatRef = _db.collection(chatsCollection).doc(chatId);
     final msgRef = chatRef.collection('messages').doc();
@@ -64,7 +63,6 @@ class ChatService {
     );
 
     await _db.runTransaction((tx) async {
-
       tx.set(msgRef, message.toMap());
 
       tx.set(
@@ -72,7 +70,7 @@ class ChatService {
         {
           'participants': [senderUid, receiverUid],
           'lastMessage': trimmed,
-          'lastMessageAt': Timestamp.fromDate(now),
+          'lastMessageAt': FieldValue.serverTimestamp(),
           'lastSenderUid': senderUid,
           'unreadCount': FieldValue.increment(1),
         },

@@ -41,7 +41,7 @@ class ChatMessage {
       'senderUid': senderUid,
       'receiverUid': receiverUid,
       'text': text,
-      'createdAt': Timestamp.fromDate(createdAt),
+      'createdAt': FieldValue.serverTimestamp(),
       'isRead': isRead,
     };
   }
@@ -51,6 +51,7 @@ class ChatMessage {
 
     final ts = data['createdAt'];
     DateTime created;
+
     if (ts is Timestamp) {
       created = ts.toDate();
     } else if (ts is DateTime) {

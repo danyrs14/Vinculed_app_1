@@ -44,7 +44,9 @@ class ChatThread {
 
     return ChatThread(
       id: doc.id,
-      participants: List<String>.from(data['participants'] ?? const []),
+      participants: List<String>.from(
+        data['participants'] ?? const <String>[],
+      ),
       lastMessage: (data['lastMessage'] ?? '') as String,
       lastSenderUid: (data['lastSenderUid'] ?? '') as String,
       lastMessageAt: lastAt,

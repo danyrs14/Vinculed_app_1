@@ -95,7 +95,7 @@ class _MensajesRecState extends State<MensajesRec> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 8),
-              const Texto(text: 'MensajesRec', fontSize: 22),
+              const Texto(text: 'Mensajes', fontSize: 22),
               const SizedBox(height: 12),
 
               // Lista de conversaciones desde Firestore
