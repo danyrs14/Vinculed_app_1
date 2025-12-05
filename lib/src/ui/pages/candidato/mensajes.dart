@@ -65,7 +65,7 @@ class _MensajesState extends State<Mensajes> {
   String _fallbackName(String uid) {
     if (uid.isEmpty) return 'Usuario';
     if (uid.length <= 8) return uid;
-    return 'Usuario ${uid.substring(0, 6)}';
+    return '${uid.substring(0, 6)}';
   }
 
   /// Lógica para iniciar un chat nuevo desde el FAB
@@ -125,8 +125,6 @@ class _MensajesState extends State<Mensajes> {
     } catch (_) {
       // Si falla la consulta, usamos el fallback y ya
     }
-
-    // Navegamos a la conversación; el hilo se crea solo al mandar el primer mensaje
     if (!mounted) return;
     Navigator.push(
       context,
@@ -219,13 +217,22 @@ class _MensajesState extends State<Mensajes> {
                           orElse: () => '',
                         );
 
-                        // Si por alguna razón no hay peerUid válido, no pintamos nada
                         if (peerUid.isEmpty) {
                           return const SizedBox.shrink();
                         }
 
                         final timeLabel =
                         _formatTimeLabel(thread.lastMessageAt);
+
+                        final int totalUnread = thread.unreadCount;
+                        final bool lastFromMe =
+                            thread.lastSenderUid == _myUid;
+
+                        final bool hasNewForMe =
+                            !lastFromMe && totalUnread > 0;
+
+                        final int unreadForMe = hasNewForMe ? 1 : 0;
+                        // =========================================================
 
                         return StreamBuilder<
                             DocumentSnapshot<Map<String, dynamic>>>(
@@ -251,7 +258,8 @@ class _MensajesState extends State<Mensajes> {
                               name: displayName,
                               lastMessage: thread.lastMessage,
                               timeLabel: timeLabel,
-                              unreadCount: thread.unreadCount,
+                              // 0 = sin globo, 1 = "nuevo"
+                              unreadCount: unreadForMe,
                               isTyping: false,
                             );
 

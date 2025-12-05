@@ -123,10 +123,8 @@ class _MensajesRecState extends State<MensajesRec> {
             .toString();
       }
     } catch (_) {
-      // Si falla la consulta, usamos el fallback y ya
     }
 
-    // Navegamos a la conversación; el hilo se crea solo al mandar el primer mensaje
     if (!mounted) return;
     Navigator.push(
       context,
@@ -178,7 +176,7 @@ class _MensajesRecState extends State<MensajesRec> {
                     if (snapshot.hasError) {
                       // Para que veas el error real en la consola
                       debugPrint(
-                          'Error en streamUserChats: ${snapshot.error}');
+                          'Error en streamUserChats (reclutador): ${snapshot.error}');
                       return const Center(
                         child: Text(
                           'Ocurrió un error al cargar tus chats',
@@ -219,13 +217,22 @@ class _MensajesRecState extends State<MensajesRec> {
                           orElse: () => '',
                         );
 
-                        // Si por alguna razón no hay peerUid válido, no pintamos nada
                         if (peerUid.isEmpty) {
                           return const SizedBox.shrink();
                         }
 
                         final timeLabel =
                         _formatTimeLabel(thread.lastMessageAt);
+
+                        final int totalUnread = thread.unreadCount;
+                        final bool lastFromMe =
+                            thread.lastSenderUid == _myUid;
+
+                        final bool hasNewForMe =
+                            !lastFromMe && totalUnread > 0;
+
+                        final int unreadForMe = hasNewForMe ? 1 : 0;
+                        // ==================================================================
 
                         return StreamBuilder<
                             DocumentSnapshot<Map<String, dynamic>>>(
@@ -251,7 +258,7 @@ class _MensajesRecState extends State<MensajesRec> {
                               name: displayName,
                               lastMessage: thread.lastMessage,
                               timeLabel: timeLabel,
-                              unreadCount: thread.unreadCount,
+                              unreadCount: unreadForMe,
                               isTyping: false,
                             );
 
