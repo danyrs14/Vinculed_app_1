@@ -97,6 +97,37 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
     }
   }
 
+  /// Procesa el código QR sin mostrar indicador de carga (usado cuando ya hay uno visible)
+  Future<void> _procesarCodigoSinIndicador(String codigo) async {
+    try {
+      final Uri url = Uri.parse("$baseUrl?url=$codigo");
+      final response = await http.get(url);
+      if (!mounted) return;
+
+      if (response.statusCode == 200 || response.statusCode == 304) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final String nombre = data['nombre'] ?? 'Usuario';
+        context.go('/signin', extra: nombre);
+      } else if (response.statusCode == 400) {
+        _mostrarMensaje(
+          "Lo sentimos. Solo se pueden registrar alumnos de la ESCOM.",
+          redirigirLogin: true,
+        );
+      } else {
+        _mostrarMensaje(
+          "Hubo un error al verificar el código QR. Por favor, inténtelo más tarde.",
+          redirigirLogin: false,
+        );
+      }
+    } catch (e) {
+      print(e.toString());
+      _mostrarMensaje(
+        "Error de conexión con el servidor. Por favor, inténtelo más tarde.",
+        redirigirLogin: false,
+      );
+    }
+  }
+
   void _mostrarMensaje(String mensaje, {bool redirigirLogin = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(mensaje), backgroundColor: Colors.redAccent),
@@ -112,7 +143,18 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
     final XFile? imagen = await _picker.pickImage(source: ImageSource.gallery);
     if (imagen == null) return;
 
+    // Mostrar indicador de carga azul
     setState(() => _isLoading = true);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+        ),
+      ),
+    );
+
     try {
       final Uint8List bytes = await imagen.readAsBytes();
       
@@ -125,12 +167,16 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
       }
       
       if (decoded != null && decoded.isNotEmpty) {
-        await _procesarCodigo(decoded);
+        // Cerrar el diálogo de carga antes de procesar
+        if (mounted) Navigator.pop(context);
+        await _procesarCodigoSinIndicador(decoded);
       } else {
+        if (mounted) Navigator.pop(context);
         _mostrarMensaje('No se pudo detectar el código QR en la imagen. Intenta con otra foto más clara.');
       }
     } catch (e) {
       print('Error al escanear imagen: $e');
+      if (mounted) Navigator.pop(context);
       _mostrarMensaje('Error al procesar la imagen.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -614,13 +660,6 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
               ),
             ),
           ),
-          if (_isLoading)
-            Container(
-              color: Colors.black.withOpacity(0.5),
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
-            ),
         ],
       ),
     );
