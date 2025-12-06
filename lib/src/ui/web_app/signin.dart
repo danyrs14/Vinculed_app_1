@@ -31,6 +31,7 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
   final _nameController = TextEditingController();
   final _genderController = TextEditingController();
   final _emailController = TextEditingController();
+  final _confirmEmailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   // Estado de carga y validación
@@ -183,6 +184,7 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
     _nameController.dispose();
     _genderController.dispose();
     _emailController.dispose();
+    _confirmEmailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -300,6 +302,24 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'El correo es obligatorio.';
+                                      }
+                                      final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
+                                      if (!emailRegex.hasMatch(value)) {
+                                        return 'Ingrese un correo válido.';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  StyledTextFormField(
+                                    isRequired: true,
+                                    controller: _confirmEmailController,
+                                    title: "Confirma el correo",
+                                    keyboardType: TextInputType.emailAddress,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty || 
+                                      !identical(value.trim(), _emailController.text.trim())) {
+                                        return 'El correo debe coincidir con el proporcionado anteriormente.';
                                       }
                                       final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
                                       if (!emailRegex.hasMatch(value)) {
