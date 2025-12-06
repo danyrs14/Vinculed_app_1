@@ -93,6 +93,7 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
+        Navigator.pop(context);
       }
     }
   }
