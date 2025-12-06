@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/chat_model.dart';
 import '../models/chat_thread.dart';
@@ -9,6 +10,7 @@ class ChatService {
   static final ChatService instance = ChatService._internal();
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   static const String chatsCollection = 'chats';
 
@@ -71,13 +73,45 @@ class ChatService {
       text: trimmed,
     );
 
+    // Nombres legibles para cada uid
+    final String senderName = await _getDisplayNameForUid(senderUid);
+    final String receiverName = await _getDisplayNameForUid(receiverUid);
+
     await _db.runTransaction((tx) async {
+      // 1) LEER primero el documento del chat (regla de Firestore: todos los reads antes que los writes)
+      final chatSnap = await tx.get(chatRef);
+
+      Map<String, dynamic> participantsDisplayNames = {};
+
+      final existingData = chatSnap.data() as Map<String, dynamic>?;
+      if (existingData != null &&
+          existingData['participantsDisplayNames'] is Map) {
+        final raw = existingData['participantsDisplayNames'] as Map;
+        participantsDisplayNames = raw.map(
+              (key, value) => MapEntry(key.toString(), value.toString()),
+        );
+      }
+
+      // 2) Solo actualizamos el nombre de un uid si no es "Usuario"
+      if (senderName != 'Usuario') {
+        participantsDisplayNames[senderUid] = senderName;
+      }
+      if (receiverName != 'Usuario') {
+        participantsDisplayNames[receiverUid] = receiverName;
+      }
+
+      // 3) Ahora sí, hacer los WRITES
       tx.set(msgRef, message.toMap());
 
       tx.set(
         chatRef,
         {
+          // Seguimos usando UID para las queries (no cambia nada)
           'participants': [senderUid, receiverUid],
+
+          // Mapa de nombres legibles
+          'participantsDisplayNames': participantsDisplayNames,
+
           'lastMessage': trimmed,
           'lastMessageAt': FieldValue.serverTimestamp(),
           'lastSenderUid': senderUid,
@@ -123,5 +157,34 @@ class ChatService {
         .doc(messageId);
 
     await msgRef.delete();
+  }
+
+  Future<String> _getDisplayNameForUid(String uid) async {
+    try {
+      final current = _auth.currentUser;
+      if (current != null && current.uid == uid) {
+        final dn = current.displayName;
+        if (dn != null && dn.trim().isNotEmpty) {
+          return dn.trim();
+        }
+      }
+
+      final userDoc = await _db.collection('users').doc(uid).get();
+      if (userDoc.exists) {
+        final data = userDoc.data() as Map<String, dynamic>? ?? {};
+        final fromFs = (data['fullName'] ??
+            data['displayName'] ??
+            data['name'])
+            ?.toString()
+            .trim();
+        if (fromFs != null && fromFs.isNotEmpty) {
+          return fromFs;
+        }
+      }
+    } catch (e) {
+      print('Error obteniendo displayName para $uid: $e');
+    }
+
+    return 'Usuario';
   }
 }
