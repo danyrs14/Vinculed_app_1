@@ -5,10 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
-//import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:image/image.dart' as img; // Importa con un alias para evitar conflictos
-import 'package:zxing2/qrcode.dart';
-//import 'package:zxing2/zxing2.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:image/image.dart' as img;
+import 'package:zxing2/qrcode.dart' as zxing;
 import 'dart:js_interop' as js;
 
 import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
@@ -35,6 +34,10 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
   final String baseUrl = "http://localhost:3000/api/verificarqr";
   //final String baseUrl = "https://oda-talent-back-81413836179.us-central1.run.app/api/verificarqr";
   bool _isLoading = false;
+  
+  // Controlador del escáner de cámara
+  MobileScannerController? _scannerController;
+  bool _hasScanned = false; // Evita múltiples escaneos
 
   // Lógica de Footer
   final ScrollController _scrollCtrl = ScrollController();
@@ -132,6 +135,151 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  /// Abre el escáner de cámara en un diálogo modal
+  void _abrirEscanerCamara() {
+    _hasScanned = false;
+    _scannerController = MobileScannerController(
+      detectionSpeed: DetectionSpeed.normal,
+      facing: CameraFacing.back,
+      formats: [BarcodeFormat.qrCode],
+    );
+    
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(16),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header del diálogo
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF1A4B8C),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.qr_code_scanner, color: Colors.white),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Escanear código QR',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () {
+                          _cerrarEscaner();
+                          Navigator.of(dialogContext).pop();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                // Vista de la cámara
+                Flexible(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(16),
+                      bottomRight: Radius.circular(16),
+                    ),
+                    child: Stack(
+                      children: [
+                        MobileScanner(
+                          controller: _scannerController,
+                          onDetect: (BarcodeCapture capture) {
+                            if (_hasScanned) return; // Evitar múltiples detecciones
+                            
+                            final List<Barcode> barcodes = capture.barcodes;
+                            for (final barcode in barcodes) {
+                              if (barcode.rawValue != null && barcode.rawValue!.isNotEmpty) {
+                                _hasScanned = true;
+                                final String codigo = barcode.rawValue!;
+                                
+                                // Cerrar el diálogo y procesar
+                                Navigator.of(dialogContext).pop();
+                                _cerrarEscaner();
+                                _procesarCodigo(codigo);
+                                return;
+                              }
+                            }
+                          },
+                        ),
+                        // Overlay con marco de escaneo
+                        Center(
+                          child: Container(
+                            width: 250,
+                            height: 250,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.8),
+                                width: 3,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                        // Instrucciones
+                        Positioned(
+                          bottom: 20,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Enfoca el código QR de tu credencial',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ).then((_) {
+      // Asegurar limpieza cuando se cierra el diálogo
+      _cerrarEscaner();
+    });
+  }
+
+  /// Cierra el escáner y libera recursos
+  void _cerrarEscaner() {
+    _scannerController?.dispose();
+    _scannerController = null;
   }
 
   /// Intenta decodificar usando jsQR vía JavaScript (index.html helper)
@@ -314,30 +462,30 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
         argb[p] = (a << 24) | (r << 16) | (g << 8) | b;
       }
 
-      final LuminanceSource source = RGBLuminanceSource(rgba.width, rgba.height, argb);
-      final DecodeHints hints = DecodeHints()
-        ..put(DecodeHintType.tryHarder, true)
-        ..put(DecodeHintType.possibleFormats, [BarcodeFormat.qrCode]);
+      final zxing.LuminanceSource source = zxing.RGBLuminanceSource(rgba.width, rgba.height, argb);
+      final zxing.DecodeHints hints = zxing.DecodeHints()
+        ..put(zxing.DecodeHintType.tryHarder, true)
+        ..put(zxing.DecodeHintType.possibleFormats, [zxing.BarcodeFormat.qrCode]);
 
       // Intentar con HybridBinarizer
       try {
-        final bitmap = BinaryBitmap(HybridBinarizer(source));
-        final result = QRCodeReader().decode(bitmap, hints: hints);
+        final bitmap = zxing.BinaryBitmap(zxing.HybridBinarizer(source));
+        final result = zxing.QRCodeReader().decode(bitmap, hints: hints);
         return result.text;
       } catch (_) {}
 
       // Intentar con GlobalHistogramBinarizer
       try {
-        final bitmap = BinaryBitmap(GlobalHistogramBinarizer(source));
-        final result = QRCodeReader().decode(bitmap, hints: hints);
+        final bitmap = zxing.BinaryBitmap(zxing.GlobalHistogramBinarizer(source));
+        final result = zxing.QRCodeReader().decode(bitmap, hints: hints);
         return result.text;
       } catch (_) {}
 
       // Intentar invertido
       try {
-        final invertedSource = InvertedLuminanceSource(source);
-        final bitmap = BinaryBitmap(HybridBinarizer(invertedSource));
-        final result = QRCodeReader().decode(bitmap, hints: hints);
+        final invertedSource = zxing.InvertedLuminanceSource(source);
+        final bitmap = zxing.BinaryBitmap(zxing.HybridBinarizer(invertedSource));
+        final result = zxing.QRCodeReader().decode(bitmap, hints: hints);
         return result.text;
       } catch (_) {}
 
@@ -364,6 +512,7 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
 
   @override
   void dispose() {
+    _cerrarEscaner();
     _scrollCtrl.removeListener(_onScroll);
     _scrollCtrl.dispose();
     super.dispose();
@@ -424,7 +573,7 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
                               ),
                               const SizedBox(height: 16),
                               const Text(
-                                'Para continuar con tu registro, por favor sube una fotografía o captura de pantalla del código QR que se encuentra al reverso de tu credencial institucional.',
+                                'Para continuar con tu registro, escanea el código QR de tu credencial institucional usando la cámara, o sube una fotografía del mismo.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 16,
@@ -432,6 +581,12 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
                                 ),
                               ),
                               const SizedBox(height: 32),
+                              LargeButton(
+                                title: 'Escanear con Cámara',
+                                onTap: _isLoading ? null : () => _abrirEscanerCamara(),
+                                icon: Icons.camera_alt_rounded,
+                              ),
+                              const SizedBox(height: 16),
                               LargeButton(
                                 title: 'Subir Imagen de QR',
                                 onTap: _isLoading ? null : () => _escanearDesdeImagenWebJS(),
