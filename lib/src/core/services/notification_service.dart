@@ -41,9 +41,11 @@ class NotificationService {
         return;
       }
 
+      // 👇 Además del token, guardamos también el nombre del usuario
       await _db.collection('users').doc(user.uid).set(
         {
           'fcmToken': token,
+          'displayName': user.displayName ?? 'Usuario',
         },
         SetOptions(merge: true),
       );
@@ -56,6 +58,7 @@ class NotificationService {
         await _db.collection('users').doc(user.uid).set(
           {
             'fcmToken': newToken,
+            'displayName': user.displayName ?? 'Usuario',
           },
           SetOptions(merge: true),
         );
