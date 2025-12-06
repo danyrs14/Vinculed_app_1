@@ -31,8 +31,8 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
   final ImagePicker _picker = ImagePicker();
 
   // NOTA: Para web, usa 'localhost' en lugar de '10.0.2.2'
-  final String baseUrl = "http://localhost:3000/api/verificarqr";
-  //final String baseUrl = "https://oda-talent-back-81413836179.us-central1.run.app/api/verificarqr";
+  //final String baseUrl = "http://localhost:3000/api/verificarqr";
+  final String baseUrl = "https://oda-talent-back-81413836179.us-central1.run.app/api/verificarqr";
   bool _isLoading = false;
   
   // Controlador del escáner de cámara
