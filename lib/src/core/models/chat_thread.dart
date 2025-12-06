@@ -8,6 +8,8 @@ class ChatThread {
   final DateTime? lastMessageAt;
   final int unreadCount;
 
+  final Map<String, dynamic>? participantsDisplayNames;
+
   ChatThread({
     required this.id,
     required this.participants,
@@ -15,6 +17,7 @@ class ChatThread {
     required this.lastSenderUid,
     required this.lastMessageAt,
     required this.unreadCount,
+    this.participantsDisplayNames,
   });
 
   Map<String, dynamic> toMap() {
@@ -22,16 +25,18 @@ class ChatThread {
       'participants': participants,
       'lastMessage': lastMessage,
       'lastSenderUid': lastSenderUid,
-      'lastMessageAt': lastMessageAt != null
-          ? Timestamp.fromDate(lastMessageAt!)
-          : null,
+      'lastMessageAt':
+      lastMessageAt != null ? Timestamp.fromDate(lastMessageAt!) : null,
       'unreadCount': unreadCount,
+      if (participantsDisplayNames != null)
+        'participantsDisplayNames': participantsDisplayNames,
     };
   }
 
   factory ChatThread.fromDoc(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
 
+    // lastMessageAt
     final ts = data['lastMessageAt'];
     DateTime? lastAt;
     if (ts is Timestamp) {
@@ -42,15 +47,38 @@ class ChatThread {
       lastAt = null;
     }
 
+    // participants
+    final rawParticipants = data['participants'];
+    final List<String> participants = rawParticipants is List
+        ? rawParticipants.map((e) => e.toString()).toList()
+        : <String>[];
+
+    // unreadCount seguro como int
+    int unread = 0;
+    final unreadRaw = data['unreadCount'];
+    if (unreadRaw is int) {
+      unread = unreadRaw;
+    } else if (unreadRaw is num) {
+      unread = unreadRaw.toInt();
+    }
+
+    // participantsDisplayNames
+    Map<String, dynamic>? namesMap;
+    final rawNames = data['participantsDisplayNames'];
+    if (rawNames is Map) {
+      namesMap = rawNames.map(
+            (key, value) => MapEntry(key.toString(), value),
+      );
+    }
+
     return ChatThread(
       id: doc.id,
-      participants: List<String>.from(
-        data['participants'] ?? const <String>[],
-      ),
+      participants: participants,
       lastMessage: (data['lastMessage'] ?? '') as String,
       lastSenderUid: (data['lastSenderUid'] ?? '') as String,
       lastMessageAt: lastAt,
-      unreadCount: (data['unreadCount'] ?? 0) as int,
+      unreadCount: unread,
+      participantsDisplayNames: namesMap,
     );
   }
 
@@ -61,6 +89,7 @@ class ChatThread {
     String? lastSenderUid,
     DateTime? lastMessageAt,
     int? unreadCount,
+    Map<String, dynamic>? participantsDisplayNames,
   }) {
     return ChatThread(
       id: id ?? this.id,
@@ -69,6 +98,8 @@ class ChatThread {
       lastSenderUid: lastSenderUid ?? this.lastSenderUid,
       lastMessageAt: lastMessageAt ?? this.lastMessageAt,
       unreadCount: unreadCount ?? this.unreadCount,
+      participantsDisplayNames:
+      participantsDisplayNames ?? this.participantsDisplayNames,
     );
   }
 }
