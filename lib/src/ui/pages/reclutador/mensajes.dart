@@ -64,8 +64,7 @@ class _MensajesRecState extends State<MensajesRec> {
 
   String _fallbackName(String uid) {
     if (uid.isEmpty) return 'Usuario';
-    if (uid.length <= 8) return uid;
-    return 'Usuario ${uid.substring(0, 6)}';
+    return 'Usuario';
   }
 
   /// Lógica para iniciar un chat nuevo desde el FAB
@@ -109,7 +108,7 @@ class _MensajesRecState extends State<MensajesRec> {
 
     final trimmedPeerUid = peerUid.trim();
 
-    // Obtenemos el nombre del usuario (si existe en /users)
+    // Solo para el título de la pantalla de chat
     String displayName = _fallbackName(trimmedPeerUid);
     try {
       final userDoc =
@@ -122,8 +121,7 @@ class _MensajesRecState extends State<MensajesRec> {
             displayName)
             .toString();
       }
-    } catch (_) {
-    }
+    } catch (_) {}
 
     if (!mounted) return;
     Navigator.push(
@@ -168,13 +166,11 @@ class _MensajesRecState extends State<MensajesRec> {
               const Texto(text: 'Mensajes', fontSize: 22),
               const SizedBox(height: 12),
 
-              // Lista de conversaciones desde Firestore
               Expanded(
                 child: StreamBuilder<List<ChatThread>>(
                   stream: ChatService.instance.streamUserChats(_myUid),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
-                      // Para que veas el error real en la consola
                       debugPrint(
                           'Error en streamUserChats (reclutador): ${snapshot.error}');
                       return const Center(
@@ -211,7 +207,6 @@ class _MensajesRecState extends State<MensajesRec> {
                       itemBuilder: (context, i) {
                         final thread = threads[i];
 
-                        // Encontrar al otro usuario (peerUid)
                         final peerUid = thread.participants.firstWhere(
                               (uid) => uid != _myUid,
                           orElse: () => '',
@@ -232,50 +227,41 @@ class _MensajesRecState extends State<MensajesRec> {
                             !lastFromMe && totalUnread > 0;
 
                         final int unreadForMe = hasNewForMe ? 1 : 0;
-                        // ==================================================================
 
-                        return StreamBuilder<
-                            DocumentSnapshot<Map<String, dynamic>>>(
-                          stream: _db
-                              .collection('users')
-                              .doc(peerUid)
-                              .snapshots(),
-                          builder: (context, userSnap) {
-                            String displayName = _fallbackName(peerUid);
+                        // ========= OBTENER NOMBRE DESDE EL DOCUMENTO DEL CHAT =========
+                        String displayName = _fallbackName(peerUid);
 
-                            if (userSnap.hasData &&
-                                userSnap.data != null &&
-                                userSnap.data!.data() != null) {
-                              final data = userSnap.data!.data()!;
-                              displayName = (data['fullName'] ??
-                                  data['displayName'] ??
-                                  data['name'] ??
-                                  displayName)
-                                  .toString();
-                            }
+                        final Map<String, dynamic>? namesMap =
+                            thread.participantsDisplayNames;
+                        if (namesMap != null &&
+                            namesMap.containsKey(peerUid)) {
+                          final raw = namesMap[peerUid];
+                          if (raw is String && raw.trim().isNotEmpty) {
+                            displayName = raw.trim();
+                          }
+                        }
+                        // =============================================================
 
-                            final preview = ChatPreview(
-                              name: displayName,
-                              lastMessage: thread.lastMessage,
-                              timeLabel: timeLabel,
-                              unreadCount: unreadForMe,
-                              isTyping: false,
-                            );
+                        final preview = ChatPreview(
+                          name: displayName,
+                          lastMessage: thread.lastMessage,
+                          timeLabel: timeLabel,
+                          unreadCount: unreadForMe,
+                          isTyping: false,
+                        );
 
-                            return ChatPreviewTile(
-                              preview: preview,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ChatConversation(
-                                      contactName: displayName,
-                                      peerUid: peerUid,
-                                      isTyping: false,
-                                    ),
-                                  ),
-                                );
-                              },
+                        return ChatPreviewTile(
+                          preview: preview,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChatConversation(
+                                  contactName: displayName,
+                                  peerUid: peerUid,
+                                  isTyping: false,
+                                ),
+                              ),
                             );
                           },
                         );
