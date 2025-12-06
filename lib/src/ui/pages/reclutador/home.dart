@@ -419,6 +419,7 @@ class _RecruitedCandidateCard extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: SizedBox(
+              height: 40,
               child: SimpleButton(
                 title: 'Marcar como Completada',
                 onTap: () => _markCompleted(context),
