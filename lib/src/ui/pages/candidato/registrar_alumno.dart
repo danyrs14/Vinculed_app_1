@@ -24,7 +24,6 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
   final TextEditingController _genderController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmEmailController = TextEditingController();
 
   bool _loading = false;
 
@@ -148,16 +147,6 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
   }
 
   @override
-  void dispose() {
-    _nameController.dispose();
-    _genderController.dispose();
-    _emailController.dispose();
-    _confirmEmailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
     return Scaffold(
@@ -238,24 +227,6 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
                                         validator: (value) {
                                           if (value == null || value.isEmpty) {
                                             return 'El correo es obligatorio.';
-                                          }
-                                          final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
-                                          if (!emailRegex.hasMatch(value)) {
-                                            return 'Ingrese un correo válido.';
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                      const SizedBox(height: 10),
-                                      StyledTextFormField(
-                                        isRequired: true,
-                                        controller: _confirmEmailController,
-                                        title: "Confirma el correo",
-                                        keyboardType: TextInputType.emailAddress,
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty || 
-                                          !identical(value.trim(), _emailController.text.trim())) {
-                                            return 'El correo debe coincidir con el proporcionado anteriormente.';
                                           }
                                           final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
                                           if (!emailRegex.hasMatch(value)) {
