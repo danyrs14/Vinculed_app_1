@@ -122,9 +122,11 @@ class _MensajesState extends State<Mensajes> {
             displayName)
             .toString();
       }
-    } catch (_) {
-      // Si falla la consulta, usamos el fallback y ya
+    } catch (e) {
+      // Solo log para depurar; no cambia la UI
+      debugPrint('Error al leer /users/$trimmedPeerUid: $e');
     }
+
     if (!mounted) return;
     Navigator.push(
       context,
@@ -174,7 +176,6 @@ class _MensajesState extends State<Mensajes> {
                   stream: ChatService.instance.streamUserChats(_myUid),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
-                      // Para que veas el error real en la consola
                       debugPrint(
                           'Error en streamUserChats: ${snapshot.error}');
                       return const Center(
