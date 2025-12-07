@@ -11,45 +11,42 @@ class Notificaciones extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.background(),
       appBar: AppBar(
-        backgroundColor: theme.background(), // Fondo personalizado para el AppBar
-        automaticallyImplyLeading: false, // Elimina el botón de retroceso predeterminado
+        backgroundColor: theme.background(),
+        automaticallyImplyLeading: false,
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribuye los elementos en el AppBar
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Logo a la izquierda
             Image.asset(
-              'assets/images/escom.png', // Asegúrate de tener la ruta correcta de la imagen
-              width: 50, // Ajusta el tamaño del logo
+              'assets/images/escom.png',
+              width: 50,
               height: 50,
             ),
 
-            // Íconos a la derecha (Búsqueda, Notificaciones y Perfil)
             Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.search, color: theme.primario()), // Ícono de búsqueda
+                  icon: Icon(Icons.search, color: theme.primario()),
                   onPressed: () {
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.notifications_none, color: theme.primario()), // Ícono de notificaciones
+                  icon: Icon(Icons.notifications_none, color: theme.primario()),
                   onPressed: () {},
                 ),
                 IconButton(
                   icon: CircleAvatar(
                     backgroundColor: Colors.blue[50],
-                    backgroundImage: AssetImage('assets/images/amlo.jpg'), // Foto de perfil
-                    radius: 18, // Tamaño del avatar
+                    backgroundImage: AssetImage('assets/images/amlo.jpg'),
+                    radius: 18,
                   ),
                   onPressed: () {
-                    // Acción para perfil
                   },
                 ),
               ],
             ),
           ],
         ),
-        elevation: 0, // Sin sombra en el AppBar
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
