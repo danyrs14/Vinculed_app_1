@@ -37,6 +37,8 @@ class _HomeState extends State<Home> {
 
       final nombre = usuario.displayName ?? 'usuario';
 
+      NotificationService.instance.initPush();
+      NotificationService.instance.startListeningToIncomingMessages();
       await NotificationService.instance.addNotification(
         userId: usuario.uid,
         title: '¡Bienvenido $nombre!',

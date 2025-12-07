@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -10,11 +11,14 @@ class NotificationService {
   final _auth = FirebaseAuth.instance;
   final _db = FirebaseFirestore.instance;
 
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _messagesSub;
+
   Future<void> initPush() async {
     try {
       final user = _auth.currentUser;
       if (user == null) {
-        print('initPush(): No hay usuario autenticado, no se puede registrar FCM.');
+        print(
+            'initPush(): No hay usuario autenticado, no se puede registrar FCM.');
         return;
       }
 
@@ -42,7 +46,6 @@ class NotificationService {
         return;
       }
 
-      // Guardamos token + nombre del usuario
       await _db.collection('users').doc(user.uid).set(
         {
           'fcmToken': token,
@@ -95,7 +98,8 @@ class NotificationService {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      print('Notificación guardada en users/$userId/notifications/${docRef.id}');
+      print(
+          'Notificación guardada en users/$userId/notifications/${docRef.id}');
 
       await LocalPushService.instance.showSimple(
         title: title,
@@ -105,5 +109,72 @@ class NotificationService {
       print('ERROR al guardar notificación: $e');
       print('STACK: $st');
     }
+  }
+
+  Future<void> startListeningToIncomingMessages() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      print(
+          'startListeningToIncomingMessages(): no hay usuario logueado, no se puede escuchar mensajes.');
+      return;
+    }
+
+    final uid = user.uid;
+    await _messagesSub?.cancel();
+
+    // 👇 Para evitar que el primer snapshot (histórico) dispare notificaciones
+    bool firstSnapshot = true;
+
+    _messagesSub = _db
+        .collectionGroup('messages')
+        .where('receiverUid', isEqualTo: uid)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen((snapshot) async {
+      if (firstSnapshot) {
+        firstSnapshot = false;
+        print(
+            'startListeningToIncomingMessages(): primer snapshot ignorado (histórico).');
+        return;
+      }
+
+      for (final change in snapshot.docChanges) {
+        // Solo reaccionamos a mensajes nuevos
+        if (change.type != DocumentChangeType.added) continue;
+
+        final data = change.doc.data();
+        if (data == null) continue;
+
+        final senderUid = data['senderUid'] as String? ?? '';
+        final receiverUid = data['receiverUid'] as String? ?? '';
+        final text =
+            data['text'] as String? ?? 'Tienes un nuevo mensaje';
+
+        if (receiverUid != uid) continue;
+        if (senderUid == uid) continue;
+
+        const title = 'Nuevo mensaje';
+
+        await NotificationService.instance.addNotification(
+          userId: uid,
+          title: title,
+          body: text,
+          type: 'message',
+          extraData: {
+            'messageId': change.doc.id,
+            'chatPath': change.doc.reference.parent.parent?.path,
+            'senderUid': senderUid,
+          },
+        );
+      }
+    }, onError: (e, st) {
+      print('ERROR en startListeningToIncomingMessages(): $e');
+      print('STACK: $st');
+    });
+  }
+
+  Future<void> dispose() async {
+    await _messagesSub?.cancel();
+    _messagesSub = null;
   }
 }
