@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:vinculed_app_1/src/core/services/local_push_service.dart';
 
 class NotificationService {
   NotificationService._();
@@ -95,6 +96,11 @@ class NotificationService {
       });
 
       print('Notificación guardada en users/$userId/notifications/${docRef.id}');
+
+      await LocalPushService.instance.showSimple(
+        title: title,
+        body: body,
+      );
     } catch (e, st) {
       print('ERROR al guardar notificación: $e');
       print('STACK: $st');
