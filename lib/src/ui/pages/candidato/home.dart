@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/core/services/notification_service.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/busqueda.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/vacante.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
@@ -36,10 +37,12 @@ class _HomeState extends State<Home> {
 
       final nombre = usuario.displayName ?? 'usuario';
 
-      await LocalPushService.instance.showSimple(
+      await NotificationService.instance.addNotification(
+        userId: usuario.uid,
         title: '¡Bienvenido $nombre!',
         body: 'Has iniciado sesión correctamente.',
       );
+
     });
   }
 

@@ -41,7 +41,7 @@ class NotificationService {
         return;
       }
 
-      // 👇 Además del token, guardamos también el nombre del usuario
+      // Guardamos token + nombre del usuario
       await _db.collection('users').doc(user.uid).set(
         {
           'fcmToken': token,
@@ -65,10 +65,39 @@ class NotificationService {
 
         print('Token FCM actualizado en Firestore.');
       });
-
     } catch (e, st) {
       print('ERROR en initPush(): $e');
       print('STACK TRACE: $st');
+    }
+  }
+
+  Future<void> addNotification({
+    required String userId,
+    required String title,
+    required String body,
+    String? type,
+    Map<String, dynamic>? extraData,
+  }) async {
+    try {
+      final docRef = _db
+          .collection('users')
+          .doc(userId)
+          .collection('notifications')
+          .doc(); // id auto
+
+      await docRef.set({
+        'title': title,
+        'body': body,
+        'type': type ?? 'general',
+        'extra': extraData,
+        'read': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      print('Notificación guardada en users/$userId/notifications/${docRef.id}');
+    } catch (e, st) {
+      print('ERROR al guardar notificación: $e');
+      print('STACK: $st');
     }
   }
 }
