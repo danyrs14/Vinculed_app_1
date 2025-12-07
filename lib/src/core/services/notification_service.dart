@@ -153,7 +153,28 @@ class NotificationService {
         if (receiverUid != uid) continue;
         if (senderUid == uid) continue;
 
-        const title = 'Nuevo mensaje';
+        // ================== OBTENER NOMBRE DEL REMITENTE ==================
+        String senderName = 'Usuario';
+        try {
+          if (senderUid.isNotEmpty) {
+            final senderDoc =
+            await _db.collection('users').doc(senderUid).get();
+            if (senderDoc.exists) {
+              final senderData =
+                  senderDoc.data() as Map<String, dynamic>? ?? {};
+              senderName = (senderData['fullName'] ??
+                  senderData['displayName'] ??
+                  senderData['name'] ??
+                  senderName)
+                  .toString();
+            }
+          }
+        } catch (e) {
+          print('Error al leer nombre del remitente ($senderUid): $e');
+        }
+
+        final title = '$senderName';
+        // ================================================================
 
         await NotificationService.instance.addNotification(
           userId: uid,
