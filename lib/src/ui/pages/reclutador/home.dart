@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
+import 'package:vinculed_app_1/src/core/services/notification_service.dart';
 
 class HomeRec extends StatefulWidget {
   const HomeRec({super.key});
@@ -20,15 +21,33 @@ class _HomeRecState extends State<HomeRec> {
   final usuario = FirebaseAuth.instance.currentUser!;
   final ScrollController _scrollCtrl = ScrollController();
 
-  // Estado de alumnos reclutados
   List<_RecruitedStudent> _students = [];
   bool _loading = true;
   String? _error;
 
+  static bool _welcomeShown = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!_welcomeShown) {
+        _welcomeShown = true;
+
+        final userProv = context.read<UserDataProvider>();
+        final nombre =
+            userProv.nombreUsuario ?? (usuario.displayName ?? 'Reclutador');
+
+        NotificationService.instance.initPush();
+        NotificationService.instance.startListeningToIncomingMessages();
+        await NotificationService.instance.addNotification(
+          userId: usuario.uid,
+          title: '¡Bienvenido $nombre!',
+          body: 'Has iniciado sesión correctamente.',
+        );
+      }
+
       _fetchRecruitedStudents();
     });
   }
