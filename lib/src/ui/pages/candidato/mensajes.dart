@@ -71,7 +71,8 @@ class _MensajesState extends State<Mensajes> {
   Future<void> _startNewChat() async {
     if (_myUid.isEmpty) return;
 
-    final selection = await ChatNewHelper.pickUserByName(
+    // 👉 Usamos el service que ya creamos, con .instance
+    final selection = await ChatNewHelper.instance.pickUserByName(
       context: context,
     );
 

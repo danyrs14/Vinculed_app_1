@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+/// Resultado de la selección de usuario para nuevo chat
 class ChatUserSelection {
   final String peerUid;
   final String displayName;
@@ -11,128 +13,153 @@ class ChatUserSelection {
   });
 }
 
+/// Service para seleccionar usuario con el que se iniciará un nuevo chat
 class ChatNewHelper {
   ChatNewHelper._();
 
-  static final FirebaseFirestore _db = FirebaseFirestore.instance;
+  /// Singleton para usar como:
+  /// final selection = await ChatNewHelper.instance.pickUserByName(context: context);
+  static final ChatNewHelper instance = ChatNewHelper._();
 
-  static String _fallbackName(String uid) {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  String _fallbackName(String uid) {
     if (uid.isEmpty) return 'Usuario';
     return 'Usuario';
   }
 
-  static Future<ChatUserSelection?> pickUserByName({
+  /// Abre una pantalla con la lista de usuarios y regresa el usuario seleccionado,
+  /// o null si se cancela.
+  Future<ChatUserSelection?> pickUserByName({
     required BuildContext context,
   }) async {
-    final controller = TextEditingController();
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Debes iniciar sesión para iniciar un chat')),
+      );
+      return null;
+    }
 
-    final input = await showDialog<String>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Nuevo chat'),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              labelText: 'Nombre del usuario',
-              hintText: 'Escribe el nombre del usuario',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                final value = controller.text.trim();
-                Navigator.of(ctx).pop(value.isEmpty ? null : value);
-              },
-              child: const Text('Iniciar'),
-            ),
-          ],
-        );
-      },
+    // Navegamos a la página que lista usuarios
+    final selection = await Navigator.push<ChatUserSelection>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _ChatUserListPage(
+          currentUid: currentUid,
+          db: _db,
+          fallbackName: _fallbackName,
+        ),
+      ),
     );
 
-    if (input == null || input.trim().isEmpty) {
-      return null;
-    }
+    return selection;
+  }
+}
 
-    final nameOrId = input.trim();
+/// Pantalla interna que muestra la lista de usuarios disponibles para chatear
+class _ChatUserListPage extends StatelessWidget {
+  final String currentUid;
+  final FirebaseFirestore db;
+  final String Function(String uid) fallbackName;
 
-    String peerUid = '';
-    String displayName = _fallbackName('');
+  const _ChatUserListPage({
+    super.key,
+    required this.currentUid,
+    required this.db,
+    required this.fallbackName,
+  });
 
-    try {
-      DocumentSnapshot<Map<String, dynamic>>? userDoc;
+  String _buildDisplayName(Map<String, dynamic> data, String uid) {
+    final fullName = (data['fullName'] ?? '').toString().trim();
+    final displayName = (data['displayName'] ?? '').toString().trim();
+    final name = (data['name'] ?? '').toString().trim();
 
-      final qFull = await _db
-          .collection('users')
-          .where('fullName', isEqualTo: nameOrId)
-          .limit(1)
-          .get();
+    if (fullName.isNotEmpty) return fullName;
+    if (displayName.isNotEmpty) return displayName;
+    if (name.isNotEmpty) return name;
+    return fallbackName(uid);
+  }
 
-      if (qFull.docs.isNotEmpty) {
-        userDoc = qFull.docs.first;
-      } else {
-        final qDisplay = await _db
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Selecciona un usuario'),
+      ),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: db
             .collection('users')
-            .where('displayName', isEqualTo: nameOrId)
-            .limit(1)
-            .get();
+        // Si quieres filtrar por rol, aquí puedes encadenar un .where('role', isEqualTo: 'candidato')
+            .orderBy('displayName', descending: false)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('Error al cargar usuarios'),
+            );
+          }
 
-        if (qDisplay.docs.isNotEmpty) {
-          userDoc = qDisplay.docs.first;
-        }
-      }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-      if (userDoc == null) {
-        final docById =
-        await _db.collection('users').doc(nameOrId).get();
-        if (docById.exists) {
-          userDoc = docById;
-        }
-      }
+          final docs = snapshot.data?.docs ?? [];
 
-      if (userDoc == null || !userDoc.exists) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content:
-            Text('No se encontró un usuario con ese nombre/UID'),
-          ),
-        );
-        return null;
-      }
+          // No nos listamos a nosotros mismos
+          final filtered = docs.where((doc) => doc.id != currentUid).toList();
 
-      peerUid = userDoc.id;
-      final data = userDoc.data() ?? {};
-      displayName = (data['fullName'] ??
-          data['displayName'] ??
-          data['name'] ??
-          _fallbackName(peerUid))
-          .toString();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al buscar usuario: $e'),
-        ),
-      );
-      return null;
-    }
+          if (filtered.isEmpty) {
+            return const Center(
+              child: Text('No hay usuarios disponibles para chatear'),
+            );
+          }
 
-    if (peerUid.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo determinar el usuario destino'),
-        ),
-      );
-      return null;
-    }
+          return ListView.separated(
+            itemCount: filtered.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final doc = filtered[index];
+              final data = doc.data();
+              final uid = doc.id;
 
-    return ChatUserSelection(
-      peerUid: peerUid,
-      displayName: displayName,
+              final displayName = _buildDisplayName(data, uid);
+              final email = (data['email'] ?? '').toString();
+
+              return ListTile(
+                leading: CircleAvatar(
+                  child: Text(
+                    displayName.isNotEmpty
+                        ? displayName[0].toUpperCase()
+                        : '?',
+                  ),
+                ),
+                title: Text(
+                  displayName,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  email.isNotEmpty ? email : uid,
+                  style: TextStyle(color: theme.textTheme.bodySmall?.color),
+                ),
+                onTap: () {
+                  Navigator.pop(
+                    context,
+                    ChatUserSelection(
+                      peerUid: uid,
+                      displayName: displayName,
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

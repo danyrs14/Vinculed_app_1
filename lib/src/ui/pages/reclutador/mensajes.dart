@@ -73,7 +73,7 @@ class _MensajesRecState extends State<MensajesRec> {
   Future<void> _startNewChat() async {
     if (_myUid.isEmpty) return;
 
-    final selection = await ChatNewHelper.pickUserByName(
+    final selection = await ChatNewHelper.instance.pickUserByName(
       context: context,
     );
 
