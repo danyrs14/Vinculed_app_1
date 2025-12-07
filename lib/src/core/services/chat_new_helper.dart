@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// Resultado de la selección de usuario para nuevo chat
 class ChatUserSelection {
   final String peerUid;
   final String displayName;
@@ -13,12 +12,9 @@ class ChatUserSelection {
   });
 }
 
-/// Service para seleccionar usuario con el que se iniciará un nuevo chat
 class ChatNewHelper {
   ChatNewHelper._();
 
-  /// Singleton para usar como:
-  /// final selection = await ChatNewHelper.instance.pickUserByName(context: context);
   static final ChatNewHelper instance = ChatNewHelper._();
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -28,8 +24,6 @@ class ChatNewHelper {
     return 'Usuario';
   }
 
-  /// Abre una pantalla con la lista de usuarios y regresa el usuario seleccionado,
-  /// o null si se cancela.
   Future<ChatUserSelection?> pickUserByName({
     required BuildContext context,
   }) async {
@@ -41,7 +35,6 @@ class ChatNewHelper {
       return null;
     }
 
-    // Navegamos a la página que lista usuarios
     final selection = await Navigator.push<ChatUserSelection>(
       context,
       MaterialPageRoute(
@@ -57,7 +50,6 @@ class ChatNewHelper {
   }
 }
 
-/// Pantalla interna que muestra la lista de usuarios disponibles para chatear
 class _ChatUserListPage extends StatelessWidget {
   final String currentUid;
   final FirebaseFirestore db;
@@ -92,7 +84,6 @@ class _ChatUserListPage extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: db
             .collection('users')
-        // Si quieres filtrar por rol, aquí puedes encadenar un .where('role', isEqualTo: 'candidato')
             .orderBy('displayName', descending: false)
             .snapshots(),
         builder: (context, snapshot) {
@@ -110,7 +101,6 @@ class _ChatUserListPage extends StatelessWidget {
 
           final docs = snapshot.data?.docs ?? [];
 
-          // No nos listamos a nosotros mismos
           final filtered = docs.where((doc) => doc.id != currentUid).toList();
 
           if (filtered.isEmpty) {
@@ -142,10 +132,14 @@ class _ChatUserListPage extends StatelessWidget {
                   displayName,
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: Text(
-                  email.isNotEmpty ? email : uid,
-                  style: TextStyle(color: theme.textTheme.bodySmall?.color),
-                ),
+                subtitle: email.isNotEmpty
+                    ? Text(
+                  email,
+                  style: TextStyle(
+                    color: theme.textTheme.bodySmall?.color,
+                  ),
+                )
+                    : null,
                 onTap: () {
                   Navigator.pop(
                     context,
