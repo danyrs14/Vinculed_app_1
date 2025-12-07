@@ -73,7 +73,8 @@ class _MensajesRecState extends State<MensajesRec> {
 
     final controller = TextEditingController();
 
-    final peerUid = await showDialog<String>(
+    // AHORA PEDIMOS NOMBRE, NO UID
+    final input = await showDialog<String>(
       context: context,
       builder: (ctx) {
         return AlertDialog(
@@ -81,8 +82,8 @@ class _MensajesRecState extends State<MensajesRec> {
           content: TextField(
             controller: controller,
             decoration: const InputDecoration(
-              labelText: 'UID del usuario',
-              hintText: 'Pega o escribe el UID del usuario',
+              labelText: 'Nombre del usuario',
+              hintText: 'Escribe el nombre del usuario',
             ),
           ),
           actions: [
@@ -102,26 +103,86 @@ class _MensajesRecState extends State<MensajesRec> {
       },
     );
 
-    if (peerUid == null || peerUid.trim().isEmpty) {
+    if (input == null || input.trim().isEmpty) {
       return;
     }
 
-    final trimmedPeerUid = peerUid.trim();
+    final nameOrId = input.trim();
 
-    // Solo para el título de la pantalla de chat
-    String displayName = _fallbackName(trimmedPeerUid);
+    // 🔹 AHORA ES String, NO String?
+    String peerUid = '';
+    String displayName = _fallbackName('');
+
     try {
-      final userDoc =
-      await _db.collection('users').doc(trimmedPeerUid).get();
-      if (userDoc.exists) {
-        final data = userDoc.data() as Map<String, dynamic>? ?? {};
-        displayName = (data['fullName'] ??
-            data['displayName'] ??
-            data['name'] ??
-            displayName)
-            .toString();
+      DocumentSnapshot<Map<String, dynamic>>? userDoc;
+
+      // 1) Buscar por fullName
+      final qFull = await _db
+          .collection('users')
+          .where('fullName', isEqualTo: nameOrId)
+          .limit(1)
+          .get();
+
+      if (qFull.docs.isNotEmpty) {
+        userDoc = qFull.docs.first;
+      } else {
+        // 2) Buscar por displayName
+        final qDisplay = await _db
+            .collection('users')
+            .where('displayName', isEqualTo: nameOrId)
+            .limit(1)
+            .get();
+
+        if (qDisplay.docs.isNotEmpty) {
+          userDoc = qDisplay.docs.first;
+        }
       }
-    } catch (_) {}
+
+      // 3) Si no se encontró por nombre, intentamos usarlo como UID
+      if (userDoc == null) {
+        final docById =
+        await _db.collection('users').doc(nameOrId).get();
+        if (docById.exists) {
+          userDoc = docById;
+        }
+      }
+
+      if (userDoc == null || !userDoc.exists) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se encontró un usuario con ese nombre/UID'),
+          ),
+        );
+        return;
+      }
+
+      peerUid = userDoc.id;
+      final data = userDoc.data() ?? {};
+      displayName = (data['fullName'] ??
+          data['displayName'] ??
+          data['name'] ??
+          _fallbackName(peerUid))
+          .toString();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al buscar usuario: $e'),
+        ),
+      );
+      return;
+    }
+
+    if (peerUid.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo determinar el usuario destino'),
+        ),
+      );
+      return;
+    }
 
     if (!mounted) return;
     Navigator.push(
@@ -129,7 +190,7 @@ class _MensajesRecState extends State<MensajesRec> {
       MaterialPageRoute(
         builder: (_) => ChatConversation(
           contactName: displayName,
-          peerUid: trimmedPeerUid,
+          peerUid: peerUid, // ✅ ahora es String, sin error
           isTyping: false,
         ),
       ),
