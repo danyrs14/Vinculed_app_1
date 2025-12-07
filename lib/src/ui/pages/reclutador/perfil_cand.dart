@@ -217,7 +217,6 @@ class _PerfilPostuladoPage extends State<PerfilPostuladoPage> {
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 40,
               child: SimpleButton(
                 title: 'Actualizar',
                 onTap: _fetchPostulacionesRevision,
