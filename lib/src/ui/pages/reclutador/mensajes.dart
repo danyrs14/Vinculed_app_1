@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/models/chat_thread.dart';
 import 'package:vinculed_app_1/src/core/services/chat_service.dart';
+import 'package:vinculed_app_1/src/core/services/chat_new_helper.dart'; // 👈 USAMOS EL SERVICE
 import 'package:vinculed_app_1/src/ui/pages/reclutador/chat.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements_app/chat_preview.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
@@ -68,68 +69,22 @@ class _MensajesRecState extends State<MensajesRec> {
   }
 
   /// Lógica para iniciar un chat nuevo desde el FAB
+  /// 👉 Ahora usamos el service ChatNewHelper para buscar por nombre
   Future<void> _startNewChat() async {
     if (_myUid.isEmpty) return;
 
-    final controller = TextEditingController();
-
-    final peerUid = await showDialog<String>(
+    final selection = await ChatNewHelper.instance.pickUserByName(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Nuevo chat'),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              labelText: 'UID del usuario',
-              hintText: 'Pega o escribe el UID del usuario',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                final value = controller.text.trim();
-                Navigator.of(ctx).pop(value.isEmpty ? null : value);
-              },
-              child: const Text('Iniciar'),
-            ),
-          ],
-        );
-      },
     );
 
-    if (peerUid == null || peerUid.trim().isEmpty) {
-      return;
-    }
+    if (!mounted || selection == null) return;
 
-    final trimmedPeerUid = peerUid.trim();
-
-    // Solo para el título de la pantalla de chat
-    String displayName = _fallbackName(trimmedPeerUid);
-    try {
-      final userDoc =
-      await _db.collection('users').doc(trimmedPeerUid).get();
-      if (userDoc.exists) {
-        final data = userDoc.data() as Map<String, dynamic>? ?? {};
-        displayName = (data['fullName'] ??
-            data['displayName'] ??
-            data['name'] ??
-            displayName)
-            .toString();
-      }
-    } catch (_) {}
-
-    if (!mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ChatConversation(
-          contactName: displayName,
-          peerUid: trimmedPeerUid,
+          contactName: selection.displayName,
+          peerUid: selection.peerUid,
           isTyping: false,
         ),
       ),
