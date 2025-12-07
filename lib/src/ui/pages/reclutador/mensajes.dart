@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/models/chat_thread.dart';
 import 'package:vinculed_app_1/src/core/services/chat_service.dart';
+import 'package:vinculed_app_1/src/core/services/chat_new_helper.dart'; // 👈 USAMOS EL SERVICE
 import 'package:vinculed_app_1/src/ui/pages/reclutador/chat.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements_app/chat_preview.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
@@ -68,129 +69,22 @@ class _MensajesRecState extends State<MensajesRec> {
   }
 
   /// Lógica para iniciar un chat nuevo desde el FAB
+  /// 👉 Ahora usamos el service ChatNewHelper para buscar por nombre
   Future<void> _startNewChat() async {
     if (_myUid.isEmpty) return;
 
-    final controller = TextEditingController();
-
-    // AHORA PEDIMOS NOMBRE, NO UID
-    final input = await showDialog<String>(
+    final selection = await ChatNewHelper.pickUserByName(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Nuevo chat'),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              labelText: 'Nombre del usuario',
-              hintText: 'Escribe el nombre del usuario',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                final value = controller.text.trim();
-                Navigator.of(ctx).pop(value.isEmpty ? null : value);
-              },
-              child: const Text('Iniciar'),
-            ),
-          ],
-        );
-      },
     );
 
-    if (input == null || input.trim().isEmpty) {
-      return;
-    }
+    if (!mounted || selection == null) return;
 
-    final nameOrId = input.trim();
-
-    // 🔹 AHORA ES String, NO String?
-    String peerUid = '';
-    String displayName = _fallbackName('');
-
-    try {
-      DocumentSnapshot<Map<String, dynamic>>? userDoc;
-
-      // 1) Buscar por fullName
-      final qFull = await _db
-          .collection('users')
-          .where('fullName', isEqualTo: nameOrId)
-          .limit(1)
-          .get();
-
-      if (qFull.docs.isNotEmpty) {
-        userDoc = qFull.docs.first;
-      } else {
-        // 2) Buscar por displayName
-        final qDisplay = await _db
-            .collection('users')
-            .where('displayName', isEqualTo: nameOrId)
-            .limit(1)
-            .get();
-
-        if (qDisplay.docs.isNotEmpty) {
-          userDoc = qDisplay.docs.first;
-        }
-      }
-
-      // 3) Si no se encontró por nombre, intentamos usarlo como UID
-      if (userDoc == null) {
-        final docById =
-        await _db.collection('users').doc(nameOrId).get();
-        if (docById.exists) {
-          userDoc = docById;
-        }
-      }
-
-      if (userDoc == null || !userDoc.exists) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No se encontró un usuario con ese nombre/UID'),
-          ),
-        );
-        return;
-      }
-
-      peerUid = userDoc.id;
-      final data = userDoc.data() ?? {};
-      displayName = (data['fullName'] ??
-          data['displayName'] ??
-          data['name'] ??
-          _fallbackName(peerUid))
-          .toString();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al buscar usuario: $e'),
-        ),
-      );
-      return;
-    }
-
-    if (peerUid.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo determinar el usuario destino'),
-        ),
-      );
-      return;
-    }
-
-    if (!mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ChatConversation(
-          contactName: displayName,
-          peerUid: peerUid, // ✅ ahora es String, sin error
+          contactName: selection.displayName,
+          peerUid: selection.peerUid,
           isTyping: false,
         ),
       ),
