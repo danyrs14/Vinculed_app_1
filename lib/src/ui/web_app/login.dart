@@ -190,14 +190,14 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                                   // Campo de Correo con validación
                                   StyledTextFormField(
                                     isRequired: true,
-                                    title: 'Correo institucional',
+                                    title: 'Correo electrónico',
                                     controller: _emailCtrl,
                                     keyboardType: TextInputType.emailAddress,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Por favor, ingresa tu correo.';
                                       }
-                                      final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                                      final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
                                       if (!emailRegex.hasMatch(value)) {
                                         return 'Ingresa un correo válido.';
                                       }
