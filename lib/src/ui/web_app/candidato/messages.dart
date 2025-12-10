@@ -27,6 +27,14 @@ class _MessagesPageState extends State<MessagesPage> {
   final _auth = FirebaseAuth.instance;
   final _db = FirebaseFirestore.instance;
 
+  // Scroll global para controlar el footer animado
+  final _scrollCtrl = ScrollController();
+  bool _showFooter = false;
+
+  static const double _footerReservedSpace = EscomFooter.height;
+  static const double _extraBottomPadding = 24.0;
+  static const double _atEndThreshold = 4.0;
+
   String _myUid = '';
 
   // 👉 Para el panel derecho (chat embebido)
@@ -38,6 +46,31 @@ class _MessagesPageState extends State<MessagesPage> {
     super.initState();
     final user = _auth.currentUser;
     _myUid = user?.uid ?? '';
+
+    _scrollCtrl.addListener(_handleScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _handleScroll());
+  }
+
+  void _handleScroll() {
+    final pos = _scrollCtrl.position;
+    if (!pos.hasPixels || !pos.hasContentDimensions) return;
+
+    // Si no hay scroll (contenido más pequeño que la pantalla)
+    if (pos.maxScrollExtent <= 0) {
+      if (_showFooter) setState(() => _showFooter = false);
+      return;
+    }
+
+    final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
+    if (atBottom != _showFooter) setState(() => _showFooter = atBottom);
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl
+      ..removeListener(_handleScroll)
+      ..dispose();
+    super.dispose();
   }
 
   String _formatTimeLabel(DateTime? dt) {
@@ -101,7 +134,7 @@ class _MessagesPageState extends State<MessagesPage> {
     final w = MediaQuery.of(context).size.width;
     final isMobile = w < 700;
 
-    // Si no hay sesión, mostramos el mismo mensaje pero con header y footer.
+    // ===================== SIN SESIÓN =====================
     if (_myUid.isEmpty) {
       return Scaffold(
         backgroundColor: theme.background(),
@@ -131,13 +164,75 @@ class _MessagesPageState extends State<MessagesPage> {
             }
           },
         ),
-        bottomNavigationBar: EscomFooter(isMobile: isMobile),
-        body: const Center(
-          child: Text('Inicia sesión para ver tus MessagesPage'),
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final minBodyHeight =
+                      constraints.maxHeight - _footerReservedSpace - _extraBottomPadding;
+
+                  return NotificationListener<ScrollNotification>(
+                    onNotification: (n) {
+                      if (n is ScrollUpdateNotification ||
+                          n is UserScrollNotification ||
+                          n is ScrollEndNotification) {
+                        _handleScroll();
+                      }
+                      return false;
+                    },
+                    child: SingleChildScrollView(
+                      controller: _scrollCtrl,
+                      padding: const EdgeInsets.only(
+                        bottom: _footerReservedSpace + _extraBottomPadding,
+                      ),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 1200),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 24,
+                            ),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: minBodyHeight > 0 ? minBodyHeight : 0,
+                              ),
+                              child: const Center(
+                                child: Text('Inicia sesión para ver tus MessagesPage'),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // Footer animado
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: AnimatedSlide(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+                offset: _showFooter ? Offset.zero : const Offset(0, 1),
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 220),
+                  opacity: _showFooter ? 1 : 0,
+                  child: EscomFooter(isMobile: isMobile),
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }
 
+    // ===================== CON SESIÓN =====================
     return Scaffold(
       backgroundColor: theme.background(),
       appBar: EscomHeader2(
@@ -166,164 +261,229 @@ class _MessagesPageState extends State<MessagesPage> {
           }
         },
       ),
-      bottomNavigationBar: EscomFooter(isMobile: isMobile),
       floatingActionButton: FloatingActionButton(
         onPressed: _startNewChat,
         backgroundColor: theme.secundario(),
         child: const Icon(Icons.chat_bubble_outline),
       ),
-      body: SafeArea(
-        top: false, // 👈 para que no meta padding extra debajo del header
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 8),
-              const Texto(text: 'MessagesPage', fontSize: 22),
-              const SizedBox(height: 12),
+      body: Stack(
+        children: [
+          // Scroll global con padding inferior para el footer
+          Positioned.fill(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final minBodyHeight =
+                    constraints.maxHeight - _footerReservedSpace - _extraBottomPadding;
 
-              // Layout web: lista izquierda + chat derecho
-              Expanded(
-                child: Row(
-                  children: [
-                    // ==================== LISTA DE CONVERSACIONES (IZQUIERDA) ====================
-                    SizedBox(
-                      width: 340,
-                      child: StreamBuilder<List<ChatThread>>(
-                        stream: ChatService.instance.streamUserChats(_myUid),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasError) {
-                            debugPrint(
-                                'Error en streamUserChats: ${snapshot.error}');
-                            return const Center(
-                              child: Text(
-                                'Ocurrió un error al cargar tus chats',
-                                style: TextStyle(fontSize: 14),
-                                textAlign: TextAlign.center,
-                              ),
-                            );
-                          }
-
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-
-                          final threads = snapshot.data ?? [];
-
-                          if (threads.isEmpty) {
-                            return const Center(
-                              child: Text(
-                                'Aún no tienes conversaciones',
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            );
-                          }
-
-                          return ListView.separated(
-                            itemCount: threads.length,
-                            separatorBuilder: (_, __) =>
-                            const SizedBox(height: 6),
-                            itemBuilder: (context, i) {
-                              final thread = threads[i];
-
-                              // Encontrar al otro usuario (peerUid)
-                              final peerUid =
-                              thread.participants.firstWhere(
-                                    (uid) => uid != _myUid,
-                                orElse: () => '',
-                              );
-
-                              if (peerUid.isEmpty) {
-                                return const SizedBox.shrink();
-                              }
-
-                              final timeLabel =
-                              _formatTimeLabel(thread.lastMessageAt);
-
-                              final int totalUnread = thread.unreadCount;
-                              final bool lastFromMe =
-                                  thread.lastSenderUid == _myUid;
-
-                              final bool hasNewForMe =
-                                  !lastFromMe && totalUnread > 0;
-
-                              final int unreadForMe = hasNewForMe ? 1 : 0;
-
-                              // ========= OBTENER NOMBRE DESDE EL DOCUMENTO DEL CHAT =========
-                              String displayName = _fallbackName(peerUid);
-
-                              final Map<String, dynamic>? namesMap =
-                                  thread.participantsDisplayNames;
-                              if (namesMap != null &&
-                                  namesMap.containsKey(peerUid)) {
-                                final raw = namesMap[peerUid];
-                                if (raw is String && raw.trim().isNotEmpty) {
-                                  displayName = raw.trim();
-                                }
-                              }
-                              // =============================================================
-
-                              final preview = ChatPreview(
-                                name: displayName,
-                                lastMessage: thread.lastMessage,
-                                timeLabel: timeLabel,
-                                unreadCount: unreadForMe,
-                                isTyping: false,
-                              );
-
-                              return ChatPreviewTile(
-                                preview: preview,
-                                onTap: () {
-                                  setState(() {
-                                    _selectedPeerUid = peerUid;
-                                    _selectedContactName = displayName;
-                                  });
-                                },
-                              );
-                            },
-                          );
-                        },
-                      ),
+                return NotificationListener<ScrollNotification>(
+                  onNotification: (n) {
+                    if (n is ScrollUpdateNotification ||
+                        n is UserScrollNotification ||
+                        n is ScrollEndNotification) {
+                      _handleScroll();
+                    }
+                    return false;
+                  },
+                  child: SingleChildScrollView(
+                    controller: _scrollCtrl,
+                    padding: const EdgeInsets.only(
+                      bottom: _footerReservedSpace + _extraBottomPadding,
                     ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1200),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: minBodyHeight > 0 ? minBodyHeight : 0,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const SizedBox(height: 8),
+                                const Texto(text: 'MessagesPage', fontSize: 22),
+                                const SizedBox(height: 12),
 
-                    const SizedBox(width: 16),
+                                // Layout web: lista izquierda + chat derecho
+                                SizedBox(
+                                  height: 520, // altura fija razonable para el panel
+                                  child: Row(
+                                    children: [
+                                      // ==================== LISTA DE CONVERSACIONES (IZQUIERDA) ====================
+                                      SizedBox(
+                                        width: 340,
+                                        child: StreamBuilder<List<ChatThread>>(
+                                          stream: ChatService.instance
+                                              .streamUserChats(_myUid),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.hasError) {
+                                              debugPrint(
+                                                  'Error en streamUserChats: ${snapshot.error}');
+                                              return const Center(
+                                                child: Text(
+                                                  'Ocurrió un error al cargar tus chats',
+                                                  style: TextStyle(fontSize: 14),
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              );
+                                            }
 
-                    // ==================== PANEL DE CHAT (DERECHA) ====================
-                    Expanded(
-                      child: _selectedPeerUid == null
-                          ? Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.black12,
+                                            if (snapshot.connectionState ==
+                                                ConnectionState.waiting) {
+                                              return const Center(
+                                                child: CircularProgressIndicator(),
+                                              );
+                                            }
+
+                                            final threads = snapshot.data ?? [];
+
+                                            if (threads.isEmpty) {
+                                              return const Center(
+                                                child: Text(
+                                                  'Aún no tienes conversaciones',
+                                                  style: TextStyle(fontSize: 14),
+                                                ),
+                                              );
+                                            }
+
+                                            return ListView.separated(
+                                              itemCount: threads.length,
+                                              separatorBuilder: (_, __) =>
+                                              const SizedBox(height: 6),
+                                              itemBuilder: (context, i) {
+                                                final thread = threads[i];
+
+                                                // Encontrar al otro usuario (peerUid)
+                                                final peerUid = thread.participants.firstWhere(
+                                                      (uid) => uid != _myUid,
+                                                  orElse: () => '',
+                                                );
+
+                                                if (peerUid.isEmpty) {
+                                                  return const SizedBox.shrink();
+                                                }
+
+                                                final timeLabel =
+                                                _formatTimeLabel(thread.lastMessageAt);
+
+                                                final int totalUnread = thread.unreadCount;
+                                                final bool lastFromMe =
+                                                    thread.lastSenderUid == _myUid;
+
+                                                final bool hasNewForMe =
+                                                    !lastFromMe && totalUnread > 0;
+
+                                                final int unreadForMe =
+                                                hasNewForMe ? 1 : 0;
+
+                                                // ========= OBTENER NOMBRE DESDE EL DOCUMENTO DEL CHAT =========
+                                                String displayName =
+                                                _fallbackName(peerUid);
+
+                                                final Map<String, dynamic>?
+                                                namesMap =
+                                                    thread.participantsDisplayNames;
+                                                if (namesMap != null &&
+                                                    namesMap.containsKey(peerUid)) {
+                                                  final raw = namesMap[peerUid];
+                                                  if (raw is String &&
+                                                      raw.trim().isNotEmpty) {
+                                                    displayName = raw.trim();
+                                                  }
+                                                }
+                                                // =============================================================
+
+                                                final preview = ChatPreview(
+                                                  name: displayName,
+                                                  lastMessage: thread.lastMessage,
+                                                  timeLabel: timeLabel,
+                                                  unreadCount: unreadForMe,
+                                                  isTyping: false,
+                                                );
+
+                                                return ChatPreviewTile(
+                                                  preview: preview,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      _selectedPeerUid = peerUid;
+                                                      _selectedContactName =
+                                                          displayName;
+                                                    });
+                                                  },
+                                                );
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ),
+
+                                      const SizedBox(width: 16),
+
+                                      // ==================== PANEL DE CHAT (DERECHA) ====================
+                                      Expanded(
+                                        child: _selectedPeerUid == null
+                                            ? Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                            BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: Colors.black12,
+                                            ),
+                                          ),
+                                          child: const Center(
+                                            child: Text(
+                                              'Selecciona una conversación o inicia un chat nuevo',
+                                              style:
+                                              TextStyle(fontSize: 14),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        )
+                                            : _ChatPanel(
+                                          myUid: _myUid,
+                                          peerUid: _selectedPeerUid!,
+                                          contactName:
+                                          _selectedContactName ??
+                                              'Usuario',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        child: const Center(
-                          child: Text(
-                            'Selecciona una conversación o inicia un chat nuevo',
-                            style: TextStyle(fontSize: 14),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      )
-                          : _ChatPanel(
-                        myUid: _myUid,
-                        peerUid: _selectedPeerUid!,
-                        contactName:
-                        _selectedContactName ?? 'Usuario',
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                );
+              },
+            ),
           ),
-        ),
+
+          // Footer animado (aparece al llegar al final del contenido)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AnimatedSlide(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              offset: _showFooter ? Offset.zero : const Offset(0, 1),
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 220),
+                opacity: _showFooter ? 1 : 0,
+                child: EscomFooter(isMobile: isMobile),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -487,7 +647,7 @@ class _ChatPanelState extends State<_ChatPanel> {
             ),
           ),
 
-          // Lista de MessagesPage (desde Firestore)
+          // Lista de mensajes (desde Firestore)
           Expanded(
             child: StreamBuilder<List<ChatMessage>>(
               stream: ChatService.instance.streamMessages(_chatId),
