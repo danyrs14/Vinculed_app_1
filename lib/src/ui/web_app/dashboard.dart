@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';  // EscomFooter
 import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';  // EscomHeader
@@ -182,7 +183,7 @@ class _DashboardState extends State<Dashboard> {
                                       const SizedBox(height: 24),
                                       SizedBox(
                                         width: 240,
-                                        child: SimpleButton(
+                                        child: LargeButton(
                                           onTap: () {
                                             context.go('/login');
                                           },
@@ -265,7 +266,7 @@ class _AuthActionsRowMobile extends StatelessWidget {
           spacing: 12,
           runSpacing: 8,
           children: [
-            SimpleButton(
+            LargeButton(
               onTap: () {
                 context.go('/login');
               },
