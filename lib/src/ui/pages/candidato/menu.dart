@@ -106,18 +106,15 @@ class _MenuPageState extends State<MenuPage> {
         elevation: 0,
       ),
 
-      // ⬇️ Cuerpo convertido a PageView para permitir DESLIZAR entre pantallas
       body: PageView(
         controller: _pageController,
         physics: const PageScrollPhysics(), // swipe horizontal natural
         onPageChanged: (index) {
-          // sincroniza la barra inferior cuando el usuario desliza
           setState(() => _paginaActual = index);
         },
         children: _paginas,
       ),
 
-      // ⬇️ Tu BottomNavigationBar se mantiene igual, solo conectamos al PageView
       bottomNavigationBar: Container(
         color: theme.background(),
         child: BottomNavigationBar(

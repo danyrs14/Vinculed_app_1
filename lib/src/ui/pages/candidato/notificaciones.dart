@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/busqueda.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
@@ -38,7 +39,7 @@ class Notificaciones extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Image.asset(
-              'assets/images/escom.png',
+              'assets/images/graduate.png',
               width: 50,
               height: 50,
             ),
@@ -47,12 +48,11 @@ class Notificaciones extends StatelessWidget {
                 IconButton(
                   icon: Icon(Icons.search, color: theme.primario()),
                   onPressed: () {
-                    // Aquí podrías implementar búsqueda de notificaciones
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Busqueda()),
+                    );
                   },
-                ),
-                IconButton(
-                  icon: Icon(Icons.notifications_none, color: theme.primario()),
-                  onPressed: () {},
                 ),
                 IconButton(
                   icon: CircleAvatar(
