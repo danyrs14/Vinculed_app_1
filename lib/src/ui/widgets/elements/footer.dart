@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 
 class EscomFooter extends StatelessWidget {
   const EscomFooter({super.key, required this.isMobile});
@@ -9,9 +10,10 @@ class EscomFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
     return Container(
       height: height,
-      color: const Color(0xFF2B2F33),
+      color: theme.primario(),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: isMobile ? _mobileScrollable() : _desktopCompact(),
     );
@@ -19,35 +21,31 @@ class EscomFooter extends StatelessWidget {
 
   // ====== MÓVIL: contenido scrolleable para evitar overflow ======
   Widget _mobileScrollable() {
+    final theme = ThemeController.instance;
     return ScrollConfiguration(
       behavior: const _NoGlowBehavior(),
       child: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             // Imagen arriba de todo
             Image.asset(
-              'assets/images/escom.png', // cambia la ruta si es otra
-              height: 50,
+              'assets/images/graduate.png', // cambia la ruta si es otra
+              height: 150,
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 12),
-            const Text("ESCOM", style: TextStyle(color: Colors.white, fontSize: 20)),
-            const SizedBox(height: 8),
-            const Text(
-              "Copyright © 2025\nDerechos Reservados",
-              style: TextStyle(color: Colors.white70),
+            Text("OdaTalent", style: TextStyle(color: theme.background(), fontSize: 20)),
+            const SizedBox(height: 16),
+            _footerColumn(
+              "TT 2025 - B003",
+              ["Orta Acuña Angel Gabriel", "Garcia Jimenez Osmar Alejandro", "Rodriguez Sanchez Daniel"],
             ),
             const SizedBox(height: 16),
             _footerColumn(
-              "Equipo TT",
-              ["Acerca de", "Blog", "Contactanos", "Pricing", "Testimonials"],
-            ),
-            const SizedBox(height: 16),
-            _footerColumn(
-              "Soporte",
-              ["Emergencias", "Ayuda", "Ubicacion", "Privacy policy", "Status"],
+              "¿Qué es OdaTalent?",
+              ["Sistema web y móvil que vincula a los alumnos de la carrera de Ingeniería en Sistemas Computacionales de la Escuela Superior de Cómputo con las oportunidades que ofrecen las empresas en puestos de becarios y proyectos"],
             ),
             const SizedBox(height: 16),
             _footerSubscribe(),
@@ -58,40 +56,35 @@ class EscomFooter extends StatelessWidget {
   }
 
   Widget _desktopCompact() {
+    final theme = ThemeController.instance;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Imagen arriba de todo
             Image.asset(
-              'assets/images/escudoESCOM.png', // cambia la ruta si es otra
-              height: 150,
+              'assets/images/graduate.png',
+              height: 200,
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 12),
-            Center(
-              child: const Text(
-                "Copyright © 2025\nDerechos Reservados",
-                style: TextStyle(color: Colors.white70),
-              ),
-            ),
+            Text("OdaTalent", style: TextStyle(color: theme.background(), fontSize: 20)),
           ],
         ),
         const Spacer(),
         Flexible(
           child: _footerColumn(
-            "Equipo TT",
-            ["Acerca de", "Blog", "Contactanos", "Pricing", "Testimonials"],
+            "TT 2025 - B003",
+            ["Orta Acuña Angel Gabriel", "Garcia Jimenez Osmar Alejandro", "Rodriguez Sanchez Daniel"],
           ),
         ),
         const SizedBox(width: 48),
         Flexible(
           child: _footerColumn(
-            "Soporte",
-            ["Emergencias", "Ayuda", "Ubicacion", "Privacy policy", "Status"],
+            "¿Qué es OdaTalent?",
+            ["Sistema web y móvil que vincula a los alumnos de la carrera de Ingeniería en Sistemas Computacionales de la Escuela Superior de Cómputo con las oportunidades que ofrecen las empresas en puestos de becarios y proyectos"],
           ),
         ),
         const SizedBox(width: 48),
@@ -101,11 +94,12 @@ class EscomFooter extends StatelessWidget {
   }
 
   static Widget _footerColumn(String title, List<String> links) {
+    final theme = ThemeController.instance;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
+        Text(title, style: TextStyle(color: theme.background(), fontSize: 16)),
         const SizedBox(height: 6),
         for (final link in links)
           TextButton(
@@ -116,7 +110,7 @@ class EscomFooter extends StatelessWidget {
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               alignment: Alignment.centerLeft,
             ),
-            child: Text(link, style: const TextStyle(color: Colors.white70)),
+            child: Text(link, style: TextStyle(color: theme.background())),
           ),
       ],
     );
@@ -130,22 +124,23 @@ class _FooterSubscribeBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text("Conócenos", style: TextStyle(color: Colors.white, fontSize: 16)),
+        Text("Quejas y Sugerencias", style: TextStyle(color: theme.background(), fontSize: 16)),
         const SizedBox(height: 8),
         SizedBox(
           width: 220,
           child: TextField(
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: theme.background()),
             decoration: InputDecoration(
-              hintText: "Correo Electrónico",
-              hintStyle: const TextStyle(color: Colors.white70),
+              hintText: "Cuentanos",
+              hintStyle: TextStyle(color: theme.primario()),
               filled: true,
-              fillColor: Colors.grey[800],
-              suffixIcon: const Icon(Icons.send, color: Colors.white70, size: 20),
+              fillColor: theme.secundario(),
+              suffixIcon: Icon(Icons.send, color: theme.primario(), size: 20),
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),

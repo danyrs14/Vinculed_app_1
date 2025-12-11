@@ -49,7 +49,7 @@ class EscomHeader3 extends StatelessWidget implements PreferredSizeWidget {
       titleSpacing: 20,
       title: Row(
         children: [
-          Image.asset('assets/images/escom.png', height: 40),
+          Image.asset('assets/images/graduate.png', height: 40),
           const SizedBox(width: 10),
         ],
       ),

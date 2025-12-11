@@ -14,16 +14,9 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
   final void Function(String label)? onMenuSelected;
   final VoidCallback? onLoginTap;
   final VoidCallback? onRegisterTap;
-  /// Si lo dejas null, el header abrirá su panel de notificaciones integrado.
   final VoidCallback? onNotifTap;
 
   static const _menuItems = <String>[
-    "Inicio",
-    "Postulaciones",
-    "Experiencias",
-    "Mensajes",
-    "Explorar Puestos en TI",
-    "FAQ",
   ];
 
   @override
@@ -40,69 +33,29 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
       titleSpacing: 20,
       title: Row(
         children: [
-          Image.asset('assets/images/escom.png', height: 40),
+          Image.asset('assets/images/graduate.png', height: 40),
           const SizedBox(width: 10),
         ],
       ),
       actions: isMobile
           ? [
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.menu),
-                onSelected: (value) => onMenuSelected?.call(value),
-                itemBuilder: (context) => _menuItems
-                    .map((e) => PopupMenuItem<String>(
-                          value: e,
-                          child: Text(e),
-                        ))
-                    .toList(),
-              ),
-              // Botón cerrar sesión también en móvil (si se usa en pantallas autenticadas)
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 8),
-              //   child: MiniButton(
-              //     onTap: () {/* Implementa cierre desde el caller si aplica */},
-              //     title: "Cerrar Sesión",
-              //     dense: true,
-              //   ),
-              // ),
+
             ]
           : [
               ..._menuItems.map(
                     (label) => _navButton(label, () => onMenuSelected?.call(label)),
               ),
-              TextButton(
-                onPressed: onLoginTap,
-                child: Text(
-                  "Iniciar Sesión",
-                  style: TextStyle(
-                    color: theme.secundario(),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: MiniButton(
-                  onTap: onRegisterTap,
-                  title: "Registrarse",
-                ),
-              ),
-              IconButton(
-                tooltip: 'Notificaciones',
-                onPressed: onNotifTap ?? () => _showNotificationsPanel(context),
-                icon: const Icon(Icons.notifications),
-              ),
-              const SizedBox(width: 8),
             ],
     );
   }
 
   Widget _navButton(String text, VoidCallback? onTap) {
+    final theme = ThemeController.instance;
     return TextButton(
       onPressed: onTap,
       child: Text(
         text,
-        style: const TextStyle(color: Colors.black87),
+        style: TextStyle(color: theme.fuente()),
       ),
     );
   }
@@ -116,7 +69,7 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
 
     showGeneralDialog(
       context: context,
-      barrierColor: Colors.black54,
+      barrierColor: theme.fuente(),
       barrierDismissible: true,
       barrierLabel: 'Notificaciones',
       transitionDuration: const Duration(milliseconds: 220),
@@ -133,10 +86,10 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
                 decoration: BoxDecoration(
                   color: theme.background(),
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
                       blurRadius: 20,
-                      color: Color(0x33000000),
+                      color: theme.primario(),
                       offset: Offset(0, 8),
                     ),
                   ],
@@ -241,7 +194,7 @@ class _NotificationsList extends StatelessWidget {
               return ListTile(
                 leading: CircleAvatar(
                   radius: 20,
-                  backgroundColor: const Color(0xFFE6F0F5),
+                  backgroundColor: theme.background(),
                   child: Text(
                     _initials(n.name),
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -258,7 +211,7 @@ class _NotificationsList extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       '${n.minutesAgo} min',
-                      style: const TextStyle(fontSize: 12, color: Colors.black54),
+                      style: TextStyle(fontSize: 12, color: theme.fuente()),
                     ),
                   ],
                 ),
@@ -279,8 +232,6 @@ class _NotificationsList extends StatelessWidget {
                   ],
                 ),
                 onTap: () {
-                  // Aquí podrías navegar a detalle de la notificación
-                  // Navigator.of(context).pop(); // cierra el panel si quieres
                 },
               );
             },

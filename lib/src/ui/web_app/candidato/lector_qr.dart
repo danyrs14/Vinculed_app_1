@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:image/image.dart' as img;
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:zxing2/qrcode.dart' as zxing;
 import 'dart:js_interop' as js;
 
@@ -28,6 +29,7 @@ class LectorQRPageWeb extends StatefulWidget {
 }
 
 class _LectorQRPageWebState extends State<LectorQRPageWeb> {
+  final theme = ThemeController.instance;
   final ImagePicker _picker = ImagePicker();
 
   // NOTA: Para web, usa 'localhost' en lugar de '10.0.2.2'
@@ -56,11 +58,12 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
   // --- Lógica de Procesamiento de QR ---
 
   Future<void> _procesarCodigo(String codigo) async {
+    final theme = ThemeController.instance;
     setState(() => _isLoading = true);
     showDialog(
       context: context, 
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator(valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),)),
+      builder: (context) => Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(theme.primario()),)),
     );
     try {
       final Uri url = Uri.parse("$baseUrl?url=$codigo");
@@ -141,6 +144,7 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
   }
 
   Future<void> _escanearDesdeImagenWebJS() async {
+    final theme = ThemeController.instance;
     final XFile? imagen = await _picker.pickImage(source: ImageSource.gallery);
     if (imagen == null) return;
 
@@ -149,9 +153,9 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
+      builder: (context) => Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+          valueColor: AlwaysStoppedAnimation<Color>(theme.primario()),
         ),
       ),
     );
@@ -203,7 +207,7 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.background(),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -212,8 +216,8 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
                 // Header del diálogo
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF1A4B8C),
+                  decoration: BoxDecoration(
+                    color: theme.primario(),
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(16),
                       topRight: Radius.circular(16),
@@ -221,20 +225,20 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.qr_code_scanner, color: Colors.white),
+                      Icon(Icons.qr_code_scanner, color: theme.background()),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'Escanear código QR',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: theme.background(),
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
+                        icon: Icon(Icons.close, color: theme.background()),
                         onPressed: () {
                           _cerrarEscaner();
                           Navigator.of(dialogContext).pop();
@@ -279,7 +283,7 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
                             height: 250,
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.8),
+                                color: theme.background(),
                                 width: 3,
                               ),
                               borderRadius: BorderRadius.circular(12),
@@ -295,14 +299,14 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
                             margin: const EdgeInsets.symmetric(horizontal: 20),
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
+                              color: theme.fuente(),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Enfoca el código QR de tu credencial',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Colors.white,
+                                color: theme.background(),
                                 fontSize: 14,
                               ),
                             ),
@@ -619,12 +623,12 @@ class _LectorQRPageWebState extends State<LectorQRPageWeb> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              const Text(
+                              Text(
                                 'Para continuar con tu registro, escanea el código QR de tu credencial institucional usando la cámara, o sube una fotografía del mismo.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.black54,
+                                  color: theme.fuente(),
                                 ),
                               ),
                               const SizedBox(height: 32),
