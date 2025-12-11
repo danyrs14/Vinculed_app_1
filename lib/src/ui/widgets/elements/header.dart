@@ -39,16 +39,7 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: isMobile
           ? [
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.menu),
-                onSelected: (value) => onMenuSelected?.call(value),
-                itemBuilder: (context) => _menuItems
-                    .map((e) => PopupMenuItem<String>(
-                          value: e,
-                          child: Text(e),
-                        ))
-                    .toList(),
-              ),
+
             ]
           : [
               ..._menuItems.map(
