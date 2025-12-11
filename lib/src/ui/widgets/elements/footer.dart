@@ -13,7 +13,7 @@ class EscomFooter extends StatelessWidget {
     final theme = ThemeController.instance;
     return Container(
       height: height,
-      color: const Color(0xFF2B2F33),
+      color: theme.primario(),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: isMobile ? _mobileScrollable() : _desktopCompact(),
     );
@@ -21,22 +21,22 @@ class EscomFooter extends StatelessWidget {
 
   // ====== MÓVIL: contenido scrolleable para evitar overflow ======
   Widget _mobileScrollable() {
+    final theme = ThemeController.instance;
     return ScrollConfiguration(
       behavior: const _NoGlowBehavior(),
       child: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             // Imagen arriba de todo
             Image.asset(
-              'assets/images/escom.png', // cambia la ruta si es otra
-              height: 100,
+              'assets/images/graduate.png', // cambia la ruta si es otra
+              height: 150,
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 12),
-            const Text("ESCOM", style: TextStyle(color: Colors.white, fontSize: 20)),
-            const SizedBox(height: 8),
+            Text("OdaTalent", style: TextStyle(color: theme.background(), fontSize: 20)),
             const SizedBox(height: 16),
             _footerColumn(
               "TT 2025 - B003",
@@ -56,19 +56,21 @@ class EscomFooter extends StatelessWidget {
   }
 
   Widget _desktopCompact() {
+    final theme = ThemeController.instance;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(
-              'assets/images/escudoESCOM.png', // cambia la ruta si es otra
+              'assets/images/graduate.png',
               height: 200,
               fit: BoxFit.contain,
             ),
-
+            const SizedBox(height: 12),
+            Text("OdaTalent", style: TextStyle(color: theme.background(), fontSize: 20)),
           ],
         ),
         const Spacer(),
@@ -92,11 +94,12 @@ class EscomFooter extends StatelessWidget {
   }
 
   static Widget _footerColumn(String title, List<String> links) {
+    final theme = ThemeController.instance;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
+        Text(title, style: TextStyle(color: theme.background(), fontSize: 16)),
         const SizedBox(height: 6),
         for (final link in links)
           TextButton(
@@ -107,7 +110,7 @@ class EscomFooter extends StatelessWidget {
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               alignment: Alignment.centerLeft,
             ),
-            child: Text(link, style: const TextStyle(color: Colors.white70)),
+            child: Text(link, style: TextStyle(color: theme.background())),
           ),
       ],
     );
@@ -126,12 +129,12 @@ class _FooterSubscribeBox extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text("Quejas y Sugerencias", style: TextStyle(color: Colors.white, fontSize: 16)),
+        Text("Quejas y Sugerencias", style: TextStyle(color: theme.background(), fontSize: 16)),
         const SizedBox(height: 8),
         SizedBox(
           width: 220,
           child: TextField(
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: theme.background()),
             decoration: InputDecoration(
               hintText: "Cuentanos",
               hintStyle: TextStyle(color: theme.primario()),

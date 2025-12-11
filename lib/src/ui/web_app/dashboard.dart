@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';  // EscomFooter
 import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';  // EscomHeader
@@ -54,6 +55,7 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
     final width = MediaQuery.of(context).size.width;
 
     // Breakpoints simples
@@ -64,7 +66,7 @@ class _DashboardState extends State<Dashboard> {
     final titleStyle = TextStyle(
       fontSize: isMobile ? 30 : (isTablet ? 38 : 44),
       fontWeight: FontWeight.bold,
-      color: Colors.black87,
+      color: theme.fuente(),
       height: 1.1,
     );
 
