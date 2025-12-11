@@ -50,11 +50,12 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _navButton(String text, VoidCallback? onTap) {
+    final theme = ThemeController.instance;
     return TextButton(
       onPressed: onTap,
       child: Text(
         text,
-        style: const TextStyle(color: Colors.black87),
+        style: TextStyle(color: theme.fuente()),
       ),
     );
   }
@@ -68,7 +69,7 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
 
     showGeneralDialog(
       context: context,
-      barrierColor: Colors.black54,
+      barrierColor: theme.fuente(),
       barrierDismissible: true,
       barrierLabel: 'Notificaciones',
       transitionDuration: const Duration(milliseconds: 220),
@@ -85,10 +86,10 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
                 decoration: BoxDecoration(
                   color: theme.background(),
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
                       blurRadius: 20,
-                      color: Color(0x33000000),
+                      color: theme.primario(),
                       offset: Offset(0, 8),
                     ),
                   ],
@@ -193,7 +194,7 @@ class _NotificationsList extends StatelessWidget {
               return ListTile(
                 leading: CircleAvatar(
                   radius: 20,
-                  backgroundColor: const Color(0xFFE6F0F5),
+                  backgroundColor: theme.background(),
                   child: Text(
                     _initials(n.name),
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -210,7 +211,7 @@ class _NotificationsList extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       '${n.minutesAgo} min',
-                      style: const TextStyle(fontSize: 12, color: Colors.black54),
+                      style: TextStyle(fontSize: 12, color: theme.fuente()),
                     ),
                   ],
                 ),
@@ -231,8 +232,6 @@ class _NotificationsList extends StatelessWidget {
                   ],
                 ),
                 onTap: () {
-                  // Aquí podrías navegar a detalle de la notificación
-                  // Navigator.of(context).pop(); // cierra el panel si quieres
                 },
               );
             },

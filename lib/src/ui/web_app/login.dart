@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 
 import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
@@ -122,6 +123,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 700;
 
@@ -291,10 +293,10 @@ class _LoginPageWebState extends State<LoginPageWeb> {
           // Indicador de carga superpuesto
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.5),
-              child: const Center(
+              color: theme.fuente(),
+              child: Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(theme.background()),
                 ),
               ),
             ),
