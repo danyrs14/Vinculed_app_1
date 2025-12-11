@@ -62,7 +62,7 @@ class _MenuPageRecState extends State<MenuPageRec> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset('assets/images/escom.png', width: 50, height: 50),
+            Image.asset('assets/images/graduate.png', width: 50, height: 50),
 
             Row(
               children: [

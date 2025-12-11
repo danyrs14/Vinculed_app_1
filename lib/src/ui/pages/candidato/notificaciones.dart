@@ -149,22 +149,24 @@ class Notificaciones extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: read
-                              ? Colors.white
-                              : theme.secundario().withOpacity(0.08),
+                              ? theme.background()
+                              : theme.background(),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: theme.secundario().withOpacity(0.4),
+                            color: theme.primario().withOpacity(0.4),
                           ),
                         ),
                         child: Row(
                           crossAxisAlignment:
                           CrossAxisAlignment.start,
                           children: [
-                            Icon(
-                              read
-                                  ? Icons.notifications_none
-                                  : Icons.notifications_active_rounded,
-                              color: theme.primario(),
+                            ImageIcon(
+                              AssetImage(
+                                read
+                                    ? 'assets/images/graduate.png'
+                                    : 'assets/images/graduate.png',
+                              ),
+                              color: theme.primario(), // igual que en tu Icon
                             ),
                             const SizedBox(width: 10),
                             Expanded(
