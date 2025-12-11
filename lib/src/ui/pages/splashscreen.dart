@@ -8,10 +8,18 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
+
+  void initState() {
+    super.initState();
+
+    Future.delayed(const Duration(seconds: 20), () {
+      if (!mounted) return;
+    });
+  }
+
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
     return Scaffold(
-      // Quitamos el backgroundColor del Scaffold
       body: SafeArea(
         child: Container(
           width: double.infinity,
@@ -44,8 +52,8 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
               SizedBox(height: 60),
               Image.asset(
-                'assets/images/escom.png',
-                width: 120,// Si quieres que el logo sea blanco, pon color
+                'assets/images/escudoESCOM.png',
+                width: 120,
               ),
               SizedBox(height: 8),
               Text(
@@ -53,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: theme.background(), // Cambié a blanco para contraste con fondo
+                  color: theme.background(),
                 ),
               ),
               SizedBox(height: 24),
