@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:vinculed_app_1/src/ui/web_app/index.dart';
+import 'package:vinculed_app_1/src/ui/web_app/index_stub.dart'
+if (dart.library.js_interop)
+'package:vinculed_app_1/src/ui/web_app/index.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
@@ -70,7 +72,9 @@ class MyApp extends StatelessWidget {
             color: background,
             surfaceTintColor: Colors.transparent,
             elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           appBarTheme: AppBarTheme(
             backgroundColor: background,
