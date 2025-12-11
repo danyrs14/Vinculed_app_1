@@ -45,7 +45,7 @@ class EscomFooter extends StatelessWidget {
             const SizedBox(height: 16),
             _footerColumn(
               "¿Qué es OdaTalent?",
-              ["Sistema web y móvil que vincula a los alumnos de la carrera de Ingeniería en Sistemas Computacionales de la Escuela Superior de Cómputo con las oportunidades que ofrecen lasempresas en puestos de becarios y proyectos"],
+              ["Sistema web y móvil que vincula a los alumnos de la carrera de Ingeniería en Sistemas Computacionales de la Escuela Superior de Cómputo con las oportunidades que ofrecen las empresas en puestos de becarios y proyectos"],
             ),
             const SizedBox(height: 16),
             _footerSubscribe(),
@@ -84,7 +84,7 @@ class EscomFooter extends StatelessWidget {
         Flexible(
           child: _footerColumn(
             "¿Qué es OdaTalent?",
-            ["Sistema web y móvil que vincula a los alumnos de la carrera de Ingeniería en Sistemas Computacionales de la Escuela Superior de Cómputo con las oportunidades que ofrecen lasempresas en puestos de becarios y proyectos"],
+            ["Sistema web y móvil que vincula a los alumnos de la carrera de Ingeniería en Sistemas Computacionales de la Escuela Superior de Cómputo con las oportunidades que ofrecen las empresas en puestos de becarios y proyectos"],
           ),
         ),
         const SizedBox(width: 48),
