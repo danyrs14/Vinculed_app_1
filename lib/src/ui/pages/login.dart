@@ -105,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                                       children: [
                                         // Logo en la parte superior
                                         Image.asset(
-                                          'assets/images/anim.png', // Asegúrate de que tu imagen esté en esta ruta
+                                          'assets/images/graduate.png', // Asegúrate de que tu imagen esté en esta ruta
                                           width: 150, // Ajusta el tamaño de la imagen
                                         ), // Espacio entre el logo y el formulario de inicio de sesión
       

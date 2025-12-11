@@ -17,26 +17,19 @@ class _SplashScreenState extends State<SplashScreen> {
           width: double.infinity,
           height: double.infinity,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFF0288D1), // Azul medio
-                Color(0xFFFFFFFF), // Azul claro
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
+            color: theme.primario(),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                'Bienvenido a ODATalent',
+                'OdaTalent',
                 style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Poppins',
-                  color: theme.fuente(),
+                  color: theme.background(),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -44,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(24),
                 child: Image.asset(
-                  'assets/images/anim.png',
+                  'assets/images/graduate.png',
                   width: MediaQuery.of(context).size.width * 0.8,
                   fit: BoxFit.cover,
                 ),
@@ -60,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: Colors.black, // Cambié a blanco para contraste con fondo
+                  color: theme.background(), // Cambié a blanco para contraste con fondo
                 ),
               ),
               SizedBox(height: 24),
