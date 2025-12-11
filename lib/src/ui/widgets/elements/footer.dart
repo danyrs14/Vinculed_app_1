@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 
 class EscomFooter extends StatelessWidget {
   const EscomFooter({super.key, required this.isMobile});
@@ -9,6 +10,7 @@ class EscomFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
     return Container(
       height: height,
       color: const Color(0xFF2B2F33),
@@ -119,6 +121,7 @@ class _FooterSubscribeBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -131,10 +134,10 @@ class _FooterSubscribeBox extends StatelessWidget {
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: "Cuentanos",
-              hintStyle: const TextStyle(color: Colors.white70),
+              hintStyle: TextStyle(color: theme.primario()),
               filled: true,
-              fillColor: Colors.grey[800],
-              suffixIcon: const Icon(Icons.send, color: Colors.white70, size: 20),
+              fillColor: theme.secundario(),
+              suffixIcon: Icon(Icons.send, color: theme.primario(), size: 20),
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
