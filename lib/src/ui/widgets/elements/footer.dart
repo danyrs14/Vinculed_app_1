@@ -29,25 +29,21 @@ class EscomFooter extends StatelessWidget {
             // Imagen arriba de todo
             Image.asset(
               'assets/images/escom.png', // cambia la ruta si es otra
-              height: 50,
+              height: 100,
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 12),
             const Text("ESCOM", style: TextStyle(color: Colors.white, fontSize: 20)),
             const SizedBox(height: 8),
-            const Text(
-              "Copyright © 2025\nDerechos Reservados",
-              style: TextStyle(color: Colors.white70),
+            const SizedBox(height: 16),
+            _footerColumn(
+              "TT 2025 - B003",
+              ["Orta Acuña Angel Gabriel", "Garcia Jimenez Osmar Alejandro", "Rodriguez Sanchez Daniel"],
             ),
             const SizedBox(height: 16),
             _footerColumn(
-              "Equipo TT",
-              ["Acerca de", "Blog", "Contactanos", "Pricing", "Testimonials"],
-            ),
-            const SizedBox(height: 16),
-            _footerColumn(
-              "Soporte",
-              ["Emergencias", "Ayuda", "Ubicacion", "Privacy policy", "Status"],
+              "¿Qué es OdaTalent?",
+              ["Sistema web y móvil que vincula a los alumnos de la carrera de Ingeniería en Sistemas Computacionales de la Escuela Superior de Cómputo con las oportunidades que ofrecen lasempresas en puestos de becarios y proyectos"],
             ),
             const SizedBox(height: 16),
             _footerSubscribe(),
@@ -65,33 +61,26 @@ class EscomFooter extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Imagen arriba de todo
             Image.asset(
               'assets/images/escudoESCOM.png', // cambia la ruta si es otra
-              height: 150,
+              height: 200,
               fit: BoxFit.contain,
             ),
-            const SizedBox(height: 12),
-            Center(
-              child: const Text(
-                "Copyright © 2025\nDerechos Reservados",
-                style: TextStyle(color: Colors.white70),
-              ),
-            ),
+
           ],
         ),
         const Spacer(),
         Flexible(
           child: _footerColumn(
-            "Equipo TT",
-            ["Acerca de", "Blog", "Contactanos", "Pricing", "Testimonials"],
+            "TT 2025 - B003",
+            ["Orta Acuña Angel Gabriel", "Garcia Jimenez Osmar Alejandro", "Rodriguez Sanchez Daniel"],
           ),
         ),
         const SizedBox(width: 48),
         Flexible(
           child: _footerColumn(
-            "Soporte",
-            ["Emergencias", "Ayuda", "Ubicacion", "Privacy policy", "Status"],
+            "¿Qué es OdaTalent?",
+            ["Sistema web y móvil que vincula a los alumnos de la carrera de Ingeniería en Sistemas Computacionales de la Escuela Superior de Cómputo con las oportunidades que ofrecen lasempresas en puestos de becarios y proyectos"],
           ),
         ),
         const SizedBox(width: 48),
@@ -134,14 +123,14 @@ class _FooterSubscribeBox extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text("Conócenos", style: TextStyle(color: Colors.white, fontSize: 16)),
+        const Text("Quejas y Sugerencias", style: TextStyle(color: Colors.white, fontSize: 16)),
         const SizedBox(height: 8),
         SizedBox(
           width: 220,
           child: TextField(
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              hintText: "Correo Electrónico",
+              hintText: "Cuentanos",
               hintStyle: const TextStyle(color: Colors.white70),
               filled: true,
               fillColor: Colors.grey[800],

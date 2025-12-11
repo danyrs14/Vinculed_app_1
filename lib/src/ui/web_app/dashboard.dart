@@ -243,8 +243,6 @@ class _DashboardState extends State<Dashboard> {
   }
 }
 
-/// Fila de acciones de autenticación visible en móviles.
-/// Sustituye al CTA "Postularse" en vista móvil/tablet.
 class _AuthActionsRowMobile extends StatelessWidget {
   const _AuthActionsRowMobile({
     required this.onLogin,
@@ -266,12 +264,10 @@ class _AuthActionsRowMobile extends StatelessWidget {
           runSpacing: 8,
           children: [
             SimpleButton(
-              onTap: onLogin,
-              title: 'Iniciar Sesión',
-            ),
-            SimpleButton(
-              onTap: onRegister,
-              title: 'Registrarse',
+              onTap: () {
+                context.go('/login');
+              },
+              title: 'Empecemos',
             ),
           ],
         );
