@@ -83,32 +83,7 @@ class _DashboardState extends State<Dashboard> {
     }
 
     return Scaffold(
-      appBar: EscomHeader(
-        onLoginTap: () => context.go('/login'),
-        onRegisterTap: () => context.go('/lector_qr'),
-        onNotifTap: () {},
-        onMenuSelected: (label) {
-          switch (label) {
-            case "Inicio":
-              context.go('/dashboard');
-              break;
-            case "Postulaciones":
-            // context.go('/mis_postulaciones');
-              break;
-            case "Experiencias":
-            // context.go('/experiencias');
-              break;
-            case "Mensajes":
-            // context.go('/mensajes');
-              break;
-            case "Explorar Puestos en TI":
-            // context.go('/preferencias');
-              break;
-            case "FAQ":
-            // context.go('/faq');
-              break;
-          }
-        },
+      appBar: const EscomHeader(
       ),
 
       body: Stack(
@@ -206,8 +181,10 @@ class _DashboardState extends State<Dashboard> {
                                       SizedBox(
                                         width: 240,
                                         child: SimpleButton(
-                                          onTap: () {},
-                                          title: "Postularse",
+                                          onTap: () {
+                                            context.go('/login');
+                                          },
+                                          title: "Empecemos",
                                         ),
                                       ),
                                     ],

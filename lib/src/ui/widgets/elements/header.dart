@@ -14,16 +14,9 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
   final void Function(String label)? onMenuSelected;
   final VoidCallback? onLoginTap;
   final VoidCallback? onRegisterTap;
-  /// Si lo dejas null, el header abrirá su panel de notificaciones integrado.
   final VoidCallback? onNotifTap;
 
   static const _menuItems = <String>[
-    "Inicio",
-    "Postulaciones",
-    "Experiencias",
-    "Mensajes",
-    "Explorar Puestos en TI",
-    "FAQ",
   ];
 
   @override
@@ -56,43 +49,11 @@ class EscomHeader extends StatelessWidget implements PreferredSizeWidget {
                         ))
                     .toList(),
               ),
-              // Botón cerrar sesión también en móvil (si se usa en pantallas autenticadas)
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 8),
-              //   child: MiniButton(
-              //     onTap: () {/* Implementa cierre desde el caller si aplica */},
-              //     title: "Cerrar Sesión",
-              //     dense: true,
-              //   ),
-              // ),
             ]
           : [
               ..._menuItems.map(
                     (label) => _navButton(label, () => onMenuSelected?.call(label)),
               ),
-              TextButton(
-                onPressed: onLoginTap,
-                child: Text(
-                  "Iniciar Sesión",
-                  style: TextStyle(
-                    color: theme.secundario(),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: MiniButton(
-                  onTap: onRegisterTap,
-                  title: "Registrarse",
-                ),
-              ),
-              IconButton(
-                tooltip: 'Notificaciones',
-                onPressed: onNotifTap ?? () => _showNotificationsPanel(context),
-                icon: const Icon(Icons.notifications),
-              ),
-              const SizedBox(width: 8),
             ],
     );
   }
