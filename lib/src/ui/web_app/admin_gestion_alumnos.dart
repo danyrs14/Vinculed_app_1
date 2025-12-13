@@ -97,6 +97,7 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
   static const String _endpoint = 'http://localhost:3000/api/usuarios/ver_alumnos';
   static const String _delUrl = 'http://localhost:3000/api/usuarios/eliminar_alumno';
   static const String _createUrl = 'http://localhost:3000/api/usuarios/crear_alumno';
+  static const String _putUrl = 'http://localhost:3000/api/usuarios/editar_usuario';
 
   // Datos y paginación
   List<AlumnoItem> _alumnos = const [];
@@ -278,11 +279,11 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
                     spacing: 12,
                     runSpacing: 12, // espacio vertical cuando se apilan en móvil
                     children: [
-                      // SimpleButton(
-                      //   title: 'Editar',
-                      //   icon: Icons.edit,
-                      //   onTap: () => _openEditarAlumno(e),
-                      // ),
+                      SimpleButton(
+                        title: 'Editar',
+                        icon: Icons.edit,
+                        onTap: () => _openEditarAlumno(e),
+                      ),
                       SimpleButton(
                         title: 'Eliminar',
                         icon: Icons.delete_forever,
@@ -348,21 +349,21 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
       context: context,
       builder: (ctx) => _AlumnoFormDialog(
         title: 'Agregar Alumno',
-        onSubmit: (nombre, correo, genero, correoProvisional) => _crearAlumno(nombre, correo, genero, correoProvisional),
+        onSubmit: (item, correoProvisional) => _crearAlumno(item, correoProvisional),
       ),
     );
   }
 
-  Future<void> _crearAlumno(nombre, correo, genero, correoProvisional) async {
+  Future<void> _crearAlumno(AlumnoItem item, String? correoProvisional) async {
     final headers = await context.read<UserDataProvider>().getAuthHeaders();
     final res = await http.post(
       Uri.parse(_createUrl),
       headers: headers,
       body: jsonEncode({
-        'nombre': nombre,
-        'email': correo,
-        'genero': genero,
-        'correo_provisional': correoProvisional,
+        'nombre': item.nombre,
+        'email': item.correo,
+        'genero': item.genero,
+        'correo_provisional': correoProvisional!,
       }),
     );
     if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -370,6 +371,35 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
       await _loadPage(_page);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al crear: ${res.statusCode}')));
+    }
+  }
+
+  void _openEditarAlumno(AlumnoItem e) {
+    showDialog(
+      context: context,
+      builder: (ctx) => _AlumnoFormDialog(
+        title: 'Editar Alumno',
+        initial: e,
+        onSubmit: (item, correoProvisional) => _actualizarAlumno(item),
+      ),
+    );
+  }
+
+  Future<void> _actualizarAlumno(AlumnoItem base) async {
+    final headers = await context.read<UserDataProvider>().getAuthHeaders();
+
+    final body = jsonEncode({
+      'id_usuario': base.idUsuario,
+      'nombre': base.nombre,
+      'correo': base.correo,
+      'genero': base.genero,
+    });
+    final res = await http.put(Uri.parse(_putUrl), headers: headers, body: body);
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Alumno actualizado')));
+      await _loadPage(_page);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al actualizar: ${res.statusCode}')));
     }
   }
 
@@ -564,7 +594,7 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
 class _AlumnoFormDialog extends StatefulWidget {
   final String title;
   final AlumnoItem? initial;
-  final Future<void> Function(String nombre, String correo, String genero, String correoProvisional) onSubmit;
+  final Future<void> Function(AlumnoItem item, String? correoProvisional) onSubmit;
   const _AlumnoFormDialog({required this.title, this.initial, required this.onSubmit});
   @override
   State<_AlumnoFormDialog> createState() => _AlumnoFormDialogState();
@@ -577,8 +607,6 @@ class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
   late TextEditingController _emailProvCtrl;
   late TextEditingController _generoCtrl;
   late TextEditingController _confirmEmailCtrl;
-  Uint8List? _pickedBytes;
-  String? _pickedName;
   bool _sending = false;
 
   @override
@@ -604,17 +632,18 @@ class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
     final correo = _emailCtrl.text.trim();
     final correoProvisional = _emailProvCtrl.text.trim();
     final genero = _generoCtrl.text.trim();
+    final item = AlumnoItem(
+      idUsuario: widget.initial?.idUsuario ?? 0,
+      idAlumno: widget.initial?.idAlumno ?? 0,
+      nombre: nombre,
+      correo: correo,
+      genero: genero,
+      urFotoPerfil: widget.initial?.urFotoPerfil ?? '',
+      uidFirebase: widget.initial?.uidFirebase ?? '',
+    );
   
-    await widget.onSubmit(nombre, correo, genero, correoProvisional);
+    await widget.onSubmit(item, correoProvisional);
     if (mounted) { setState(()=>_sending=false); Navigator.of(context).maybePop(); }
-  }
-
-  String? _validNotEmpty(String? v) => (v==null||v.trim().isEmpty) ? 'Requerido' : null;
-  String? _validWeb(String? v) {
-    if (v==null||v.trim().isEmpty) return 'Requerido';
-    final uri = Uri.tryParse(v.trim());
-    if (uri==null || !uri.hasAbsolutePath || !(uri.scheme=='http'||uri.scheme=='https')) return 'URL inválida';
-    return null;
   }
 
   @override
@@ -729,7 +758,7 @@ class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
           onTap: _sending? null : () => Navigator.of(context).maybePop(),
         ),
         SimpleButton(
-          title: _sending ? 'Agregando...' : 'Agregar',
+          title: _sending ? 'Guardando...' : 'Guardar',
           icon: Icons.save,
           onTap: _sending? null : _submit,
         ),
