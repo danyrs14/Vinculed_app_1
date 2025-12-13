@@ -399,7 +399,9 @@ class _InicioAdminPageState extends State<InicioAdminPage> {
             case "Alumnos":
               context.go('/admin/alumnos');
               break;
-            //case "Reclutadores":
+            case "Reclutadores":
+              context.go('/admin/reclutadores');
+              break;
           }
         },
       ),

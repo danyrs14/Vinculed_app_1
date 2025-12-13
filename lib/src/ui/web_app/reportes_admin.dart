@@ -552,6 +552,12 @@ class _ReportesAdminPageState extends State<ReportesAdminPage> {
             case "Empresas":
               context.go('/admin/empresas');
               break;
+            case "Alumnos":
+              context.go('/admin/alumnos');
+              break;
+            case "Reclutadores":
+              context.go('/admin/reclutadores');
+              break;
           }
         },
       ),
