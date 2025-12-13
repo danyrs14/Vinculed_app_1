@@ -97,10 +97,10 @@ class AdminGestionReclutadoresPage extends StatefulWidget {
 }
 
 class _AdminGestionReclutadoresPageState extends State<AdminGestionReclutadoresPage> {
-  static const String _endpoint = 'http://localhost:3000/api/usuarios/ver_reclutadores';
-  static const String _delUrl = 'http://localhost:3000/api/usuarios/eliminar_reclutador';
-  static const String _createUrl = 'http://localhost:3000/api/usuarios/crear_reclutador';
-  static const String _putUrl = 'http://localhost:3000/api/usuarios/editar_usuario';
+  static const String _endpoint = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/ver_reclutadores';
+  static const String _delUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/eliminar_reclutador';
+  static const String _createUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/crear_reclutador';
+  static const String _putUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/editar_usuario';
 
   // Datos y paginación
   List<ReclutadorItem> _Reclutadores = const [];
@@ -233,7 +233,7 @@ class _AdminGestionReclutadoresPageState extends State<AdminGestionReclutadoresP
   Future<void> _fetchEmpresas() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3000/api/empresas/obtener_empresas'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/empresas/obtener_empresas'),
       );
 
       if (response.statusCode == 200 && mounted) {
