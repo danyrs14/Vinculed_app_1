@@ -15,18 +15,16 @@ import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
 
 /* ============================ Modelos ============================ */
 class Paginacion {
-  final int totalAlumnos;
+  final int totalReclutadores;
   final int totalPaginas;
   final int paginaActual;
   final int tamanoPagina;
-  final int totalAlumnosInactivos;
 
   const Paginacion({
-    required this.totalAlumnos,
+    required this.totalReclutadores,
     required this.totalPaginas,
     required this.paginaActual,
     required this.tamanoPagina,
-    required this.totalAlumnosInactivos,
   });
 
   factory Paginacion.fromJson(Map<String, dynamic> json) {
@@ -36,77 +34,85 @@ class Paginacion {
     }
 
     return Paginacion(
-      totalAlumnos: _toInt(json['total_alumnos']),
+      totalReclutadores: _toInt(json['total_reclutadores']),
       totalPaginas: _toInt(json['total_paginas']),
       paginaActual: _toInt(json['pagina_actual']),
       tamanoPagina: _toInt(json['tamano_pagina']),
-      totalAlumnosInactivos: _toInt(json['total_alumnos_inactivos']),
     );
   }
 }
 
-class AlumnoItem {
+class ReclutadorItem {
   final int idUsuario;
-  final int idAlumno;
+  final int idReclutador;
   final String nombre;
   final String correo;
   final String genero;
   final String urFotoPerfil;
   final String uidFirebase;
+  final int idEmpresa;
+  final String empresa;
   //final DateTime ultimoAcceso;
 
-  const AlumnoItem({
+  const ReclutadorItem({
     required this.idUsuario,
-    required this.idAlumno,
+    required this.idReclutador,
     required this.nombre,
     required this.correo,
     required this.genero,
     required this.urFotoPerfil,
     required this.uidFirebase,
+    required this.idEmpresa,
+    required this.empresa,
     //required this.ultimoAcceso,
   });
 
-  factory AlumnoItem.fromJson(Map<String, dynamic> json) {
+  factory ReclutadorItem.fromJson(Map<String, dynamic> json) {
     int _toInt(dynamic v) {
       if (v is int) return v;
       return int.tryParse('$v') ?? 0;
     }
 
-    return AlumnoItem(
+    return ReclutadorItem(
       idUsuario: _toInt(json['id_usuario']),
-      idAlumno: _toInt(json['id_alumno']),
+      idReclutador: _toInt(json['id_reclutador']),
       nombre: (json['nombre'] ?? '').toString(),
       correo: (json['correo'] ?? '').toString(),
       genero: (json['genero'] ?? '').toString(),
       urFotoPerfil: (json['url_foto_perfil'] ?? '').toString(),
       uidFirebase: (json['uid_firebase'] ?? '').toString(),
+      idEmpresa: _toInt(json['id_empresa'] ?? 0),
+      empresa: (json['empresa'] ?? '').toString(),
       //ultimoAcceso: DateTime.tryParse((json['ultimo_acceso'] ?? '').toString())?.toLocal() ?? DateTime.april,
     );
   }
 }
 
 /* ============================ Página ============================ */
-class AdminGestionAlumnosPage extends StatefulWidget {
-  const AdminGestionAlumnosPage({Key? key}) : super(key: key);
+class AdminGestionReclutadoresPage extends StatefulWidget {
+  const AdminGestionReclutadoresPage({Key? key}) : super(key: key);
 
   @override
-  State<AdminGestionAlumnosPage> createState() => _AdminGestionAlumnosPageState();
+  State<AdminGestionReclutadoresPage> createState() => _AdminGestionReclutadoresPageState();
 }
 
-class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
-  static const String _endpoint = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/ver_alumnos';
-  static const String _delUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/eliminar_alumno';
-  static const String _createUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/crear_alumno';
+class _AdminGestionReclutadoresPageState extends State<AdminGestionReclutadoresPage> {
+  static const String _endpoint = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/ver_reclutadores';
+  static const String _delUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/eliminar_reclutador';
+  static const String _createUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/crear_reclutador';
   static const String _putUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/editar_usuario';
 
   // Datos y paginación
-  List<AlumnoItem> _alumnos = const [];
+  List<ReclutadorItem> _Reclutadores = const [];
   Paginacion? _paginacion;
   Map<String, dynamic>? _rawResponse; // Guarda TODOS los datos recibidos
   int _page = 1;
   final int _limit = 10;
   bool _loading = false;
   String? _error;
+
+  List<dynamic> _rawDataEmpresas = [];
+  List<DropdownMenuItem<String>> empresasItems = [];
 
   // Footer animado estilo dashboard
   final ScrollController _scrollCtrl = ScrollController();
@@ -120,7 +126,8 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
     super.initState();
     _scrollCtrl.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
-    _loadPage(1); // carga primeros 10 alumnos
+    _fetchEmpresas();
+    _loadPage(1); // carga primeros 10 Reclutadores
   }
 
   @override
@@ -191,14 +198,14 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
       }
 
       final pag = Paginacion.fromJson(Map<String, dynamic>.from(decoded['paginacion'] ?? {}));
-      final list = (decoded['alumnos'] as List? ?? [])
-          .map((e) => AlumnoItem.fromJson(Map<String, dynamic>.from(e)))
+      final list = (decoded['reclutadores'] as List? ?? [])
+          .map((e) => ReclutadorItem.fromJson(Map<String, dynamic>.from(e)))
           .toList();
 
       setState(() {
         _page = pag.paginaActual;
         _paginacion = pag;
-        _alumnos = list;
+        _Reclutadores = list;
         _rawResponse = decoded; // Guardamos todo
       });
     } catch (e) {
@@ -213,11 +220,46 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
   }
 
+   void _cargarEmpresasItemsDeJson(List<dynamic> jsonList) {
+    final items = jsonList.map<DropdownMenuItem<String>>((e) {
+      final id = (e['id'] ?? '').toString();
+      final label = (e['nombre'] ?? id).toString();
+      return DropdownMenuItem(value: id, child: Text(label));
+    }).toList();
+
+    setState(() {empresasItems = items;});
+  }
+
+  Future<void> _fetchEmpresas() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/empresas/obtener_empresas'),
+      );
+
+      if (response.statusCode == 200 && mounted) {
+        _rawDataEmpresas = jsonDecode(response.body);
+        _cargarEmpresasItemsDeJson(_rawDataEmpresas);
+      } else {
+        throw Exception("Error al cargar empresas");
+      }
+    } catch (e) {
+      _showError(e.toString());
+
+    }
+  }
+  void _showError(String msg) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: Colors.red),
+      );
+    }
+  }
+
   // =============== UI Helpers ===============
 
 
 
-  Widget _cardAlumno(AlumnoItem e) {
+  Widget _cardReclutador(ReclutadorItem e) {
     final theme = ThemeController.instance;
     return Card(
       elevation: 3,
@@ -228,26 +270,59 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: e.urFotoPerfil.isNotEmpty ? Image.network(
-                e.urFotoPerfil,
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 80,
-                  height: 80,
-                  color: Colors.grey.shade200,
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.image_not_supported),
-                ),
-              ) : Container(
-                width: 80,
-                height: 80,
-                color: Colors.grey.shade200,
-                alignment: Alignment.center,
-                child: const Icon(Icons.person_2_outlined),
+            Container(
+              constraints: const BoxConstraints(
+                maxWidth: 82,
+                maxHeight: 164,
+              ),
+              child: Column(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: e.urFotoPerfil.isNotEmpty ? Image.network(
+                      e.urFotoPerfil,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: 80,
+                        height: 80,
+                        color: Colors.grey.shade200,
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.image_not_supported),
+                      ),
+                    ) : Container(
+                      width: 80,
+                      height: 80,
+                      color: Colors.grey.shade200,
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.person_2_outlined),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: e.urFotoPerfil.isNotEmpty ? Image.network(
+                      e.urFotoPerfil,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: 80,
+                        height: 80,
+                        color: Colors.grey.shade200,
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.image_not_supported),
+                      ),
+                    ) : Container(
+                      width: 80,
+                      height: 80,
+                      color: Colors.grey.shade200,
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.business),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(width: 16),
@@ -260,6 +335,8 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
                   Text(e.correo, style: const TextStyle(fontSize: 14, color: Colors.black54)),
                   const SizedBox(height: 6),
                   Text(e.genero, style: const TextStyle(fontSize: 14, color: Colors.black54)),
+                  const SizedBox(height: 6),
+                  Text(e.empresa, style: const TextStyle(fontSize: 14, color: Colors.black54)),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 12,
@@ -268,14 +345,14 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
                       SimpleButton(
                         title: 'Editar',
                         icon: Icons.edit,
-                        onTap: () => _openEditarAlumno(e),
+                        onTap: () => _openEditarReclutador(e),
                       ),
                       SimpleButton(
                         title: 'Eliminar',
                         icon: Icons.delete_forever,
                         backgroundColor: Colors.red,
                         textColor: Colors.white,
-                        onTap: () => _confirmEliminar(e.idUsuario, e.idAlumno, e.uidFirebase),
+                        onTap: () => _confirmEliminar(e.idUsuario, e.uidFirebase),
                       ),
                     ],
                   ),
@@ -326,48 +403,55 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
     );
   }
 
-  void _openCrearAlumno() {
+  void _openCrearReclutador() {
     showDialog(
       context: context,
-      builder: (ctx) => _AlumnoFormDialog(
-        title: 'Agregar Alumno',
-        onSubmit: (item, correoProvisional) => _crearAlumno(item, correoProvisional),
+      builder: (ctx) => _ReclutadorFormDialog(
+        title: 'Agregar Reclutador',
+        //onSubmit: (item, correoProvisional) => _crearReclutador(item, correoProvisional),
+        data: _rawDataEmpresas,
+        empresasItems: empresasItems,
+        onSubmit: (item) => _crearReclutador(item),
       ),
     );
   }
 
-  Future<void> _crearAlumno(AlumnoItem item, String? correoProvisional) async {
+  //Future<void> _crearReclutador(ReclutadorItem item, String? correoProvisional) async {
+  Future<void> _crearReclutador(ReclutadorItem item) async {
     final headers = await context.read<UserDataProvider>().getAuthHeaders();
     final res = await http.post(
       Uri.parse(_createUrl),
       headers: headers,
       body: jsonEncode({
         'nombre': item.nombre,
-        'email': item.correo,
+        'correo': item.correo,
         'genero': item.genero,
-        'correo_provisional': correoProvisional!,
+        'id_empresa': item.idEmpresa,
+        //'correo_provisional': correoProvisional!,
       }),
     );
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Alumno creado')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reclutador creado')));
       await _loadPage(_page);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al crear: ${res.statusCode}')));
     }
   }
 
-  void _openEditarAlumno(AlumnoItem e) {
+  void _openEditarReclutador(ReclutadorItem e) {
     showDialog(
       context: context,
-      builder: (ctx) => _AlumnoFormDialog(
-        title: 'Editar Alumno',
+      builder: (ctx) => _ReclutadorFormDialog(
+        title: 'Editar Reclutador',
         initial: e,
-        onSubmit: (item, correoProvisional) => _actualizarAlumno(item),
+        data: _rawDataEmpresas,
+        empresasItems: empresasItems,
+        onSubmit: (item) => _actualizarReclutador(item),
       ),
     );
   }
 
-  Future<void> _actualizarAlumno(AlumnoItem base) async {
+  Future<void> _actualizarReclutador(ReclutadorItem base) async {
     final headers = await context.read<UserDataProvider>().getAuthHeaders();
 
     final body = jsonEncode({
@@ -375,22 +459,23 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
       'nombre': base.nombre,
       'correo': base.correo,
       'genero': base.genero,
+      'id_empresa': base.idEmpresa,
     });
     final res = await http.put(Uri.parse(_putUrl), headers: headers, body: body);
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Alumno actualizado')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reclutador actualizado')));
       await _loadPage(_page);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al actualizar: ${res.statusCode}')));
     }
   }
 
-  void _confirmEliminar(int idUsuario, int idAlumno, String uidFirebase) {
+  void _confirmEliminar(int idUsuario,String uidFirebase) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar alumno'),
-        content: const Text('¿Confirmas eliminar este alumno?'),
+        title: const Text('Eliminar Reclutador'),
+        content: const Text('¿Confirmas eliminar este Reclutador?'),
         actions: [
           SimpleButton(
             title: 'Cancelar',
@@ -404,18 +489,18 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
             icon: Icons.delete_forever,
             backgroundColor: Colors.red,
             textColor: Colors.white,
-            onTap: () { Navigator.pop(ctx); _eliminarAlumno(idUsuario, idAlumno, uidFirebase); },
+            onTap: () { Navigator.pop(ctx); _eliminarReclutador(idUsuario, uidFirebase); },
           ),
         ],
       ),
     );
   }
 
-  Future<void> _eliminarAlumno(int idUsuario, int idAlumno, String uidFirebase) async {
+  Future<void> _eliminarReclutador(int idUsuario, String uidFirebase) async {
     final headers = await context.read<UserDataProvider>().getAuthHeaders();
-    final res = await http.delete(Uri.parse(_delUrl), headers: headers, body: jsonEncode({'id_usuario':idUsuario,'id_alumno': idAlumno, 'uid_alumno': uidFirebase}));
+    final res = await http.delete(Uri.parse(_delUrl), headers: headers, body: jsonEncode({'id_usuario':idUsuario, 'uid_reclutador': uidFirebase}));
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Alumno eliminado')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reclutador eliminado')));
       await _loadPage(_page);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al eliminar: ${res.statusCode}')));
@@ -449,9 +534,9 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
         },
       ),
       floatingActionButton: SimpleButton(
-        title: 'Nuevo Alumno',
+        title: 'Nuevo Reclutador',
         icon: Icons.person_add_alt,
-        onTap: _openCrearAlumno,
+        onTap: _openCrearReclutador,
       ),
       body: Stack(
         children: [
@@ -489,7 +574,7 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
                                   Row(
                                     children: [
                                       const Text(
-                                        'Alumnos Registrados',
+                                        'Reclutadores Registrados',
                                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
                                       ),
                                       const Spacer(),
@@ -506,7 +591,7 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
                                   const SizedBox(height: 16),
                                   if (_paginacion != null)
                                     Text(
-                                      'Total: ${_paginacion!.totalAlumnos}  •  Página: ${_paginacion!.paginaActual}/${_paginacion!.totalPaginas}  •  Tamaño: ${_paginacion!.tamanoPagina}  •  Total de Alumnos Inactivos: ${_paginacion!.totalAlumnosInactivos}',
+                                      'Total: ${_paginacion!.totalReclutadores}  •  Página: ${_paginacion!.paginaActual}/${_paginacion!.totalPaginas}  •  Tamaño: ${_paginacion!.tamanoPagina}',
                                       style: const TextStyle(color: Colors.black54),
                                     ),
                                   const SizedBox(height: 12),
@@ -527,15 +612,15 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
                                         ],
                                       ),
                                     )
-                                  else if (_alumnos.isEmpty)
+                                  else if (_Reclutadores.isEmpty)
                                     const Padding(
                                       padding: EdgeInsets.only(top: 80),
-                                      child: Center(child: Text('No hay alumnos con cuenta activa en firebase.')),
+                                      child: Center(child: Text('No hay Reclutadores con cuenta activa en firebase.')),
                                     )
                                   else
                                     Column(
                                       children: [
-                                        for (final r in _alumnos) _cardAlumno(r),
+                                        for (final r in _Reclutadores) _cardReclutador(r),
                                         const SizedBox(height: 8),
                                         _paginationBar(),
                                       ],
@@ -576,23 +661,29 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
 }
 
 
-class _AlumnoFormDialog extends StatefulWidget {
+class _ReclutadorFormDialog extends StatefulWidget {
   final String title;
-  final AlumnoItem? initial;
-  final Future<void> Function(AlumnoItem item, String? correoProvisional) onSubmit;
-  const _AlumnoFormDialog({required this.title, this.initial, required this.onSubmit});
+  final ReclutadorItem? initial;
+  final Future<void> Function(ReclutadorItem item) onSubmit;
+  final List<dynamic> data;
+  final List<DropdownMenuItem<String>> empresasItems;
+  const _ReclutadorFormDialog({required this.title, this.initial, required this.onSubmit, required this.data, required this.empresasItems, Key? key}) : super(key: key);
   @override
-  State<_AlumnoFormDialog> createState() => _AlumnoFormDialogState();
+  State<_ReclutadorFormDialog> createState() => _ReclutadorFormDialogState();
 }
 
-class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
+class _ReclutadorFormDialogState extends State<_ReclutadorFormDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nombreCtrl;
   late TextEditingController _emailCtrl;
-  late TextEditingController _emailProvCtrl;
   late TextEditingController _generoCtrl;
   late TextEditingController _confirmEmailCtrl;
+  final _empresaNombreCtrl = TextEditingController();
+  String? _empresaSeleccionada;
   bool _sending = false;
+
+  List<DropdownMenuItem<String>> empresasItems = [];
+  List<dynamic> data = [];
 
   @override
   void initState() {
@@ -600,13 +691,16 @@ class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
     _nombreCtrl = TextEditingController(text: widget.initial?.nombre ?? '');
     _emailCtrl   = TextEditingController(text: widget.initial?.correo ?? '');
     _confirmEmailCtrl   = TextEditingController(text: widget.initial?.correo ?? '');
-    _emailProvCtrl   = TextEditingController(text: widget.initial?.correo ?? '');
     _generoCtrl    = TextEditingController(text: widget.initial?.genero ?? '');
+    empresasItems = widget.empresasItems;
+    data = widget.data;
   }
+
+ 
 
   @override
   void dispose() {
-    _nombreCtrl.dispose(); _emailCtrl.dispose(); _generoCtrl.dispose();
+    _nombreCtrl.dispose(); _emailCtrl.dispose(); _generoCtrl.dispose(); _confirmEmailCtrl.dispose(); _empresaNombreCtrl.dispose();
     super.dispose();
   }
 
@@ -615,19 +709,22 @@ class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
     setState(()=>_sending=true);
     final nombre = _nombreCtrl.text.trim();
     final correo = _emailCtrl.text.trim();
-    final correoProvisional = _emailProvCtrl.text.trim();
     final genero = _generoCtrl.text.trim();
-    final item = AlumnoItem(
+    final empresa = _empresaNombreCtrl.text.trim();
+    final idEmpresa = int.tryParse(_empresaSeleccionada?? '') ?? 0;
+    final item = ReclutadorItem(
       idUsuario: widget.initial?.idUsuario ?? 0,
-      idAlumno: widget.initial?.idAlumno ?? 0,
+      idReclutador: widget.initial?.idReclutador ?? 0,
       nombre: nombre,
       correo: correo,
       genero: genero,
       urFotoPerfil: widget.initial?.urFotoPerfil ?? '',
       uidFirebase: widget.initial?.uidFirebase ?? '',
+      idEmpresa: idEmpresa,
+      empresa: empresa,
     );
   
-    await widget.onSubmit(item, correoProvisional);
+    await widget.onSubmit(item);
     if (mounted) { setState(()=>_sending=false); Navigator.of(context).maybePop(); }
   }
 
@@ -680,13 +777,13 @@ class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
                 StyledTextFormField(
                   isRequired: true,
                   controller: _emailCtrl,
-                  title: "Correo institucional",
+                  title: "Correo electrónico",
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'El correo es obligatorio.';
                     }
-                    final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
+                    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
                     if (!emailRegex.hasMatch(value)) {
                       return 'Ingrese un correo válido.';
                     }
@@ -704,7 +801,7 @@ class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
                     !identical(value.trim(), _emailCtrl.text.trim())) {
                       return 'El correo debe coincidir con el proporcionado anteriormente.';
                     }
-                    final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
+                    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
                     if (!emailRegex.hasMatch(value)) {
                       return 'Ingrese un correo válido.';
                     }
@@ -712,20 +809,25 @@ class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
                   },
                 ),
                 const SizedBox(height: 12),
-                StyledTextFormField(
-                  isRequired: true,
-                  title: 'Correo provisional',
-                  controller: _emailProvCtrl,
-                  keyboardType: TextInputType.emailAddress,
+                DropdownInput<String>(
+                  title: "Empresa",
+                  required: true,
+                  items: empresasItems,
+                  value: _empresaSeleccionada,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, ingresa tu correo.';
-                    }
-                    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                    if (!emailRegex.hasMatch(value)) {
-                      return 'Ingresa un correo válido.';
-                    }
+                    if (value == null || value.isEmpty ) return 'La empresa es obligatoria.';
                     return null;
+                  },
+                  onChanged: (valor) {
+                    if (valor == null) return;
+                    final valorInt = int.tryParse(valor);
+                    final itemEncontrado = data.firstWhere(
+                      (elemento) => elemento['id'] == valorInt
+                    );
+                    setState(() {
+                      _empresaSeleccionada = valor;
+                      _empresaNombreCtrl.text = itemEncontrado['nombre'] ?? '';
+                    });
                   },
                 ),
                 const SizedBox(height: 12),

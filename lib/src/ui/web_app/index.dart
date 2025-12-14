@@ -4,8 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/auth_notifier.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:vinculed_app_1/src/ui/web_app/admin_gestion_alumnos.dart';
 //import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil_visible.dart';
 import 'package:vinculed_app_1/src/ui/web_app/admin_gestion_empresas.dart';
+import 'package:vinculed_app_1/src/ui/web_app/admin_gestion_reclutadores.dart';
 
 // Candidato
 import 'package:vinculed_app_1/src/ui/web_app/candidato/add_experiencia.dart';
@@ -185,6 +187,14 @@ class _AdminAppState extends State<AdminApp> {
             GoRoute(
               path: 'empresas',
               builder: (context, state) => const AdminGestionEmpresasPage(),
+            ),
+            GoRoute(
+              path: 'alumnos',
+              builder: (context, state) => const AdminGestionAlumnosPage(),
+            ),
+            GoRoute(
+              path: 'reclutadores',
+              builder: (context, state) => const AdminGestionReclutadoresPage(),
             ),
           ],
         ),
