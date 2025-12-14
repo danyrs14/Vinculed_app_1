@@ -93,7 +93,6 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
      - assets/images/anim.png
-     - assets/images/escom.png
      - assets/icons/home.png
      - assets/icons/verif.png
      - assets/icons/perfil.png
@@ -106,8 +105,6 @@ flutter:
      - assets/images/error404.json
      - assets/images/escudoESCOM.png
      - assets/images/portada.jpg
-     - assets/images/logoapp.png
-     - assets/images/icon_app.png
      - assets/images/graduate.png
   #   - images/a_dot_ham.jpeg
 

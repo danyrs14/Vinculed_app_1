@@ -39,7 +39,7 @@ class NotificacionesRec extends StatelessWidget {
           children: [
             // Logo a la izquierda
             Image.asset(
-              'assets/images/escom.png',
+              'assets/images/graduate.png',
               width: 50,
               height: 50,
             ),

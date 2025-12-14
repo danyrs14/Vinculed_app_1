@@ -62,7 +62,7 @@ class _MenuPageState extends State<MenuPage> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset('assets/images/escom.png', width: 50, height: 50),
+            Image.asset('assets/images/graduate.png', width: 50, height: 50),
 
             Row(
               children: [
@@ -106,18 +106,15 @@ class _MenuPageState extends State<MenuPage> {
         elevation: 0,
       ),
 
-      // ⬇️ Cuerpo convertido a PageView para permitir DESLIZAR entre pantallas
       body: PageView(
         controller: _pageController,
         physics: const PageScrollPhysics(), // swipe horizontal natural
         onPageChanged: (index) {
-          // sincroniza la barra inferior cuando el usuario desliza
           setState(() => _paginaActual = index);
         },
         children: _paginas,
       ),
 
-      // ⬇️ Tu BottomNavigationBar se mantiene igual, solo conectamos al PageView
       bottomNavigationBar: Container(
         color: theme.background(),
         child: BottomNavigationBar(
@@ -137,7 +134,7 @@ class _MenuPageState extends State<MenuPage> {
               backgroundColor: theme.background(),
               icon: Image.asset(
                 'assets/icons/perfil.png',
-                color: _paginaActual == 0 ? theme.fuente() : Colors.grey,
+                color: _paginaActual == 0 ? theme.primario() : Colors.grey,
                 width: 26, height: 26,
               ),
               label: 'Perfil',
@@ -146,7 +143,7 @@ class _MenuPageState extends State<MenuPage> {
               backgroundColor: theme.background(),
               icon: Image.asset(
                 'assets/icons/verif.png',
-                color: _paginaActual == 1 ? theme.fuente() : Colors.grey,
+                color: _paginaActual == 1 ? theme.primario() : Colors.grey,
                 width: 26, height: 26,
               ),
               label: 'Postulaciones',
@@ -155,7 +152,7 @@ class _MenuPageState extends State<MenuPage> {
               backgroundColor: theme.background(),
               icon: Image.asset(
                 'assets/icons/home.png',
-                color: _paginaActual == 2 ? theme.fuente() : Colors.grey,
+                color: _paginaActual == 2 ? theme.primario() : Colors.grey,
                 width: 26, height: 26,
               ),
               label: 'Inicio',
@@ -164,7 +161,7 @@ class _MenuPageState extends State<MenuPage> {
               backgroundColor: theme.background(),
               icon: Image.asset(
                 'assets/icons/cora.png',
-                color: _paginaActual == 3 ? theme.fuente() : Colors.grey,
+                color: _paginaActual == 3 ? theme.primario() : Colors.grey,
                 width: 26, height: 26,
               ),
               label: 'Experiencias',
@@ -173,7 +170,7 @@ class _MenuPageState extends State<MenuPage> {
               backgroundColor: theme.background(),
               icon: Image.asset(
                 'assets/icons/mail.png',
-                color: _paginaActual == 4 ? theme.fuente() : Colors.grey,
+                color: _paginaActual == 4 ? theme.primario() : Colors.grey,
                 width: 26, height: 26,
               ),
               label: 'Mensajes',

@@ -1,10 +1,14 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/notificaciones.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/notificaciones.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil.dart';
 // REMOVED unused import menu.dart
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
@@ -21,6 +25,7 @@ class CrearVacantePage extends StatefulWidget {
 
 class _CrearVacantePageState extends State<CrearVacantePage> {
   final _formKey = GlobalKey<FormState>();
+  final usuario = FirebaseAuth.instance.currentUser!;
 
   // Controllers generales
   final _nombreCtrl = TextEditingController();
@@ -183,20 +188,45 @@ class _CrearVacantePageState extends State<CrearVacantePage> {
     return Scaffold(
       backgroundColor: theme.background(),
       appBar: AppBar(
-          elevation: 0,
-          backgroundColor: theme.background(),
-          centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded),
-            color: Colors.black87,
-            // El icono de back SÍ regresa a la pantalla anterior
-            onPressed: () => Navigator.pop(context),
+        backgroundColor: theme.background(),
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset('assets/images/graduate.png', width: 50, height: 50),
+
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.notifications_none, color: theme.primario()),
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => NotificacionesRec()),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.blue[50],
+                    backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
+                    child: usuario.photoURL == null ? const Icon(Icons.person, size: 18, color: Colors.blueGrey) : null,
+                  ),
+                  onPressed: () {
+                    // Acción para perfil
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PerfilRec()),
+                    );
+                  },
+                ),
+              ],
             ),
-          title: const Texto(
-            text: 'Crear Vacante',
-            fontSize: 22,
-          ),
+          ],
         ),
+        elevation: 0,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -206,9 +236,10 @@ class _CrearVacantePageState extends State<CrearVacantePage> {
               child: Form(
                 key: _formKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    
+Text("Crear Vacante", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: theme.fuente())),
+                    const SizedBox(height: 12),
                     StyledTextFormField(
                       controller: _nombreCtrl,
                       title: 'Título de la vacante (ej. Analista de Datos)',
