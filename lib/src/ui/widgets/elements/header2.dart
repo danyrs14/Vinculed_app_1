@@ -4,6 +4,8 @@ import 'package:vinculed_app_1/src/ui/widgets/buttons/mini_buttons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:vinculed_app_1/src/core/services/notification_log_service.dart';
 
 class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
   const EscomHeader2({
@@ -35,7 +37,7 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
     } catch (e) {
       print("Error al cerrar sesión: $e");
     }
-  } 
+  }
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -81,10 +83,12 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.menu),
           onSelected: (value) => onMenuSelected?.call(value),
           itemBuilder: (context) => _menuItems
-              .map((e) => PopupMenuItem<String>(
-            value: e,
-            child: Text(e),
-          ))
+              .map(
+                (e) => PopupMenuItem<String>(
+              value: e,
+              child: Text(e),
+            ),
+          )
               .toList(),
         ),
       ]
@@ -116,41 +120,52 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  /// Botón de notificaciones con "badge" de ejemplo.
+  /// Botón de notificaciones con badge dinámico usando Firestore
   Widget _notifIcon(BuildContext context) {
-    // Cambia este número para simular cuántas no leídas tienes.
-    const int unreadCount = 3;
+    final theme = ThemeController.instance;
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        IconButton(
-          tooltip: 'Notificaciones',
-          onPressed: () {
-            _showNotificationsPanel(context); // SIEMPRE abre
-            onNotifTap?.call(); // luego, si quieres hacer algo extra
-          },
-          icon: const Icon(Icons.notifications),
-        ),
-        if (unreadCount > 0)
-          Positioned(
-            right: 6,
-            top: 6,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                unreadCount.toString(),
-                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-              ),
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: NotificationLogService.instance.streamForCurrentUser(),
+      builder: (context, snapshot) {
+        int unreadCount = 0;
+
+        if (snapshot.hasData) {
+          final docs = snapshot.data!.docs;
+          unreadCount = docs
+              .where((d) => (d.data()['read'] ?? false) == false)
+              .length;
+        }
+
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              tooltip: 'Notificaciones',
+              onPressed: () {
+                _showNotificationsPanel(context); // SIEMPRE abre
+                onNotifTap?.call(); // luego, si quieres hacer algo extra
+              },
+              icon: const Icon(Icons.notifications),
             ),
-          ),
-      ],
+            if (unreadCount > 0)
+              Positioned(
+                right: 6,
+                top: 6,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
+
 
   Widget _navButton(String text, VoidCallback? onTap) {
     return TextButton(
@@ -205,7 +220,8 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
         );
       },
       transitionBuilder: (_, anim, __, child) {
-        final curved = CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
+        final curved =
+        CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
         return SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(0.15, 0), // entra desde la derecha
@@ -218,43 +234,20 @@ class EscomHeader2 extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-/* ───────────────────────── Panel de Notificaciones ───────────────────────── */
-
 class _NotificationsList extends StatelessWidget {
   const _NotificationsList({required this.onClose});
   final VoidCallback onClose;
 
-  // Notificaciones de muestra (puedes borrarlas después):
-  List<_Notif> get _items => const [
-    _Notif(
-      name: 'Andrés Flores',
-      message: 'Revisó tu perfil',
-      minutesAgo: 2,
-      unread: true,
-    ),
-    _Notif(
-      name: 'Oscar Manríquez',
-      message: 'Mostró interés en tu candidatura',
-      minutesAgo: 6,
-      unread: true,
-    ),
-    _Notif(
-      name: 'Eduardo Pérez',
-      message: 'Comentó tu publicación “Tips de entrevista”',
-      minutesAgo: 15,
-    ),
-    _Notif(
-      name: 'Ximena Castillo',
-      message: 'Publicó una nueva experiencia',
-      minutesAgo: 16,
-    ),
-    _Notif(
-      name: 'Pablo López',
-      message: 'Se ha unido a tu red',
-      minutesAgo: 18,
-      unread: true,
-    ),
-  ];
+  String _formatDate(Timestamp? ts) {
+    if (ts == null) return '';
+    final dt = ts.toDate();
+    final d = dt.day.toString().padLeft(2, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    final y = dt.year.toString();
+    final hh = dt.hour.toString().padLeft(2, '0');
+    final mm = dt.minute.toString().padLeft(2, '0');
+    return '$d/$m/$y  $hh:$mm';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -287,60 +280,119 @@ class _NotificationsList extends StatelessWidget {
         ),
         const Divider(height: 1),
 
-        // Lista
+        // Lista (ahora con datos reales de Firestore)
         Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            itemBuilder: (context, i) {
-              final n = _items[i];
-              return ListTile(
-                leading: CircleAvatar(
-                  radius: 20,
-                  backgroundColor: const Color(0xFFE6F0F5),
-                  child: Text(
-                    _initials(n.name),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                title: Text(
-                  n.name,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(n.message),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${n.minutesAgo} min',
-                      style: const TextStyle(fontSize: 12, color: Colors.black54),
+          child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: NotificationLogService.instance.streamForCurrentUser(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      'Ocurrió un error al cargar tus notificaciones',
+                      style: TextStyle(fontSize: 14),
+                      textAlign: TextAlign.center,
                     ),
-                  ],
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (n.unread)
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: theme.secundario(),
-                          shape: BoxShape.circle,
+                  ),
+                );
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              final docs = snapshot.data?.docs ?? [];
+
+              if (docs.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'Aún no tienes notificaciones',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                );
+              }
+
+              // (Opcional) ordenar por fecha aquí si fuera necesario
+              docs.sort((a, b) {
+                final ta = a.data()['createdAt'];
+                final tb = b.data()['createdAt'];
+                if (ta is Timestamp && tb is Timestamp) {
+                  return tb.compareTo(ta); // desc
+                }
+                return 0;
+              });
+
+              return ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                itemBuilder: (context, i) {
+                  final data = docs[i].data();
+
+                  final title =
+                  (data['title'] ?? 'Notificación').toString();
+                  final body = (data['body'] ?? '').toString();
+                  final createdAt = data['createdAt'] as Timestamp?;
+                  final read = (data['read'] ?? false) as bool;
+
+                  return ListTile(
+                    leading: CircleAvatar(
+                      radius: 20,
+                      backgroundColor: const Color(0xFFE6F0F5),
+                      child: Text(
+                        _initials(title),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    const SizedBox(width: 10),
-                    const Icon(Icons.chevron_right),
-                  ],
-                ),
-                onTap: () {
-                  // Aquí podrías navegar al detalle o marcar como leída
-                  // Navigator.of(context).pop(); // si quieres cerrar
+                    ),
+                    title: Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (body.isNotEmpty) Text(body),
+                        const SizedBox(height: 2),
+                        Text(
+                          _formatDate(createdAt),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (!read)
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: theme.secundario(),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        const SizedBox(width: 10),
+                        const Icon(Icons.chevron_right),
+                      ],
+                    ),
+                    onTap: () {
+                      // Aquí podrías navegar al detalle o marcar como leída
+                      // De momento solo se respeta el diseño
+                    },
+                  );
                 },
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemCount: docs.length,
               );
             },
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemCount: _items.length,
           ),
         ),
       ],
@@ -348,25 +400,12 @@ class _NotificationsList extends StatelessWidget {
   }
 
   /// Iniciales simples sin dependencia de `characters`.
-  static String _initials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
+  static String _initials(String text) {
+    final parts = text.trim().split(RegExp(r'\s+'));
     if (parts.isEmpty || parts.first.isEmpty) return '?';
     final first = parts.first[0];
-    final last = (parts.length > 1 && parts.last.isNotEmpty) ? parts.last[0] : '';
+    final last =
+    (parts.length > 1 && parts.last.isNotEmpty) ? parts.last[0] : '';
     return (first + last).toUpperCase();
   }
-}
-
-class _Notif {
-  final String name;
-  final String message;
-  final int minutesAgo;
-  final bool unread;
-
-  const _Notif({
-    required this.name,
-    required this.message,
-    required this.minutesAgo,
-    this.unread = false,
-  });
 }

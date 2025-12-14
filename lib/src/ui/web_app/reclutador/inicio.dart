@@ -113,7 +113,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
               context.go('/reclutador/faq_rec');
               break;
             case "Mensajes":
-              context.go('/reclutador/msg_rec ');
+              context.go('/reclutador/msg_rec');
               break;
           }
         },
@@ -267,7 +267,6 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                     },
                                   ),
                                 ],
-
                                 const SizedBox(height: 20),
                               ],
                             ),
@@ -280,8 +279,6 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
               },
             ),
           ),
-
-          // Footer animado
           Positioned(
             left: 0,
             right: 0,
