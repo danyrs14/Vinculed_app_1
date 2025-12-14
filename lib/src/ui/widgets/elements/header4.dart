@@ -21,6 +21,8 @@ class EscomHeader4 extends StatelessWidget implements PreferredSizeWidget {
   static const _menuItems = <String>[
     "Inicio",
     "Empresas",
+    "Alumnos",
+    "Reclutadores",
   ];
 
   Future<void> _cerrarSesion(BuildContext context) async {
@@ -106,7 +108,7 @@ class EscomHeader4 extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
         // Campana con badge
-        _notifIcon(context),
+        //_notifIcon(context),
         const SizedBox(width: 8),
       ],
     );
