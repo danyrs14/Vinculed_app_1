@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_ajustes.dart';
+import 'package:vinculed_app_1/src/ui/pages/admin_gestion_alumnos.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_empresas.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_reclutador.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_reportes.dart';
@@ -29,6 +30,7 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
       InicioAdminPageMovil(),           // 2
       AdminGestionEmpresasPageMovil(),   // 3
       AjustesAdmin(),       // 4
+      AdminGestionAlumnosMovilPage(), //5
     ];
     _pageController = PageController(initialPage: _paginaActual);
   }
@@ -104,11 +106,12 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
               icon: Icon(
-                Icons.person_search_outlined,
+                //Icons.person_search_outlined,
+                Icons.person_add_alt_1_outlined,
                 color: _paginaActual == 1 ? theme.fuente() : Colors.grey,
                 size: 26,
               ),
-              label: 'Reclutadores',
+              label: 'Rec. Pendientes',
             ),
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
@@ -127,6 +130,15 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
                 size: 26,
               ),
               label: 'Ajustes',
+            ),
+            BottomNavigationBarItem(
+              backgroundColor: theme.background(),
+              icon: Icon(
+                Icons.school_outlined,
+                color: _paginaActual == 4 ? theme.fuente() : Colors.grey,
+                size: 26,
+              ),
+              label: 'Alumnos',
             ),
           ],
         ),
