@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:vinculed_app_1/src/ui/web_app/index.dart';
+// import condicional de AdminApp para evitar errores en plataformas no web
+import 'package:vinculed_app_1/src/ui/web_app/index_stub.dart'
+  if (dart.library.html) 'package:vinculed_app_1/src/ui/web_app/index.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
