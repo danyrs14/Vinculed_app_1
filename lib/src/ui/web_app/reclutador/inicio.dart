@@ -51,7 +51,6 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
       final headers = await userProv.getAuthHeaders();
       final idRol = userProv.idRol;
       final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/alumnos_reclutados')
-          .replace(queryParameters: { 'id_reclutador': '$idRol' });
           .replace(queryParameters: { 'id_reclutador': '$idRol', 'estado': _currentTab });
       final resp = await http.get(uri, headers: headers);
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
