@@ -1,15 +1,14 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
+import 'package:vinculed_app_1/src/core/services/notification_service.dart';
 
 class HomeRec extends StatefulWidget {
   const HomeRec({super.key});
@@ -22,15 +21,33 @@ class _HomeRecState extends State<HomeRec> {
   final usuario = FirebaseAuth.instance.currentUser!;
   final ScrollController _scrollCtrl = ScrollController();
 
-  // Estado de alumnos reclutados
   List<_RecruitedStudent> _students = [];
   bool _loading = true;
   String? _error;
 
+  static bool _welcomeShown = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!_welcomeShown) {
+        _welcomeShown = true;
+
+        final userProv = context.read<UserDataProvider>();
+        final nombre =
+            userProv.nombreUsuario ?? (usuario.displayName ?? 'Reclutador');
+
+        NotificationService.instance.initPush();
+        NotificationService.instance.startListeningToIncomingMessages();
+        await NotificationService.instance.addNotification(
+          userId: usuario.uid,
+          title: '¡Bienvenido $nombre!',
+          body: 'Has iniciado sesión correctamente.',
+        );
+      }
+
       _fetchRecruitedStudents();
     });
   }
@@ -158,7 +175,6 @@ class _HomeRecState extends State<HomeRec> {
                         ),
                         const SizedBox(height: 14),
                         SizedBox(
-                          height: 48,
                           child: SimpleButton(
                             title: 'Actualizar',
                             onTap: _fetchRecruitedStudents,
@@ -169,7 +185,6 @@ class _HomeRecState extends State<HomeRec> {
                   ),
                 ),
               ] else ...[
-                // Para móvil usamos una lista vertical en lugar de grid complejo
                 Column(
                   children: [
                     for (final s in _students)
@@ -229,9 +244,16 @@ class _RecruitedStudent {
       idPostulacion: j['id_postulacion'] is int ? j['id_postulacion'] : int.tryParse('${j['id_postulacion']}') ?? 0,
       idVacante: j['id_vacante'] is int ? j['id_vacante'] : int.tryParse('${j['id_vacante']}') ?? 0,
       nombre: (j['nombre'] ?? '').toString(),
-      semestreActual: (j['semestre_actual'] == null) ? null : (j['semestre_actual'] is int ? j['semestre_actual'] : int.tryParse('${j['semestre_actual']}')),
-      habilidades: habs.map<_Habilidad>((e) => _Habilidad.fromJson(Map<String, dynamic>.from(e))).toList(),
-      urlFotoPerfil: (j['url_foto_perfil']?.toString().isNotEmpty ?? false) ? j['url_foto_perfil'].toString() : null,
+      semestreActual: (j['semestre_actual'] == null)
+          ? null
+          : (j['semestre_actual'] is int
+          ? j['semestre_actual']
+          : int.tryParse('${j['semestre_actual']}')),
+      habilidades: habs
+          .map<_Habilidad>((e) => _Habilidad.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
+      urlFotoPerfil:
+      (j['url_foto_perfil']?.toString().isNotEmpty ?? false) ? j['url_foto_perfil'].toString() : null,
       estatus: (j['estatus'] ?? '').toString(),
       nombreVacante: (j['nombre_vacante'] ?? '').toString(),
     );
@@ -239,8 +261,16 @@ class _RecruitedStudent {
 }
 
 class _Habilidad {
-  final int idHabilidad; final String categoria; final String tipo; final String habilidad;
-  _Habilidad({required this.idHabilidad, required this.categoria, required this.tipo, required this.habilidad});
+  final int idHabilidad;
+  final String categoria;
+  final String tipo;
+  final String habilidad;
+  _Habilidad({
+    required this.idHabilidad,
+    required this.categoria,
+    required this.tipo,
+    required this.habilidad,
+  });
   factory _Habilidad.fromJson(Map<String, dynamic> j) => _Habilidad(
     idHabilidad: j['id_habilidad'] is int ? j['id_habilidad'] : int.tryParse('${j['id_habilidad']}') ?? 0,
     categoria: (j['categoria'] ?? '').toString(),
@@ -278,7 +308,9 @@ class _RecruitedCandidateCard extends StatelessWidget {
         );
       }
     }
-    final resolved = url.startsWith('http') ? url : 'https://${url.replaceFirst(RegExp(r'^/+'), '')}';
+    final resolved = url.startsWith('http')
+        ? url
+        : 'https://${url.replaceFirst(RegExp(r'^/+'), '')}';
     return Image.network(
       resolved,
       fit: BoxFit.cover,
@@ -292,35 +324,45 @@ class _RecruitedCandidateCard extends StatelessWidget {
 
   Future<void> _markCompleted(BuildContext context) async {
     try {
-      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/marcar_completada_postulacion');
+      final uri = Uri.parse(
+          'https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/marcar_completada_postulacion');
       final userProv = context.read<UserDataProvider>();
       final headers = await userProv.getAuthHeaders();
       headers['Content-Type'] = 'application/json';
       final resp = await http.put(
         uri,
         headers: headers,
-        body: jsonEncode({'id_postulacion': data.idPostulacion, 'estatus': 'Completado'}),
+        body: jsonEncode(
+            {'id_postulacion': data.idPostulacion, 'estatus': 'Completado'}),
       );
       if (resp.statusCode == 200) {
         onCompleted(data.idPostulacion);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Postulación marcada como completada')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Postulación marcada como completada')));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error ${resp.statusCode}: ${resp.body}')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error ${resp.statusCode}: ${resp.body}')));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
-    final skillsList = data.habilidades.map((e) => e.habilidad).where((e) => e.isNotEmpty).toList();
-    final skills = (skillsList.length > 3 ? skillsList.take(3) : skillsList).join(', ');
-    final estudianteInfo = data.semestreActual == null ? 'Estudiante ESCOM' : 'ESCOM · ${data.semestreActual}° Semestre';
+    final skillsList =
+    data.habilidades.map((e) => e.habilidad).where((e) => e.isNotEmpty).toList();
+    final skills =
+    (skillsList.length > 3 ? skillsList.take(3) : skillsList).join(', ');
+    final estudianteInfo = data.semestreActual == null
+        ? 'Estudiante ESCOM'
+        : 'ESCOM · ${data.semestreActual}° Semestre';
 
     final statusLower = data.estatus.toLowerCase();
-    final Color badgeColor = statusLower.contains('reclut') ? Colors.green : theme.secundario();
+    final Color badgeColor =
+    statusLower.contains('reclut') ? Colors.green : theme.secundario();
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -329,7 +371,11 @@ class _RecruitedCandidateCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0x11000000)),
         boxShadow: const [
-          BoxShadow(blurRadius: 10, spreadRadius: 0, offset: Offset(0, 2), color: Color(0x0F000000)),
+          BoxShadow(
+              blurRadius: 10,
+              spreadRadius: 0,
+              offset: Offset(0, 2),
+              color: Color(0x0F000000)),
         ],
       ),
       child: Column(
@@ -340,7 +386,8 @@ class _RecruitedCandidateCard extends StatelessWidget {
             child: AspectRatio(
               aspectRatio: 4 / 3,
               child: GestureDetector(
-                onTap: () => context.go('/reclutador/perfil_candidato/${data.idAlumno}'),
+                onTap: () =>
+                    context.go('/reclutador/perfil_candidato/${data.idAlumno}'),
                 child: _buildProfileImage(),
               ),
             ),
@@ -353,11 +400,15 @@ class _RecruitedCandidateCard extends StatelessWidget {
                   data.nombre,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.black87),
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black87),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: badgeColor.withOpacity(.12),
                   borderRadius: BorderRadius.circular(20),
@@ -365,25 +416,28 @@ class _RecruitedCandidateCard extends StatelessWidget {
                 ),
                 child: Text(
                   data.estatus,
-                  style: TextStyle(color: badgeColor, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                      color: badgeColor, fontWeight: FontWeight.w700),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Text(
-            data.nombreVacante.isEmpty ? 'Vacante no especificada' : data.nombreVacante,
+            data.nombreVacante.isEmpty
+                ? 'Vacante no especificada'
+                : data.nombreVacante,
             style: const TextStyle(color: Colors.black87),
           ),
           const SizedBox(height: 10),
           _detailRow('Estudiante:', estudianteInfo),
           const SizedBox(height: 6),
-          _detailRow('Habilidades:', skills.isEmpty ? 'No especificadas' : skills),
+          _detailRow(
+              'Habilidades:', skills.isEmpty ? 'No especificadas' : skills),
           const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
             child: SizedBox(
-              height: 40,
               child: SimpleButton(
                 title: 'Marcar como Completada',
                 onTap: () => _markCompleted(context),

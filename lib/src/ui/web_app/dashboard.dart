@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/widgets/buttons/large_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';  // EscomFooter
 import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';  // EscomHeader
@@ -54,6 +56,7 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
     final width = MediaQuery.of(context).size.width;
 
     // Breakpoints simples
@@ -64,7 +67,7 @@ class _DashboardState extends State<Dashboard> {
     final titleStyle = TextStyle(
       fontSize: isMobile ? 30 : (isTablet ? 38 : 44),
       fontWeight: FontWeight.bold,
-      color: Colors.black87,
+      color: theme.fuente(),
       height: 1.1,
     );
 
@@ -83,32 +86,7 @@ class _DashboardState extends State<Dashboard> {
     }
 
     return Scaffold(
-      appBar: EscomHeader(
-        onLoginTap: () => context.go('/login'),
-        onRegisterTap: () => context.go('/lector_qr'),
-        onNotifTap: () {},
-        onMenuSelected: (label) {
-          switch (label) {
-            case "Inicio":
-              context.go('/dashboard');
-              break;
-            case "Postulaciones":
-            // context.go('/mis_postulaciones');
-              break;
-            case "Experiencias":
-            // context.go('/experiencias');
-              break;
-            case "Mensajes":
-            // context.go('/mensajes');
-              break;
-            case "Explorar Puestos en TI":
-            // context.go('/preferencias');
-              break;
-            case "FAQ":
-            // context.go('/faq');
-              break;
-          }
-        },
+      appBar: const EscomHeader(
       ),
 
       body: Stack(
@@ -205,9 +183,11 @@ class _DashboardState extends State<Dashboard> {
                                       const SizedBox(height: 24),
                                       SizedBox(
                                         width: 240,
-                                        child: SimpleButton(
-                                          onTap: () {},
-                                          title: "Postularse",
+                                        child: LargeButton(
+                                          onTap: () {
+                                            context.go('/login');
+                                          },
+                                          title: "Empecemos",
                                         ),
                                       ),
                                     ],
@@ -266,8 +246,6 @@ class _DashboardState extends State<Dashboard> {
   }
 }
 
-/// Fila de acciones de autenticación visible en móviles.
-/// Sustituye al CTA "Postularse" en vista móvil/tablet.
 class _AuthActionsRowMobile extends StatelessWidget {
   const _AuthActionsRowMobile({
     required this.onLogin,
@@ -288,13 +266,11 @@ class _AuthActionsRowMobile extends StatelessWidget {
           spacing: 12,
           runSpacing: 8,
           children: [
-            SimpleButton(
-              onTap: onLogin,
-              title: 'Iniciar Sesión',
-            ),
-            SimpleButton(
-              onTap: onRegister,
-              title: 'Registrarse',
+            LargeButton(
+              onTap: () {
+                context.go('/login');
+              },
+              title: 'Empecemos',
             ),
           ],
         );

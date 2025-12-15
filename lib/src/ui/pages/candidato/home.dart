@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/core/services/notification_service.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/busqueda.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/vacante.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
@@ -9,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:vinculed_app_1/src/core/services/local_push_service.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -18,11 +20,33 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final usuario = FirebaseAuth.instance.currentUser!;
 
-  // Estado para vacantes (similar a HomeRegisteredPage)
   List<Map<String, dynamic>> _vacantes = [];
   bool _loadingVac = false;
   String? _errorVac;
   bool _initialFetchDone = false;
+
+  static bool _welcomeShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (_welcomeShown) return;
+      _welcomeShown = true;
+
+      final nombre = usuario.displayName ?? 'usuario';
+
+      NotificationService.instance.initPush();
+      NotificationService.instance.startListeningToIncomingMessages();
+      await NotificationService.instance.addNotification(
+        userId: usuario.uid,
+        title: '¡Bienvenido $nombre!',
+        body: 'Has iniciado sesión correctamente.',
+      );
+
+    });
+  }
 
   Future<void> _fetchVacantesHome(int idRol) async {
     if (_loadingVac) return;
@@ -31,7 +55,9 @@ class _HomeState extends State<Home> {
       _errorVac = null;
     });
 
-    final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/vacantes/buscar').replace(queryParameters: {
+    final uri = Uri.parse(
+      'https://oda-talent-back-81413836179.us-central1.run.app/api/vacantes/buscar',
+    ).replace(queryParameters: {
       'ordenar_por': 'fecha_publicacion_desc',
       'page': '1',
       'limit': '3',
@@ -85,11 +111,11 @@ class _HomeState extends State<Home> {
         .where((e) => e != null && e.toString().isNotEmpty)
         .join(', ');
     final anyId = v['id_vacante'] ?? v['id'];
-    final int? idVac = anyId is int ? anyId : int.tryParse(anyId?.toString() ?? '');
+    final int? idVac =
+    anyId is int ? anyId : int.tryParse(anyId?.toString() ?? '');
 
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 22, 18, 16),
-      margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: theme.background(),
         border: Border.all(color: theme.secundario(), width: 1.4),
@@ -98,19 +124,35 @@ class _HomeState extends State<Home> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(titulo.toString(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700), textAlign: TextAlign.left),
+          Text(
+            titulo.toString(),
+            style:
+            const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            textAlign: TextAlign.left,
+          ),
           const SizedBox(height: 6),
-          Text(location.isEmpty ? 'Sin ubicación' : location, style: const TextStyle(color: Colors.black54)),
+          Text(
+            location.isEmpty ? 'Sin ubicación' : location,
+            style: const TextStyle(color: Colors.black54),
+          ),
           const SizedBox(height: 10),
-          Text(empresa.toString(), style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(
+            empresa.toString(),
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 14),
           SizedBox(
             child: SimpleButton(
               title: 'Ver detalles',
-              onTap: idVac == null ? null : () {
+              onTap: idVac == null
+                  ? null
+                  : () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => JobDetailPage(idVacante: idVac)),
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        JobDetailPage(idVacante: idVac),
+                  ),
                 );
               },
               primaryColor: true,
@@ -124,7 +166,8 @@ class _HomeState extends State<Home> {
   Widget _buildEmptyState() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+      padding:
+      const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
       color: Colors.white,
       child: Column(
         children: [
@@ -139,11 +182,19 @@ class _HomeState extends State<Home> {
                   shape: BoxShape.circle,
                 ),
               ),
-              Icon(Icons.rocket_launch_rounded, size: 50, color: Colors.blue.shade300),
+              Icon(
+                Icons.rocket_launch_rounded,
+                size: 50,
+                color: Colors.blue.shade300,
+              ),
               Positioned(
                 top: 20,
                 right: 20,
-                child: Icon(Icons.star_rounded, size: 20, color: Colors.yellow.shade700),
+                child: Icon(
+                  Icons.star_rounded,
+                  size: 20,
+                  color: Colors.yellow.shade700,
+                ),
               ),
             ],
           ),
@@ -183,12 +234,12 @@ class _HomeState extends State<Home> {
     final idRol = userProv.idRol;
     if (!_initialFetchDone && idRol != null) {
       _initialFetchDone = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _fetchVacantesHome(idRol));
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _fetchVacantesHome(idRol));
     }
 
     return Scaffold(
       backgroundColor: theme.background(),
-      // Eliminando el appBar y el BottomNavigationBar
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -202,8 +253,12 @@ class _HomeState extends State<Home> {
                   CircleAvatar(
                     radius: 26,
                     backgroundColor: Colors.blue[50],
-                    backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
-                    child: usuario.photoURL == null ? const Icon(Icons.person, size: 26) : null,
+                    backgroundImage: usuario.photoURL != null
+                        ? NetworkImage(usuario.photoURL!)
+                        : null,
+                    child: usuario.photoURL == null
+                        ? const Icon(Icons.person, size: 26)
+                        : null,
                   ),
                   const SizedBox(width: 10),
                   Column(
@@ -223,15 +278,18 @@ class _HomeState extends State<Home> {
               ),
               const SizedBox(height: 12),
 
-              // CONTENIDO TRAÍDO DE HomeRegisteredPage (versión móvil)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Builder(
                   builder: (_) {
                     if (_loadingVac) {
                       return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 40),
-                        child: Center(child: CircularProgressIndicator()),
+                        padding:
+                        EdgeInsets.symmetric(vertical: 40),
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
                       );
                     }
                     if (_errorVac != null) {
@@ -240,21 +298,29 @@ class _HomeState extends State<Home> {
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFF1F2),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFFCA5A5)),
+                          border: Border.all(
+                            color: const Color(0xFFFCA5A5),
+                          ),
                         ),
-                        child: Text(_errorVac!, style: const TextStyle(color: Colors.red)),
+                        child: Text(
+                          _errorVac!,
+                          style: const TextStyle(
+                            color: Colors.red,
+                          ),
+                        ),
                       );
                     }
                     if (_vacantes.isEmpty) {
                       return _buildEmptyState();
                     }
 
-                    // En móvil listamos verticalmente hasta 3 vacantes
                     final mostrar = _vacantes.take(3).toList();
                     return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      crossAxisAlignment:
+                      CrossAxisAlignment.stretch,
                       children: [
-                        for (final v in mostrar) _buildVacanteCard(v),
+                        for (final v in mostrar)
+                          _buildVacanteCard(v),
                       ],
                     );
                   },
@@ -263,9 +329,9 @@ class _HomeState extends State<Home> {
 
               const SizedBox(height: 24),
 
-              // Botones grandes inferior (versión móvil en columna)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
                   children: [
                     SimpleButton(
@@ -273,7 +339,9 @@ class _HomeState extends State<Home> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => Busqueda()),
+                          MaterialPageRoute(
+                            builder: (context) => Busqueda(),
+                          ),
                         );
                       },
                     ),

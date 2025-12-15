@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:http/http.dart' as http; // Necesario para la petición HTTP
@@ -8,9 +7,7 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as fs;
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart';
 
 class PerfilRec extends StatefulWidget {
   const PerfilRec({super.key});
@@ -177,8 +174,6 @@ class _PerfilRecState extends State<PerfilRec> {
     ];
   }
 
-  // ──────────────────── MÉTODO BUILD ────────────────────
-
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
@@ -246,7 +241,6 @@ class _PerfilRecState extends State<PerfilRec> {
 
                     const SizedBox(height: 22),
 
-                    // ───────── Carga de datos o Contenido ─────────
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: _loading

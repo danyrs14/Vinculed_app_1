@@ -62,7 +62,7 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset('assets/images/escom.png', width: 50, height: 50),
+            Image.asset('assets/images/graduate.png', width: 50, height: 50),
             Row(
               children: [
                 const SizedBox(width: 10),
@@ -111,12 +111,11 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
           showUnselectedLabels: true,
           iconSize: 26,
           items: [
-            
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
               icon: Icon(
                 Icons.report_outlined,
-                color: _paginaActual == 0 ? theme.fuente() : Colors.grey,
+                color: _paginaActual == 0 ? theme.primario() : Colors.grey,
                 size: 26,
               ),
               label: 'Reportes',
@@ -135,7 +134,7 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
               backgroundColor: theme.background(),
               icon: Icon(
                 Icons.work_outlined,
-                color: _paginaActual == 2 ? theme.fuente() : Colors.grey,
+                color: _paginaActual == 2 ? theme.primario() : Colors.grey,
                 size: 26,
               ),
               label: 'Empresas',

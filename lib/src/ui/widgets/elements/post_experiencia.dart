@@ -8,7 +8,6 @@ import 'package:vinculed_app_1/src/ui/widgets/elements/comentarios_auxiliar.dart
 import 'package:vinculed_app_1/src/ui/widgets/elements/formulario_reporte.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/media.dart';
 
-
 class ExperienceComment {
   final String avatarAsset;
   final String author;
@@ -91,8 +90,8 @@ class ExperiencePost extends StatefulWidget {
   final ExperienceComment? highlightComment;
   final List<ExperienceComment>? initialComments; // ← NUEVO
 
-  final String currentUserName;                  // ← NUEVO
-  final String currentUserAvatarAsset;           // ← NUEVO
+  final String currentUserName; // ← NUEVO
+  final String currentUserAvatarAsset; // ← NUEVO
 
   final VoidCallback? onMore;
   final VoidCallback? onLike;
@@ -152,7 +151,8 @@ class _ExperiencePostState extends State<ExperiencePost> {
     _isLiked = widget.initialIsLiked;
     _isDisliked = widget.initialIsDisliked;
     _showComposer = widget.initialShowComposer;
-    _comments = List<ExperienceComment>.from(widget.initialComments ?? const []); // ← NUEVO
+    _comments =
+    List<ExperienceComment>.from(widget.initialComments ?? const []); // ← NUEVO
     _likesCount = widget.initialLikesCount; // inicializar
     _commentCount = widget.totalComments; // inicializar con valor inicial recibido
   }
@@ -177,7 +177,8 @@ class _ExperiencePostState extends State<ExperiencePost> {
         'accion': accion,
       });
       final res = await http.post(
-        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/reaccionar'),
+        Uri.parse(
+            'https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/reaccionar'),
         headers: headers,
         body: body,
       );
@@ -235,10 +236,8 @@ class _ExperiencePostState extends State<ExperiencePost> {
     });
     widget.onLike?.call();
     _postReaction(tipo: 'upvote', accion: accion);
-    // Si antes estaba en downvote y ahora pasamos a upvote, opcionalmente podríamos quitar el downvote explícitamente.
     if (wasDisliked && !wasLiked) {
-      // Dependiendo backend puede no ser necesario. Opcional: enviar quitar downvote.
-      // _postReaction(tipo: 'downvote', accion: 'quitar');
+      // opcional: quitar downvote en backend
     }
   }
 
@@ -283,14 +282,13 @@ class _ExperiencePostState extends State<ExperiencePost> {
         'comentario': text,
       });
       final res = await http.post(
-        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentar'),
+        Uri.parse(
+            'https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentar'),
         headers: headers,
         body: body,
       );
       if (res.statusCode >= 200 && res.statusCode < 300) {
-        // Notifica hacia fuera (opcional)
         widget.onSubmitComment?.call(text);
-        // Agrega comentario local para feedback inmediato
         final newComment = ExperienceComment(
           avatarAsset: widget.currentUserAvatarAsset,
           author: widget.currentUserName,
@@ -327,7 +325,9 @@ class _ExperiencePostState extends State<ExperiencePost> {
     try {
       final userProv = Provider.of<UserDataProvider>(context, listen: false);
       final headers = await userProv.getAuthHeaders();
-      final url = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentarios').replace(queryParameters: {
+      final url = Uri.parse(
+          'https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentarios')
+          .replace(queryParameters: {
         'id_alumno': '${widget.idAlumno}',
         'id_publicacion': '${widget.idPublicacion}',
       });
@@ -335,7 +335,8 @@ class _ExperiencePostState extends State<ExperiencePost> {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = jsonDecode(res.body);
         if (data is List) {
-          _remoteComments = data.map((e) => RemoteReply.fromJson(e as Map<String, dynamic>)).toList();
+          _remoteComments =
+              data.map((e) => RemoteReply.fromJson(e as Map<String, dynamic>)).toList();
         } else {
           _commentsError = 'Formato inesperado';
         }
@@ -353,11 +354,16 @@ class _ExperiencePostState extends State<ExperiencePost> {
 
   Future<void> _fetchRepliesFor(int idComentario) async {
     if (_loadingReplies.contains(idComentario)) return; // evitar doble fetch
-    setState(() { _loadingReplies.add(idComentario); _repliesError.remove(idComentario); });
+    setState(() {
+      _loadingReplies.add(idComentario);
+      _repliesError.remove(idComentario);
+    });
     try {
       final userProv = Provider.of<UserDataProvider>(context, listen: false);
       final headers = await userProv.getAuthHeaders();
-      final url = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentarios/respuestas').replace(queryParameters: {
+      final url = Uri.parse(
+          'https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentarios/respuestas')
+          .replace(queryParameters: {
         'id_comentario_padre': '$idComentario',
         'id_alumno': '${widget.idAlumno}',
       });
@@ -365,7 +371,8 @@ class _ExperiencePostState extends State<ExperiencePost> {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = jsonDecode(res.body);
         if (data is List) {
-          final list = data.map((e) => RemoteCommentReply.fromJson(e as Map<String,dynamic>)).toList();
+          final list =
+          data.map((e) => RemoteCommentReply.fromJson(e as Map<String, dynamic>)).toList();
           _replies[idComentario] = list;
         } else {
           _repliesError[idComentario] = 'Formato inesperado';
@@ -388,9 +395,13 @@ class _ExperiencePostState extends State<ExperiencePost> {
 
   void _toggleRepliesById(int idComentario) {
     if (_expandedReplies.contains(idComentario)) {
-      setState(() { _expandedReplies.remove(idComentario); });
+      setState(() {
+        _expandedReplies.remove(idComentario);
+      });
     } else {
-      setState(() { _expandedReplies.add(idComentario); });
+      setState(() {
+        _expandedReplies.add(idComentario);
+      });
       if (!_replies.containsKey(idComentario)) {
         _fetchRepliesFor(idComentario);
       }
@@ -408,8 +419,11 @@ class _ExperiencePostState extends State<ExperiencePost> {
           reply: reply,
           fallbackAvatar: widget.currentUserAvatarAsset,
           showRepliesButton: reply.respuestas,
-          onShowReplies: reply.respuestas ? () => _toggleRepliesById(reply.idComentario) : null,
-          repliesButtonLabel: _expandedReplies.contains(reply.idComentario) ? 'Ocultar respuestas' : 'Mostrar respuestas',
+          onShowReplies:
+          reply.respuestas ? () => _toggleRepliesById(reply.idComentario) : null,
+          repliesButtonLabel: _expandedReplies.contains(reply.idComentario)
+              ? 'Ocultar respuestas'
+              : 'Mostrar respuestas',
           onReply: () => _startReply(reply.idComentario),
         ),
       ),
@@ -427,22 +441,24 @@ class _ExperiencePostState extends State<ExperiencePost> {
         if (_loadingReplies.contains(reply.idComentario))
           Padding(
             padding: EdgeInsets.only(left: indent + 24, bottom: 8),
-            child: const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+            child: const SizedBox(
+                height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)),
           )
         else if (_repliesError.containsKey(reply.idComentario))
           Padding(
             padding: EdgeInsets.only(left: indent + 24, bottom: 8),
-            child: Text(_repliesError[reply.idComentario]!, style: const TextStyle(color: Colors.red)),
+            child: Text(_repliesError[reply.idComentario]!,
+                style: const TextStyle(color: Colors.red)),
           )
         else ...[
-          if ((_replies[reply.idComentario] ?? const []).isEmpty)
-            Padding(
-              padding: EdgeInsets.only(left: indent + 24, bottom: 8),
-              child: const Text('No hay respuestas'),
-            )
-          else ...(_replies[reply.idComentario] ?? const <RemoteCommentReply>[])
-              .expand((child) => _buildReplyTree(child, depth + 1)),
-        ],
+            if ((_replies[reply.idComentario] ?? const []).isEmpty)
+              Padding(
+                padding: EdgeInsets.only(left: indent + 24, bottom: 8),
+                child: const Text('No hay respuestas'),
+              )
+            else ...(_replies[reply.idComentario] ?? const <RemoteCommentReply>[])
+                .expand((child) => _buildReplyTree(child, depth + 1)),
+          ],
       ],
     ];
   }
@@ -476,16 +492,18 @@ class _ExperiencePostState extends State<ExperiencePost> {
         'comentario': text,
         'id_comentario_padre': parentId,
       });
-      final res = await http.post(Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentar'), headers: headers, body: body);
+      final res = await http.post(
+          Uri.parse(
+              'https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentar'),
+          headers: headers,
+          body: body);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         RemoteCommentReply parsed;
         try {
           final data = jsonDecode(res.body);
           if (data is Map<String, dynamic>) {
-            // Parse, but the backend might not return all fields.
             parsed = RemoteCommentReply.fromJson(data);
           } else {
-            // Non-map response, create an empty parsed to use fallbacks below.
             parsed = RemoteCommentReply(
               idComentario: 0,
               idAlumno: 0,
@@ -498,7 +516,6 @@ class _ExperiencePostState extends State<ExperiencePost> {
             );
           }
         } catch (_) {
-          // If response is not JSON or unexpected, fallback to local values
           parsed = RemoteCommentReply(
             idComentario: 0,
             idAlumno: 0,
@@ -511,13 +528,18 @@ class _ExperiencePostState extends State<ExperiencePost> {
           );
         }
 
-        // Build a normalized reply, preferring server data when available, otherwise local fallbacks
         final normalized = RemoteCommentReply(
-          idComentario: parsed.idComentario != 0 ? parsed.idComentario : DateTime.now().millisecondsSinceEpoch,
+          idComentario: parsed.idComentario != 0
+              ? parsed.idComentario
+              : DateTime.now().millisecondsSinceEpoch,
           idAlumno: parsed.idAlumno != 0 ? parsed.idAlumno : widget.idAlumno,
-          idComentarioPadre: parsed.idComentarioPadre != 0 ? parsed.idComentarioPadre : parentId,
-          nombre: (parsed.nombre.isNotEmpty) ? parsed.nombre : widget.currentUserName,
-          urlFotoPerfil: (parsed.urlFotoPerfil.isNotEmpty) ? parsed.urlFotoPerfil : widget.currentUserAvatarAsset,
+          idComentarioPadre:
+          parsed.idComentarioPadre != 0 ? parsed.idComentarioPadre : parentId,
+          nombre:
+          (parsed.nombre.isNotEmpty) ? parsed.nombre : widget.currentUserName,
+          urlFotoPerfil: (parsed.urlFotoPerfil.isNotEmpty)
+              ? parsed.urlFotoPerfil
+              : widget.currentUserAvatarAsset,
           comentario: (parsed.comentario.isNotEmpty) ? parsed.comentario : text,
           fecha: parsed.fecha ?? DateTime.now(),
           respuestas: parsed.respuestas,
@@ -554,7 +576,9 @@ class _ExperiencePostState extends State<ExperiencePost> {
   }
 
   Future<void> _openReportDialog() async {
-    setState(() { _modalOpen = true; });
+    setState(() {
+      _modalOpen = true;
+    });
     try {
       final result = await showDialog<bool>(
         context: context,
@@ -567,11 +591,16 @@ class _ExperiencePostState extends State<ExperiencePost> {
       );
       if (result == true && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reporte enviado correctamente. Lo revisaremos.')),
+          const SnackBar(
+              content: Text('Reporte enviado correctamente. Lo revisaremos.')),
         );
       }
     } finally {
-      if (mounted) setState(() { _modalOpen = false; });
+      if (mounted) {
+        setState(() {
+          _modalOpen = false;
+        });
+      }
     }
   }
 
@@ -579,7 +608,8 @@ class _ExperiencePostState extends State<ExperiencePost> {
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFE0E0E0)),
+      decoration: const BoxDecoration(
+          shape: BoxShape.circle, color: Color(0xFFE0E0E0)),
       alignment: Alignment.center,
       child: Icon(Icons.person, size: size * 0.6, color: Colors.grey.shade700),
     );
@@ -615,7 +645,8 @@ class _ExperiencePostState extends State<ExperiencePost> {
     final theme = ThemeController.instance;
     final accent = theme.primario(); // color de acento
     final suppressMedia = widget.hideMediaOverlays || _modalOpen;
-    final dynamicCommentLabel = _commentCount > 0 ? '$_commentCount Comentarios' : null; // etiqueta dinámica
+    final dynamicCommentLabel =
+    _commentCount > 0 ? '$_commentCount Comentarios' : null; // etiqueta dinámica
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: widget.maxWidth),
@@ -640,16 +671,23 @@ class _ExperiencePostState extends State<ExperiencePost> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(width: 40, height: 40, child: _buildAvatarFrom(widget.avatarAsset, 20)),
+                SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: _buildAvatarFrom(widget.avatarAsset, 20)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.authorName, style: const TextStyle(fontWeight: FontWeight.w800)),
+                      Text(widget.authorName,
+                          style:
+                          const TextStyle(fontWeight: FontWeight.w800)),
                       if (widget.subtitle.isNotEmpty) ...[
                         const SizedBox(height: 2),
-                        Text(widget.subtitle, style: const TextStyle(color: Colors.black54, fontSize: 12)),
+                        Text(widget.subtitle,
+                            style: const TextStyle(
+                                color: Colors.black54, fontSize: 12)),
                       ],
                     ],
                   ),
@@ -702,93 +740,69 @@ class _ExperiencePostState extends State<ExperiencePost> {
                 builder: (ctx, constraints) {
                   final w = MediaQuery.of(ctx).size.width;
                   final isMobile = w < 430; // umbral para reorganizar
-                  if (isMobile) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _ActionIcon(
-                                icon: _isLiked ? Icons.favorite : Icons.favorite_border,
-                                selected: _isLiked,
-                                selectedColor: accent,
-                                label: 'Me gusta · $_likesCount',
-                                onTap: _toggleLike,
-                              ),
-                            ),
-                            const SizedBox(width: 90),
-                            Expanded(
-                              child: _ActionIcon(
-                                icon: _isDisliked ? Icons.thumb_down_alt : Icons.thumb_down_off_alt_outlined,
-                                selected: _isDisliked,
-                                selectedColor: accent,
-                                label: 'No me gusta',
-                                onTap: _toggleDislike,
-                              ),
-                            ),
-                          ],
+
+                  // misma estructura para mobile y desktop, solo íconos
+                  final actionsRow = Row(
+                    children: [
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: _ActionIcon(
+                            icon: _isLiked
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            selected: _isLiked,
+                            selectedColor: accent,
+                            label: 'Me gusta · $_likesCount',
+                            onTap: _toggleLike,
+                          ),
                         ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _ActionIcon(
-                                icon: Icons.mode_comment_outlined,
-                                selected: _showComposer,
-                                selectedColor: accent,
-                                label: widget.commentsLabel,
-                                onTap: _toggleComposer,
-                              ),
-                            ),
-                            if (dynamicCommentLabel != null) ...[
-                              const SizedBox(width: 130),
-                              Flexible(
-                                child: Text(
-                                  dynamicCommentLabel,
-                                  textAlign: TextAlign.right,
-                                  style: const TextStyle(color: Colors.black54, fontSize: 12),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ],
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: _ActionIcon(
+                            icon: Icons.mode_comment_outlined,
+                            selected: _showComposer,
+                            selectedColor: accent,
+                            label: widget.commentsLabel,
+                            onTap: _toggleComposer,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: _ActionIcon(
+                            icon: _isDisliked
+                                ? Icons.thumb_down_alt
+                                : Icons.thumb_down_off_alt_outlined,
+                            selected: _isDisliked,
+                            selectedColor: accent,
+                            label: widget.dislikesLabel,
+                            onTap: _toggleDislike,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      actionsRow,
+                      if (dynamicCommentLabel != null) ...[
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            dynamicCommentLabel,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                                color: Colors.black54, fontSize: 12),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
-                    );
-                  }
-                  // Desktop / ancho suficiente
-                  return Row(
-                    children: [
-                      _ActionIcon(
-                        icon: _isLiked ? Icons.favorite : Icons.favorite_border,
-                        selected: _isLiked,
-                        selectedColor: accent,
-                        label: 'Me gusta · $_likesCount',
-                        onTap: _toggleLike,
-                      ),
-                      const SizedBox(width: 16),
-                      _ActionIcon(
-                        icon: _isDisliked ? Icons.thumb_down_alt : Icons.thumb_down_off_alt_outlined,
-                        selected: _isDisliked,
-                        selectedColor: accent,
-                        label: widget.dislikesLabel,
-                        onTap: _toggleDislike,
-                      ),
-                      const SizedBox(width: 16),
-                      _ActionIcon(
-                        icon: Icons.mode_comment_outlined,
-                        selected: _showComposer,
-                        selectedColor: accent,
-                        label: widget.commentsLabel,
-                        onTap: _toggleComposer,
-                      ),
-                      const Spacer(),
-                      if (dynamicCommentLabel != null)
-                        Text(
-                          dynamicCommentLabel,
-                          style: const TextStyle(color: Colors.black54, fontSize: 12),
-                        ),
                     ],
                   );
                 },
@@ -804,10 +818,12 @@ class _ExperiencePostState extends State<ExperiencePost> {
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.blue,
                     side: const BorderSide(color: Colors.blue),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
                   ),
                   onPressed: _onCommentsButtonPressed,
-                  child: Text(_showRemoteComments ? 'Ocultar comentarios' : 'Ver comentarios'),
+                  child: Text(
+                      _showRemoteComments ? 'Ocultar comentarios' : 'Ver comentarios'),
                 ),
               ),
             ],
@@ -826,35 +842,48 @@ class _ExperiencePostState extends State<ExperiencePost> {
             if (_showRemoteComments) ...[
               const SizedBox(height: 8),
               if (_loadingComments)
-                const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 8), child: CircularProgressIndicator()))
+                const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: CircularProgressIndicator(),
+                    ))
               else if (_commentsError.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(_commentsError, style: const TextStyle(color: Colors.red)),
+                  child: Text(_commentsError,
+                      style: const TextStyle(color: Colors.red)),
                 )
               else if (_remoteComments.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 8),
-                  child: Text('No hay comentarios'),
-                )
-              else ...[
-                ..._remoteComments.map((rc) => Padding(
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: Text('No hay comentarios'),
+                  )
+                else ...[
+                    ..._remoteComments.map((rc) => Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           CommentBubble(
-                            avatar: rc.urlFotoPerfil.isEmpty ? '' : rc.urlFotoPerfil, // usar placeholder si null/empty
+                            avatar: rc.urlFotoPerfil.isEmpty
+                                ? ''
+                                : rc
+                                .urlFotoPerfil, // usar placeholder si null/empty
                             name: rc.nombre,
                             text: rc.comentario,
                             showRepliesButton: rc.respuestas,
-                            onShowReplies: rc.respuestas ? () => _toggleReplies(rc) : null,
+                            onShowReplies:
+                            rc.respuestas ? () => _toggleReplies(rc) : null,
                             onReply: () => _startReply(rc.idComentario),
-                            repliesButtonLabel: _expandedReplies.contains(rc.idComentario) ? 'Ocultar respuestas' : 'Mostrar respuestas',
+                            repliesButtonLabel:
+                            _expandedReplies.contains(rc.idComentario)
+                                ? 'Ocultar respuestas'
+                                : 'Mostrar respuestas',
                           ),
                           if (_replyingTo == rc.idComentario) ...[
                             Padding(
-                              padding: const EdgeInsets.only(left: 42, top: 6, bottom: 6),
+                              padding: const EdgeInsets.only(
+                                  left: 42, top: 6, bottom: 6),
                               child: InlineReplyComposer(
                                 controller: _replyCtrl,
                                 sending: _sendingReply,
@@ -867,28 +896,40 @@ class _ExperiencePostState extends State<ExperiencePost> {
                             const SizedBox(height: 6),
                             if (_loadingReplies.contains(rc.idComentario))
                               const Padding(
-                                padding: EdgeInsets.only(left: 42, bottom: 8),
-                                child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                                padding:
+                                EdgeInsets.only(left: 42, bottom: 8),
+                                child: SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2)),
                               )
                             else if (_repliesError.containsKey(rc.idComentario))
                               Padding(
-                                padding: const EdgeInsets.only(left: 42, bottom: 8),
-                                child: Text(_repliesError[rc.idComentario]!, style: const TextStyle(color: Colors.red)),
+                                padding: const EdgeInsets.only(
+                                    left: 42, bottom: 8),
+                                child: Text(_repliesError[rc.idComentario]!,
+                                    style:
+                                    const TextStyle(color: Colors.red)),
                               )
                             else ...[
-                              if ((_replies[rc.idComentario] ?? const []).isEmpty)
-                                const Padding(
-                                  padding: EdgeInsets.only(left: 42, bottom: 8),
-                                  child: Text('No hay respuestas'),
-                                )
-                              else ...(_replies[rc.idComentario] ?? const <RemoteCommentReply>[])
-                                  .expand((r) => _buildReplyTree(r, 1)),
-                            ],
+                                if ((_replies[rc.idComentario] ??
+                                    const [])
+                                    .isEmpty)
+                                  const Padding(
+                                    padding: EdgeInsets.only(
+                                        left: 42, bottom: 8),
+                                    child: Text('No hay respuestas'),
+                                  )
+                                else ...(_replies[rc.idComentario] ??
+                                    const <RemoteCommentReply>[])
+                                    .expand((r) => _buildReplyTree(r, 1)),
+                              ],
                           ],
                         ],
                       ),
                     )),
-              ],
+                  ],
             ],
 
             // ── Comentario destacado (si lo hubiera)
@@ -904,14 +945,16 @@ class _ExperiencePostState extends State<ExperiencePost> {
             // ── Comentarios que se van agregando y se quedan
             if (_comments.isNotEmpty) ...[
               const SizedBox(height: 12),
-              ..._comments.map((c) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: CommentBubble(
-                  avatar: c.avatarAsset,
-                  name: c.author,
-                  text: c.text,
+              ..._comments.map(
+                    (c) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: CommentBubble(
+                    avatar: c.avatarAsset,
+                    name: c.author,
+                    text: c.text,
+                  ),
                 ),
-              )),
+              ),
             ],
           ],
         ),
@@ -930,7 +973,7 @@ class _ActionIcon extends StatelessWidget {
   });
 
   final IconData icon;
-  final String label;
+  final String label; // se mantiene por compatibilidad / Semantics
   final VoidCallback? onTap;
   final bool selected;
   final Color? selectedColor;
@@ -939,34 +982,27 @@ class _ActionIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final baseColor = Colors.black87;
     final color = selected ? (selectedColor ?? baseColor) : baseColor;
-    final fontWeight = selected ? FontWeight.w700 : FontWeight.w600;
 
-    final child = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 20, color: color),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13.5,
-            color: color,
-            fontWeight: fontWeight,
-          ),
-        ),
-      ],
+    final iconWidget = Semantics(
+      label: label, // accesibilidad, no se muestra en UI
+      button: true,
+      child: Icon(icon, size: 22, color: color),
     );
 
-    if (onTap == null) return child;
+    if (onTap == null) {
+      return SizedBox(
+        height: 40,
+        child: Center(child: iconWidget),
+      );
+    }
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        child: child,
+      borderRadius: BorderRadius.circular(20),
+      child: SizedBox(
+        height: 40,
+        child: Center(child: iconWidget),
       ),
     );
   }
 }
-

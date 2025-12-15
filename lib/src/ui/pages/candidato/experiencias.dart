@@ -23,15 +23,14 @@ class _ExperienciasState extends State<Experiencias> {
   final List<Map<String, dynamic>> _items = [];
   int _page = 1;
   int _totalPages = 1;
-  bool _loading = false; // primera carga / recarga filtro
-  bool _loadingMore = false; // paginación incremental
+  bool _loading = false;
+  bool _loadingMore = false;
   bool _initialized = false;
   int? _idAlumno;
 
   // Filtro roles
   List<int> _selectedRoleIds = [];
 
-  // Ocultar media cuando dropdown/modal abierto
   bool _anyModalOpen = false;
 
   @override
@@ -50,7 +49,9 @@ class _ExperienciasState extends State<Experiencias> {
 
   @override
   void dispose() {
-    _scrollCtrl..removeListener(_handleScroll)..dispose();
+    _scrollCtrl
+      ..removeListener(_handleScroll)
+      ..dispose();
     super.dispose();
   }
 
@@ -59,10 +60,17 @@ class _ExperienciasState extends State<Experiencias> {
     final id = userProv.idRol;
     if (id == null) return; // esperar a que esté disponible
     _idAlumno = id;
-    setState(() { _loading = true; _items.clear(); _page = 1; });
+    setState(() {
+      _loading = true;
+      _items.clear();
+      _page = 1;
+    });
     await _fetchPage(1);
     if (!mounted) return;
-    setState(() { _initialized = true; _loading = false; });
+    setState(() {
+      _initialized = true;
+      _loading = false;
+    });
   }
 
   Future<void> _fetchPage(int page) async {
@@ -79,16 +87,20 @@ class _ExperienciasState extends State<Experiencias> {
       if (_selectedRoleIds.isNotEmpty) {
         params['id_roltrabajo'] = _selectedRoleIds.join(',');
       }
-      final url = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/ver').replace(queryParameters: params);
+      final url = Uri.parse(
+          'https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/ver')
+          .replace(queryParameters: params);
       final res = await http.get(url, headers: headers);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
         final pag = body['paginacion'] as Map<String, dynamic>?;
-        final list = (body['experiencias'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+        final list = (body['experiencias'] as List<dynamic>? ?? [])
+            .cast<Map<String, dynamic>>();
         setState(() {
           _page = page;
           if (pag != null) {
-            _totalPages = (pag['total_paginas'] as num?)?.toInt() ?? _totalPages;
+            _totalPages =
+                (pag['total_paginas'] as num?)?.toInt() ?? _totalPages;
           }
           _items.addAll(list);
         });
@@ -106,7 +118,12 @@ class _ExperienciasState extends State<Experiencias> {
 
   Future<void> _applyRoleFilter(List<RoleOption> roles) async {
     _selectedRoleIds = roles.map((r) => r.id).toList();
-    setState(() { _loading = true; _items.clear(); _page = 1; _totalPages = 1; });
+    setState(() {
+      _loading = true;
+      _items.clear();
+      _page = 1;
+      _totalPages = 1;
+    });
     await _fetchPage(1);
     if (mounted) setState(() => _loading = false);
   }
@@ -119,6 +136,11 @@ class _ExperienciasState extends State<Experiencias> {
     if (atBottom && !_loadingMore && _page < _totalPages) {
       _fetchPage(_page + 1);
     }
+  }
+
+  // === NUEVO: función para pull-to-refresh ===
+  Future<void> _onRefresh() async {
+    await _initLoad();
   }
 
   String _two(int v) => v.toString().padLeft(2, '0');
@@ -164,8 +186,9 @@ class _ExperienciasState extends State<Experiencias> {
           idAlumno: _idAlumno ?? 0,
           initialIsLiked: isLiked,
           initialIsDisliked: isDisliked,
-          commentCountText: comentarios > 0 ? '$comentarios Comentarios' : null,
-            totalComments: comentarios,
+          commentCountText:
+          comentarios > 0 ? '$comentarios Comentarios' : null,
+          totalComments: comentarios,
           maxWidth: 560,
           mediaUrl: e['url_multimedia'] as String?,
           hideMediaOverlays: _anyModalOpen,
@@ -184,88 +207,93 @@ class _ExperienciasState extends State<Experiencias> {
     return Scaffold(
       backgroundColor: theme.background(),
       body: SafeArea(
-        child: SingleChildScrollView(
-          controller: _scrollCtrl,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Encabezado: back + título + crear
-              Row(
-                children: [
-                  // IconButton(
-                  //   tooltip: 'Regresar',
-                  //   onPressed: () => Navigator.maybePop(context),
-                  //   icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                  // ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      'Experiencias',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: isMobile ? 24 : 28,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xFF22313F),
-                      ),
-                    ),
-                  ),
-                  Material(
-                    color: theme.secundario(),
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const CreateExperiencePage()),
-                        );
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Icon(Icons.add, color: Colors.white, size: 22),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Filtro roles y botón crear (solo filtro aquí porque botón ya arriba)
-              RolesMultiDropdown(
-                label: 'Filtrar por roles',
-                hintText: '',
-                initialSelectedIds: _selectedRoleIds,
-                onChanged: (roles) => _applyRoleFilter(roles),
-                onOpen: () => setState(() => _anyModalOpen = true),
-                onClose: () => setState(() => _anyModalOpen = false),
-              ),
-              const SizedBox(height: 20),
-
-              // Contenido dinámico
-              if (!_initialized || (_loading && _items.isEmpty))
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
-                  child: CircularProgressIndicator(),
-                )
-              else if (_items.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
-                  child: Text('Sin experiencias'),
-                )
-              else
-                Column(
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: SingleChildScrollView(
+            controller: _scrollCtrl,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Encabezado: back + título + crear
+                Row(
                   children: [
-                    for (final e in _items) _buildPost(e, isMobile),
-                    if (_loadingMore)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8),
-                        child: LinearProgressIndicator(minHeight: 2),
+                    // IconButton(
+                    //   tooltip: 'Regresar',
+                    //   onPressed: () => Navigator.maybePop(context),
+                    //   icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                    // ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        'Experiencias',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: isMobile ? 24 : 28,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFF22313F),
+                        ),
                       ),
+                    ),
+                    Material(
+                      color: theme.secundario(),
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const CreateExperiencePage()),
+                          );
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Icon(Icons.add, color: Colors.white, size: 22),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-              const SizedBox(height: 40),
-            ],
+                const SizedBox(height: 20),
+
+                // Filtro roles y botón crear (solo filtro aquí porque botón ya arriba)
+                RolesMultiDropdown(
+                  label: 'Filtrar por roles',
+                  hintText: '',
+                  initialSelectedIds: _selectedRoleIds,
+                  onChanged: (roles) => _applyRoleFilter(roles),
+                  onOpen: () => setState(() => _anyModalOpen = true),
+                  onClose: () => setState(() => _anyModalOpen = false),
+                ),
+                const SizedBox(height: 20),
+
+                // Contenido dinámico
+                if (!_initialized || (_loading && _items.isEmpty))
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: CircularProgressIndicator(),
+                  )
+                else if (_items.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Text('Sin experiencias'),
+                  )
+                else
+                  Column(
+                    children: [
+                      for (final e in _items) _buildPost(e, isMobile),
+                      if (_loadingMore)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 8),
+                          child: LinearProgressIndicator(minHeight: 2),
+                        ),
+                    ],
+                  ),
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),

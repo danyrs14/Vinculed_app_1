@@ -8,35 +8,36 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
+
+  void initState() {
+    super.initState();
+
+    Future.delayed(const Duration(seconds: 20), () {
+      if (!mounted) return;
+    });
+  }
+
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
     return Scaffold(
-      // Quitamos el backgroundColor del Scaffold
       body: SafeArea(
         child: Container(
           width: double.infinity,
           height: double.infinity,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFF0288D1), // Azul medio
-                Color(0xFFFFFFFF), // Azul claro
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
+            color: theme.primario(),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                'Bienvenido a ODATalent',
+                'OdaTalent',
                 style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Poppins',
-                  color: theme.fuente(),
+                  color: theme.background(),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -44,15 +45,15 @@ class _SplashScreenState extends State<SplashScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(24),
                 child: Image.asset(
-                  'assets/images/anim.png',
+                  'assets/images/graduate.png',
                   width: MediaQuery.of(context).size.width * 0.8,
                   fit: BoxFit.cover,
                 ),
               ),
               SizedBox(height: 60),
               Image.asset(
-                'assets/images/escom.png',
-                width: 120,// Si quieres que el logo sea blanco, pon color
+                'assets/images/escudoESCOM.png',
+                width: 120,
               ),
               SizedBox(height: 8),
               Text(
@@ -60,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: Colors.black, // Cambié a blanco para contraste con fondo
+                  color: theme.background(),
                 ),
               ),
               SizedBox(height: 24),

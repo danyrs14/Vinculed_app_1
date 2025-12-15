@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/notificaciones.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/perfil.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
@@ -21,6 +24,8 @@ class _BusquedaState extends State<Busqueda> {
   final TextEditingController _queryCtrl = TextEditingController();
   final TextEditingController _entidadCtrl = TextEditingController();
   final TextEditingController _ciudadCtrl = TextEditingController();
+
+  final usuario = FirebaseAuth.instance.currentUser!;
 
   // Estado de filtros avanzados
   String _ordenarPor = 'fecha_publicacion_desc';
@@ -64,6 +69,46 @@ class _BusquedaState extends State<Busqueda> {
     }
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: theme.background(),
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset('assets/images/graduate.png', width: 50, height: 50),
+
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.notifications_none, color: theme.primario()),
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => Notificaciones()),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.blue[50],
+                    backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
+                    child: usuario.photoURL == null ? const Icon(Icons.person, size: 18, color: Colors.blueGrey) : null,
+                  ),
+                  onPressed: () {
+                    // Acción para perfil
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Perfil()),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+        elevation: 0,
+      ),
       backgroundColor: theme.background(),
       body: SafeArea(
         child: WillPopScope(

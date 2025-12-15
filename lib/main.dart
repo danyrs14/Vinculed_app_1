@@ -1,21 +1,34 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-// import condicional de AdminApp para evitar errores en plataformas no web
 import 'package:vinculed_app_1/src/ui/web_app/index_stub.dart'
-  if (dart.library.html) 'package:vinculed_app_1/src/ui/web_app/index.dart';
+if (dart.library.js_interop)
+'package:vinculed_app_1/src/ui/web_app/index.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/pages/transicionInicial.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:vinculed_app_1/src/core/services/notification_service.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // importante para que funcione con firebase
+    options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  await NotificationService.instance.initPush();
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => UserDataProvider(),
@@ -59,7 +72,9 @@ class MyApp extends StatelessWidget {
             color: background,
             surfaceTintColor: Colors.transparent,
             elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           appBarTheme: AppBarTheme(
             backgroundColor: background,
@@ -73,20 +88,20 @@ class MyApp extends StatelessWidget {
             ),
           ),
           textTheme: ThemeData.light().textTheme.apply(
-                fontFamily: 'Montserrat',
-                bodyColor: fuente,
-                displayColor: fuente,
-              ),
+            fontFamily: 'Montserrat',
+            bodyColor: fuente,
+            displayColor: fuente,
+          ),
           iconTheme: IconThemeData(color: fuente),
           dividerColor: secondary.withOpacity(.3),
         );
         return kIsWeb
             ? const AdminApp()
             : MaterialApp(
-                debugShowCheckedModeBanner: false,
-                theme: globalTheme,
-                home: TrasicionPage(),
-              );
+          debugShowCheckedModeBanner: false,
+          theme: globalTheme,
+          home: TrasicionPage(),
+        );
       },
     );
   }

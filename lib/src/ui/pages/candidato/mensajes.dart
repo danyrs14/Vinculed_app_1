@@ -1,65 +1,112 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/pages/candidato/chat.dart';
+import 'package:vinculed_app_1/src/core/models/chat_thread.dart';
+import 'package:vinculed_app_1/src/core/services/chat_service.dart';
+import 'package:vinculed_app_1/src/core/services/chat_new_helper.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/chat.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements_app/chat_preview.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
 
-class Mensajes extends StatelessWidget {
+class Mensajes extends StatefulWidget {
   const Mensajes({super.key});
+
+  @override
+  State<Mensajes> createState() => _MensajesState();
+}
+
+class _MensajesState extends State<Mensajes> {
+  final _auth = FirebaseAuth.instance;
+  final _db = FirebaseFirestore.instance;
+
+  String _myUid = '';
+
+  @override
+  void initState() {
+    super.initState();
+    final user = _auth.currentUser;
+    _myUid = user?.uid ?? '';
+  }
+
+  String _formatTimeLabel(DateTime? dt) {
+    if (dt == null) return '';
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(dt.year, dt.month, dt.day);
+
+    final diff = today.difference(day).inDays;
+
+    if (diff == 0) {
+      final hh = dt.hour.toString().padLeft(2, '0');
+      final mm = dt.minute.toString().padLeft(2, '0');
+      return '$hh:$mm';
+    } else if (diff == 1) {
+      return 'ayer';
+    } else if (diff < 7) {
+      const weekdays = [
+        'Lunes',
+        'Martes',
+        'Miércoles',
+        'Jueves',
+        'Viernes',
+        'Sábado',
+        'Domingo',
+      ];
+      return weekdays[dt.weekday - 1];
+    } else {
+      final d = dt.day.toString().padLeft(2, '0');
+      final m = dt.month.toString().padLeft(2, '0');
+      final y = dt.year.toString();
+      return '$d/$m/$y';
+    }
+  }
+
+  String _fallbackName(String uid) {
+    if (uid.isEmpty) return 'Usuario';
+    return 'Usuario';
+  }
+
+  Future<void> _startNewChat() async {
+    if (_myUid.isEmpty) return;
+
+    // 👉 Usamos el service que ya creamos, con .instance
+    final selection = await ChatNewHelper.instance.pickUserByName(
+      context: context,
+    );
+
+    if (!mounted || selection == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatConversation(
+          contactName: selection.displayName,
+          peerUid: selection.peerUid,
+          isTyping: false,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
 
-    // Datos de ejemplo (sustituye por tus datos reales)
-    final chats = <ChatPreview>[
-      const ChatPreview(
-        name: 'Luis Roberto Guzmán',
-        lastMessage: 'Luis Roberto esta escribiendo...',
-        isTyping: true,
-        timeLabel: '14:28',
-        unreadCount: 1,
-      ),
-      const ChatPreview(
-        name: 'Andrés Manuel Lopez',
-        lastMessage: 'Muchas Gracias, te confirmo.',
-        timeLabel: 'ayer',
-        unreadCount: 3,
-      ),
-      const ChatPreview(
-        name: 'Kevin Alberto Flores',
-        lastMessage: 'Te llamo en un momento.',
-        timeLabel: 'ayer',
-      ),
-      const ChatPreview(
-        name: 'Sandra Perez',
-        lastMessage: 'Con el tema de la Vacante que...',
-        timeLabel: 'Viernes',
-      ),
-      const ChatPreview(
-        name: 'Samuel Gutierrez Vazquez',
-        lastMessage: 'Claro con gusto.',
-        timeLabel: '07/21/2022',
-      ),
-      const ChatPreview(
-        name: 'Liliana Fuentes Valle',
-        lastMessage: 'Al horario que tu me digas me...',
-        timeLabel: '07/18/2022',
-      ),
-      const ChatPreview(
-        name: 'Ana Regina Muñoz',
-        lastMessage: 'Sin problema lo checamos.',
-        timeLabel: '07/16/2022',
-      ),
-    ];
+    if (_myUid.isEmpty) {
+      return Scaffold(
+        backgroundColor: theme.background(),
+        body: const Center(
+          child: Text('Inicia sesión para ver tus mensajes'),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: theme.background(),
-      // Solo contenido (tu AppBar y menú ya los tienes)
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Acción para iniciar nuevo chat (opcional)
-        },
+        onPressed: _startNewChat,
         backgroundColor: theme.secundario(),
         child: const Icon(Icons.chat_bubble_outline),
       ),
@@ -73,25 +120,106 @@ class Mensajes extends StatelessWidget {
               const Texto(text: 'Mensajes', fontSize: 22),
               const SizedBox(height: 12),
 
-              // Lista de conversaciones
+              // Lista de conversaciones desde Firestore
               Expanded(
-                child: ListView.separated(
-                  itemCount: chats.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 6),
-                  itemBuilder: (context, i) {
-                    final c = chats[i];
-                    return ChatPreviewTile(
-                      preview: c,
-                      onTap: () {
-                        // 👉 Navegar a la conversación
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ChatConversationPage(
-                              contactName: c.name,
-                              isTyping: c.isTyping,
-                            ),
-                          ),
+                child: StreamBuilder<List<ChatThread>>(
+                  stream: ChatService.instance.streamUserChats(_myUid),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      debugPrint(
+                          'Error en streamUserChats: ${snapshot.error}');
+                      return const Center(
+                        child: Text(
+                          'Ocurrió un error al cargar tus chats',
+                          style: TextStyle(fontSize: 14),
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    }
+
+                    if (snapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+
+                    final threads = snapshot.data ?? [];
+
+                    if (threads.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'Aún no tienes conversaciones',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                      );
+                    }
+
+                    return ListView.separated(
+                      itemCount: threads.length,
+                      separatorBuilder: (_, __) =>
+                      const SizedBox(height: 6),
+                      itemBuilder: (context, i) {
+                        final thread = threads[i];
+
+                        // Encontrar al otro usuario (peerUid)
+                        final peerUid = thread.participants.firstWhere(
+                              (uid) => uid != _myUid,
+                          orElse: () => '',
+                        );
+
+                        if (peerUid.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+
+                        final timeLabel =
+                        _formatTimeLabel(thread.lastMessageAt);
+
+                        final int totalUnread = thread.unreadCount;
+                        final bool lastFromMe =
+                            thread.lastSenderUid == _myUid;
+
+                        final bool hasNewForMe =
+                            !lastFromMe && totalUnread > 0;
+
+                        final int unreadForMe = hasNewForMe ? 1 : 0;
+
+                        // ========= OBTENER NOMBRE DESDE EL DOCUMENTO DEL CHAT =========
+                        String displayName = _fallbackName(peerUid);
+
+                        final Map<String, dynamic>? namesMap =
+                            thread.participantsDisplayNames;
+                        if (namesMap != null &&
+                            namesMap.containsKey(peerUid)) {
+                          final raw = namesMap[peerUid];
+                          if (raw is String && raw.trim().isNotEmpty) {
+                            displayName = raw.trim();
+                          }
+                        }
+                        // =============================================================
+
+                        final preview = ChatPreview(
+                          name: displayName,
+                          lastMessage: thread.lastMessage,
+                          timeLabel: timeLabel,
+                          unreadCount: unreadForMe,
+                          isTyping: false,
+                        );
+
+                        return ChatPreviewTile(
+                          preview: preview,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChatConversation(
+                                  contactName: displayName,
+                                  peerUid: peerUid,
+                                  isTyping: false,
+                                ),
+                              ),
+                            );
+                          },
                         );
                       },
                     );
