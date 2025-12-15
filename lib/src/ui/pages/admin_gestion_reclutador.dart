@@ -96,10 +96,10 @@ class AdminGestionReclutadoresMovilPage extends StatefulWidget {
 }
 
 class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutadoresMovilPage> {
-  static const String _endpoint = 'http://10.0.2.2:3000/api/usuarios/ver_reclutadores';
-  static const String _delUrl = 'http://10.0.2.2:3000/api/usuarios/eliminar_reclutador';
-  static const String _createUrl = 'http://10.0.2.2:3000/api/usuarios/crear_reclutador';
-  static const String _putUrl = 'http://10.0.2.2:3000/api/usuarios/editar_usuario';
+  static const String _endpoint = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/ver_reclutadores';
+  static const String _delUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/eliminar_reclutador';
+  static const String _createUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/crear_reclutador';
+  static const String _putUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/editar_usuario';
 
   // Datos y paginación
   List<ReclutadorItem> _Reclutadores = const [];
@@ -208,7 +208,7 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
   Future<void> _fetchEmpresas() async {
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/api/empresas/obtener_empresas'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/empresas/obtener_empresas'),
       );
 
       if (response.statusCode == 200 && mounted) {
@@ -355,7 +355,7 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
           child: Row(
             children: [
               SimpleButton(
-                title: 'Anterior',
+                title: 'Ant.',
                 icon: Icons.chevron_left,
                 backgroundColor: canPrev ? null : Colors.grey.shade300,
                 textColor: canPrev ? null : Colors.grey.shade600,
@@ -365,7 +365,7 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
               Text('Página $_page de $totalPages'),
               const SizedBox(width: 8),
               SimpleButton(
-                title: 'Siguiente',
+                title: 'Sig.',
                 icon: Icons.chevron_right,
                 backgroundColor: canNext ? null : Colors.grey.shade300,
                 textColor: canNext ? null : Colors.grey.shade600,
@@ -521,7 +521,7 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
                                 Row(
                                   children: [
                                     const Text(
-                                      'Reclutadores Registrados',
+                                      'Rec. Registrados',
                                       style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
                                     ),
                                     const Spacer(),
@@ -570,6 +570,7 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
                                       for (final r in _Reclutadores) _cardReclutador(r),
                                       const SizedBox(height: 8),
                                       _paginationBar(),
+                                      const SizedBox(height: 32),
                                     ],
                                   ),
                               ],
