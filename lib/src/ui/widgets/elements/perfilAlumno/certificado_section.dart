@@ -9,6 +9,20 @@ import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/habilidades_multi_dropdown.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/perfilAlumno/habilidad_clase.dart';
 
+String _toDateString(dynamic v) {
+  if (v == null) return '';
+  if (v is String) return v;
+  if (v is int) {
+    try {
+      final dt = DateTime.fromMillisecondsSinceEpoch(v);
+      return dt.toIso8601String();
+    } catch (_) {
+      return '$v';
+    }
+  }
+  return '$v';
+}
+
 class CertificadoItem {
   final int idCertificado;
   final int idAlumno;
@@ -30,13 +44,15 @@ class CertificadoItem {
     required this.urlCertificado,
     required this.habilidadesDesarrolladas,
   });
-  factory CertificadoItem.fromJson(Map<String, dynamic> j) => CertificadoItem(
+    factory CertificadoItem.fromJson(Map<String, dynamic> j) => CertificadoItem(
         idCertificado: j['id_certificado'] ?? 0,
         idAlumno: j['id_alumno'] ?? 0,
         nombre: j['nombre'],
         institucion: j['institucion'],
-        fechaExpedicion: j['fecha_expedicion'],
-        fechaCaducidad: j['fecha_caducidad'],
+      fechaExpedicion: _toDateString(j['fecha_expedicion']),
+      fechaCaducidad: (j['fecha_caducidad'] == null || (j['fecha_caducidad'] is String && (j['fecha_caducidad'] as String).isEmpty))
+      ? null
+      : _toDateString(j['fecha_caducidad']),
         idCredencial: j['id_credencial'],
         urlCertificado: j['url_certificado'],
         habilidadesDesarrolladas: (j['habilidades_desarrolladas'] as List? ?? [])
@@ -407,7 +423,7 @@ class CertificadosSection extends StatelessWidget {
                           setState(() => saving = true);
                           try {
                             final provider = Provider.of<UserDataProvider>(context, listen: false);
-                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/certificado/eliminar');
+                            final uri = Uri.parse('http://localhost:3000/api/alumnos/certificado/eliminar');
                             final payload = jsonEncode({
                               'id_certificado': item.idCertificado,
                               'id_alumno': item.idAlumno,
@@ -461,7 +477,7 @@ class CertificadosSection extends StatelessWidget {
                           setState(() => saving = true);
                           try {
                             final provider = Provider.of<UserDataProvider>(context, listen: false);
-                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/certificado/actualizar');
+                            final uri = Uri.parse('http://localhost:3000/api/alumnos/certificado/actualizar');
                             final habs = selectedHabOptions.isEmpty
                                 ? <Map<String, dynamic>>[]
                                 : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();
@@ -667,7 +683,7 @@ class CertificadosSection extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se encontró id_alumno')));
                               return;
                             }
-                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/certificado/agregar');
+                            final uri = Uri.parse('http://localhost:3000/api/alumnos/certificado/agregar');
                             final habs = selectedHabOptions.isEmpty
                                 ? <Map<String, dynamic>>[]
                                 : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();

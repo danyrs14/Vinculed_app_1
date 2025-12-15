@@ -6,6 +6,20 @@ import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
 
+String _toDateString(dynamic v) {
+  if (v == null) return '';
+  if (v is String) return v;
+  if (v is int) {
+    try {
+      final dt = DateTime.fromMillisecondsSinceEpoch(v);
+      return dt.toIso8601String();
+    } catch (_) {
+      return '$v';
+    }
+  }
+  return '$v';
+}
+
 class CursoItem {
   final int idCurso;
   final int idAlumno;
@@ -21,13 +35,13 @@ class CursoItem {
     required this.fechaInicio,
     required this.fechaFin,
   });
-  factory CursoItem.fromJson(Map<String, dynamic> j) => CursoItem(
+    factory CursoItem.fromJson(Map<String, dynamic> j) => CursoItem(
         idCurso: j['id_curso'] ?? 0,
         idAlumno: j['id_alumno'] ?? 0,
         nombre: j['nombre'],
         institucion: j['institucion'],
-        fechaInicio: j['fecha_inicio'],
-        fechaFin: j['fecha_fin'],
+      fechaInicio: _toDateString(j['fecha_inicio']),
+      fechaFin: _toDateString(j['fecha_fin']),
       );
 }
 
@@ -320,7 +334,7 @@ class CursosSection extends StatelessWidget {
                           setState(() => saving = true);
                           try {
                             final provider = Provider.of<UserDataProvider>(context, listen: false);
-                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/curso/eliminar');
+                            final uri = Uri.parse('http://localhost:3000/api/alumnos/curso/eliminar');
                             final payload = jsonEncode({
                               'id_curso': item.idCurso,
                               'id_alumno': item.idAlumno,
@@ -372,7 +386,7 @@ class CursosSection extends StatelessWidget {
                           setState(() => saving = true);
                           try {
                             final provider = Provider.of<UserDataProvider>(context, listen: false);
-                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/curso/actualizar');
+                            final uri = Uri.parse('http://localhost:3000/api/alumnos/curso/actualizar');
                             final body = jsonEncode({
                               'id_curso': item.idCurso,
                               'id_alumno': item.idAlumno,
@@ -539,7 +553,7 @@ class CursosSection extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se encontró id_alumno')));
                               return;
                             }
-                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/curso/agregar');
+                            final uri = Uri.parse('http://localhost:3000/api/alumnos/curso/agregar');
                             final payload = jsonEncode({
                               'id_alumno': idAlumno,
                               'nombre': nombreCtrl.text.trim(),
