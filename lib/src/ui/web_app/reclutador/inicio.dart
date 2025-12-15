@@ -32,6 +32,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
   List<_RecruitedStudent> _students = [];
   bool _loading = true;
   String? _error;
+  String _currentTab = 'Reclutado'; // 'Reclutado' | 'Completado'
 
   static bool _welcomeShown = false;
 
@@ -72,7 +73,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
       final headers = await userProv.getAuthHeaders();
       final idRol = userProv.idRol;
       final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/alumnos_reclutados')
-          .replace(queryParameters: { 'id_reclutador': '$idRol' });
+          .replace(queryParameters: { 'id_reclutador': '$idRol', 'estado': _currentTab });
       final resp = await http.get(uri, headers: headers);
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
         final data = jsonDecode(resp.body);
@@ -99,6 +100,40 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
     }
     final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
     if (atBottom != _showFooter) setState(() => _showFooter = atBottom);
+  }
+
+  void _changeTab(String tab) {
+    if (_currentTab == tab) {
+      _fetchRecruitedStudents();
+      return;
+    }
+    setState(() => _currentTab = tab);
+    _fetchRecruitedStudents();
+  }
+
+  Widget _tabButton(String label, bool isMobile) {
+    final selected = _currentTab == label;
+    final theme = ThemeController.instance;
+    final accent = theme.secundario();
+    final baseBg = Colors.blueGrey.shade200;
+    return ElevatedButton(
+      onPressed: () => _changeTab(label),
+      style: ElevatedButton.styleFrom(
+        elevation: selected ? 2 : 0,
+        backgroundColor: selected ? accent : baseBg,
+        foregroundColor: theme.primario(),
+        padding: EdgeInsets.symmetric(horizontal: isMobile ? 18 : 28, vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        textStyle: TextStyle(
+          fontSize: isMobile ? 14 : 16,
+          fontWeight: FontWeight.w700,
+          letterSpacing: .4,
+        ),
+      ),
+      child: Text(label),
+    );
   }
 
   @override
@@ -194,9 +229,20 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                         ),
                                       ),
                                     ),
+                                ],
+                              ),
+                              const SizedBox(height: 28),
+
+                                // Pestañas Reclutado / Completado
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    _tabButton('Reclutado', isMobile),
+                                    const SizedBox(width: 16),
+                                    _tabButton('Completado', isMobile),
                                   ],
                                 ),
-                                const SizedBox(height: 28),
+                                const SizedBox(height: 24),
 
                                 // Lista de alumnos reclutados
                                 if (_loading) ...[
@@ -233,7 +279,9 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                           ),
                                           const SizedBox(height: 12),
                                           Text(
-                                            'Aún no hay alumnos reclutados',
+                                            _currentTab == 'Reclutado'
+                                                ? 'Aún no hay alumnos reclutados'
+                                                : 'Tus becarios aún no han completado sus prácticas',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontSize: isMobile ? 18 : 20,
@@ -243,7 +291,9 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                           ),
                                           const SizedBox(height: 6),
                                           Text(
-                                            'Cuando reclutes alumnos, sus tarjetas aparecerán aquí.',
+                                            _currentTab == 'Reclutado'
+                                                ? 'Cuando reclutes alumnos, sus tarjetas aparecerán aquí.'
+                                                : 'Los becarios cuya postulación hayas marcado como Completada aparecerán en esta sección.',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontSize: isMobile ? 13.5 : 14.5,
@@ -252,7 +302,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                           ),
                                           const SizedBox(height: 14),
                                           SizedBox(
-                                            height: 48, // altura mayor para evitar corte de texto en móviles
+                                            height: 48,
                                             child: SimpleButton(
                                               title: 'Actualizar',
                                               onTap: _fetchRecruitedStudents,
@@ -279,6 +329,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                         ),
                                         itemBuilder: (_, i) => _RecruitedCandidateCard(
                                           data: _students[i],
+                                          showMarkCompleted: _currentTab == 'Reclutado',
                                           onCompleted: (id) {
                                             setState(() {
                                               _students.removeWhere((s) => s.idPostulacion == id);
@@ -378,9 +429,10 @@ class _Habilidad {
 
 // =================== CARD ===================
 class _RecruitedCandidateCard extends StatelessWidget {
-  const _RecruitedCandidateCard({required this.data, required this.onCompleted});
+  const _RecruitedCandidateCard({required this.data, required this.onCompleted, this.showMarkCompleted = true});
   final _RecruitedStudent data;
   final void Function(int idPostulacion) onCompleted;
+  final bool showMarkCompleted;
 
   // Construye la imagen de perfil soportando data URI (base64) y URL sin esquema
   Widget _buildProfileImage() {
@@ -527,16 +579,17 @@ class _RecruitedCandidateCard extends StatelessWidget {
           _detailRow('Habilidades:', skills.isEmpty ? 'No especificadas' : skills),
 
           const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: SizedBox(
-              height: 40,
-              child: SimpleButton(
-                title: 'Marcar como Completada',
-                onTap: () => _markCompleted(context),
+          if (showMarkCompleted)
+            Align(
+              alignment: Alignment.centerRight,
+              child: SizedBox(
+                height: 40,
+                child: SimpleButton(
+                  title: 'Marcar como Completada',
+                  onTap: () => _markCompleted(context),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

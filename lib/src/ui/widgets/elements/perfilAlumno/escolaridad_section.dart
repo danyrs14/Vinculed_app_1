@@ -7,6 +7,18 @@ import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/dropdown.dart';
 
+int _parseYear(dynamic v) {
+  if (v is int) return v;
+  if (v is String) {
+    final match = RegExp(r"\d{4}").firstMatch(v);
+    if (match != null) {
+      return int.tryParse(match.group(0)!) ?? 0;
+    }
+    return int.tryParse(v) ?? 0;
+  }
+  return 0;
+}
+
 class EscolaridadItem {
   final int idEscolaridad;
   final int idAlumno;
@@ -28,7 +40,7 @@ class EscolaridadItem {
     required this.fechaInicio,
     required this.fechaFin,
   });
-  factory EscolaridadItem.fromJson(Map<String, dynamic> j) => EscolaridadItem(
+    factory EscolaridadItem.fromJson(Map<String, dynamic> j) => EscolaridadItem(
         idEscolaridad: j['id_escolaridad'] ?? 0,
         idAlumno: j['id_alumno'] ?? 0,
         nivel: j['nivel'],
@@ -36,8 +48,8 @@ class EscolaridadItem {
         carrera: j['carrera'],
         plantel: j['plantel'],
         nota: j['nota'],
-        fechaInicio: j['fecha_inicio'],
-        fechaFin: j['fecha_fin'],
+      fechaInicio: _parseYear(j['fecha_inicio']),
+      fechaFin: _parseYear(j['fecha_fin']),
       );
 }
 

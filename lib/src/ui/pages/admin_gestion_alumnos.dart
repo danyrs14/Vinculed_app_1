@@ -14,16 +14,18 @@ import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
 
 /* ============================ Modelos ============================ */
 class Paginacion {
-  final int totalReclutadores;
+  final int totalAlumnos;
   final int totalPaginas;
   final int paginaActual;
   final int tamanoPagina;
+  final int totalAlumnosInactivos;
 
   const Paginacion({
-    required this.totalReclutadores,
+    required this.totalAlumnos,
     required this.totalPaginas,
     required this.paginaActual,
     required this.tamanoPagina,
+    required this.totalAlumnosInactivos,
   });
 
   factory Paginacion.fromJson(Map<String, dynamic> json) {
@@ -33,76 +35,71 @@ class Paginacion {
     }
 
     return Paginacion(
-      totalReclutadores: _toInt(json['total_reclutadores']),
+      totalAlumnos: _toInt(json['total_alumnos']),
       totalPaginas: _toInt(json['total_paginas']),
       paginaActual: _toInt(json['pagina_actual']),
       tamanoPagina: _toInt(json['tamano_pagina']),
+      totalAlumnosInactivos: _toInt(json['total_alumnos_inactivos']),
     );
   }
 }
 
-class ReclutadorItem {
+class AlumnoItem {
   final int idUsuario;
-  final int idReclutador;
+  final int idAlumno;
   final String nombre;
   final String correo;
   final String genero;
   final String urFotoPerfil;
   final String uidFirebase;
-  final int idEmpresa;
-  final String empresa;
   //final DateTime ultimoAcceso;
 
-  const ReclutadorItem({
+  const AlumnoItem({
     required this.idUsuario,
-    required this.idReclutador,
+    required this.idAlumno,
     required this.nombre,
     required this.correo,
     required this.genero,
     required this.urFotoPerfil,
     required this.uidFirebase,
-    required this.idEmpresa,
-    required this.empresa,
     //required this.ultimoAcceso,
   });
 
-  factory ReclutadorItem.fromJson(Map<String, dynamic> json) {
+  factory AlumnoItem.fromJson(Map<String, dynamic> json) {
     int _toInt(dynamic v) {
       if (v is int) return v;
       return int.tryParse('$v') ?? 0;
     }
 
-    return ReclutadorItem(
+    return AlumnoItem(
       idUsuario: _toInt(json['id_usuario']),
-      idReclutador: _toInt(json['id_reclutador']),
+      idAlumno: _toInt(json['id_alumno']),
       nombre: (json['nombre'] ?? '').toString(),
       correo: (json['correo'] ?? '').toString(),
       genero: (json['genero'] ?? '').toString(),
       urFotoPerfil: (json['url_foto_perfil'] ?? '').toString(),
       uidFirebase: (json['uid_firebase'] ?? '').toString(),
-      idEmpresa: _toInt(json['id_empresa'] ?? 0),
-      empresa: (json['empresa'] ?? '').toString(),
       //ultimoAcceso: DateTime.tryParse((json['ultimo_acceso'] ?? '').toString())?.toLocal() ?? DateTime.april,
     );
   }
 }
 
 /* ============================ Página ============================ */
-class AdminGestionReclutadoresMovilPage extends StatefulWidget {
-  const AdminGestionReclutadoresMovilPage({Key? key}) : super(key: key);
+class AdminGestionAlumnosMovilPage extends StatefulWidget {
+  const AdminGestionAlumnosMovilPage({Key? key}) : super(key: key);
 
   @override
-  State<AdminGestionReclutadoresMovilPage> createState() => _AdminGestionReclutadoresMovilPageState();
+  State<AdminGestionAlumnosMovilPage> createState() => _AdminGestionAlumnosMovilPageState();
 }
 
-class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutadoresMovilPage> {
-  static const String _endpoint = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/ver_reclutadores';
-  static const String _delUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/eliminar_reclutador';
-  static const String _createUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/crear_reclutador';
+class _AdminGestionAlumnosMovilPageState extends State<AdminGestionAlumnosMovilPage> {
+  static const String _endpoint = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/ver_alumnos';
+  static const String _delUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/eliminar_alumno';
+  static const String _createUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/crear_alumno';
   static const String _putUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/editar_usuario';
 
   // Datos y paginación
-  List<ReclutadorItem> _Reclutadores = const [];
+  List<AlumnoItem> _alumnos = const [];
   Paginacion? _paginacion;
   Map<String, dynamic>? _rawResponse; // Guarda TODOS los datos recibidos
   int _page = 1;
@@ -110,21 +107,16 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
   bool _loading = false;
   String? _error;
 
-  List<dynamic> _rawDataEmpresas = [];
-  List<DropdownMenuItem<String>> empresasItems = [];
-
-  final ScrollController _scrollCtrl = ScrollController();
+  // Footer animado eliminado
 
   @override
   void initState() {
     super.initState();
-    _fetchEmpresas();
-    _loadPage(1); // carga primeros 10 Reclutadores
+    _loadPage(1); // carga primeros 10 alumnos
   }
 
   @override
   void dispose() {
-    _scrollCtrl.dispose();
     super.dispose();
   }
 
@@ -153,6 +145,8 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
     );
   }
 
+  // Lógica de scroll para footer eliminada
+
   Future<void> _loadPage(int page) async {
     setState(() {
       _loading = true;
@@ -174,14 +168,14 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
       }
 
       final pag = Paginacion.fromJson(Map<String, dynamic>.from(decoded['paginacion'] ?? {}));
-      final list = (decoded['reclutadores'] as List? ?? [])
-          .map((e) => ReclutadorItem.fromJson(Map<String, dynamic>.from(e)))
+      final list = (decoded['alumnos'] as List? ?? [])
+          .map((e) => AlumnoItem.fromJson(Map<String, dynamic>.from(e)))
           .toList();
 
       setState(() {
         _page = pag.paginaActual;
         _paginacion = pag;
-        _Reclutadores = list;
+        _alumnos = list;
         _rawResponse = decoded; // Guardamos todo
       });
     } catch (e) {
@@ -195,46 +189,11 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
     await _loadPage(_page);
   }
 
-  void _cargarEmpresasItemsDeJson(List<dynamic> jsonList) {
-    final items = jsonList.map<DropdownMenuItem<String>>((e) {
-      final id = (e['id'] ?? '').toString();
-      final label = (e['nombre'] ?? id).toString();
-      return DropdownMenuItem(value: id, child: Text(label));
-    }).toList();
-
-    setState(() {empresasItems = items;});
-  }
-
-  Future<void> _fetchEmpresas() async {
-    try {
-      final response = await http.get(
-        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/empresas/obtener_empresas'),
-      );
-
-      if (response.statusCode == 200 && mounted) {
-        _rawDataEmpresas = jsonDecode(response.body);
-        _cargarEmpresasItemsDeJson(_rawDataEmpresas);
-      } else {
-        throw Exception("Error al cargar empresas");
-      }
-    } catch (e) {
-      _showError(e.toString());
-
-    }
-  }
-  void _showError(String msg) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: Colors.red),
-      );
-    }
-  }
-
   // =============== UI Helpers ===============
 
 
 
-  Widget _cardReclutador(ReclutadorItem e) {
+  Widget _cardAlumno(AlumnoItem e) {
     final theme = ThemeController.instance;
     return Card(
       elevation: 3,
@@ -245,59 +204,26 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              constraints: const BoxConstraints(
-                maxWidth: 82,
-                maxHeight: 164,
-              ),
-              child: Column(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: e.urFotoPerfil.isNotEmpty ? Image.network(
-                      e.urFotoPerfil,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: 80,
-                        height: 80,
-                        color: Colors.grey.shade200,
-                        alignment: Alignment.center,
-                        child: const Icon(Icons.image_not_supported),
-                      ),
-                    ) : Container(
-                      width: 80,
-                      height: 80,
-                      color: Colors.grey.shade200,
-                      alignment: Alignment.center,
-                      child: const Icon(Icons.person_2_outlined),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: e.urFotoPerfil.isNotEmpty ? Image.network(
-                      e.urFotoPerfil,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: 80,
-                        height: 80,
-                        color: Colors.grey.shade200,
-                        alignment: Alignment.center,
-                        child: const Icon(Icons.image_not_supported),
-                      ),
-                    ) : Container(
-                      width: 80,
-                      height: 80,
-                      color: Colors.grey.shade200,
-                      alignment: Alignment.center,
-                      child: const Icon(Icons.business),
-                    ),
-                  ),
-                ],
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: e.urFotoPerfil.isNotEmpty ? Image.network(
+                e.urFotoPerfil,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  width: 80,
+                  height: 80,
+                  color: Colors.grey.shade200,
+                  alignment: Alignment.center,
+                  child: const Icon(Icons.image_not_supported),
+                ),
+              ) : Container(
+                width: 80,
+                height: 80,
+                color: Colors.grey.shade200,
+                alignment: Alignment.center,
+                child: const Icon(Icons.person_2_outlined),
               ),
             ),
             const SizedBox(width: 16),
@@ -310,8 +236,6 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
                   Text(e.correo, style: const TextStyle(fontSize: 14, color: Colors.black54)),
                   const SizedBox(height: 6),
                   Text(e.genero, style: const TextStyle(fontSize: 14, color: Colors.black54)),
-                  const SizedBox(height: 6),
-                  Text(e.empresa, style: const TextStyle(fontSize: 14, color: Colors.black54)),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 12,
@@ -320,14 +244,14 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
                       SimpleButton(
                         title: 'Editar',
                         icon: Icons.edit,
-                        onTap: () => _openEditarReclutador(e),
+                        onTap: () => _openEditarAlumno(e),
                       ),
                       SimpleButton(
                         title: 'Eliminar',
                         icon: Icons.delete_forever,
                         backgroundColor: Colors.red,
                         textColor: Colors.white,
-                        onTap: () => _confirmEliminar(e.idUsuario, e.uidFirebase),
+                        onTap: () => _confirmEliminar(e.idUsuario, e.idAlumno, e.uidFirebase),
                       ),
                     ],
                   ),
@@ -371,6 +295,7 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
                 textColor: canNext ? null : Colors.grey.shade600,
                 onTap: canNext ? () => _loadPage(_page + 1) : null,
               ),
+              
             ],
           ),
         ),
@@ -378,53 +303,48 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
     );
   }
 
-  void _openCrearReclutador() {
+  void _openCrearAlumno() {
     showDialog(
       context: context,
-      builder: (ctx) => _ReclutadorFormDialog(
-        title: 'Agregar Reclutador',
-        data: _rawDataEmpresas,
-        empresasItems: empresasItems,
-        onSubmit: (item) => _crearReclutador(item),
+      builder: (ctx) => _AlumnoFormDialog(
+        title: 'Agregar Alumno',
+        onSubmit: (item, correoProvisional) => _crearAlumno(item, correoProvisional),
       ),
     );
   }
 
-  //Future<void> _crearReclutador(ReclutadorItem item, String? correoProvisional) async {
-  Future<void> _crearReclutador(ReclutadorItem item) async {
+  Future<void> _crearAlumno(AlumnoItem item, String? correoProvisional) async {
     final headers = await context.read<UserDataProvider>().getAuthHeaders();
     final res = await http.post(
       Uri.parse(_createUrl),
       headers: headers,
       body: jsonEncode({
         'nombre': item.nombre,
-        'correo': item.correo,
+        'email': item.correo,
         'genero': item.genero,
-        'id_empresa': item.idEmpresa,
+        'correo_provisional': correoProvisional!,
       }),
     );
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reclutador creado')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Alumno creado')));
       await _loadPage(_page);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al crear: ${res.statusCode}')));
     }
   }
 
-  void _openEditarReclutador(ReclutadorItem e) {
+  void _openEditarAlumno(AlumnoItem e) {
     showDialog(
       context: context,
-      builder: (ctx) => _ReclutadorFormDialog(
-        title: 'Editar Reclutador',
+      builder: (ctx) => _AlumnoFormDialog(
+        title: 'Editar Alumno',
         initial: e,
-        data: _rawDataEmpresas,
-        empresasItems: empresasItems,
-        onSubmit: (item) => _actualizarReclutador(item),
+        onSubmit: (item, correoProvisional) => _actualizarAlumno(item),
       ),
     );
   }
 
-  Future<void> _actualizarReclutador(ReclutadorItem base) async {
+  Future<void> _actualizarAlumno(AlumnoItem base) async {
     final headers = await context.read<UserDataProvider>().getAuthHeaders();
 
     final body = jsonEncode({
@@ -432,23 +352,22 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
       'nombre': base.nombre,
       'correo': base.correo,
       'genero': base.genero,
-      'id_empresa': base.idEmpresa,
     });
     final res = await http.put(Uri.parse(_putUrl), headers: headers, body: body);
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reclutador actualizado')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Alumno actualizado')));
       await _loadPage(_page);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al actualizar: ${res.statusCode}')));
     }
   }
 
-  void _confirmEliminar(int idUsuario,String uidFirebase) {
+  void _confirmEliminar(int idUsuario, int idAlumno, String uidFirebase) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar Reclutador'),
-        content: const Text('¿Confirmas eliminar este Reclutador?'),
+        title: const Text('Eliminar alumno'),
+        content: const Text('¿Confirmas eliminar este alumno?'),
         actions: [
           SimpleButton(
             title: 'Cancelar',
@@ -462,18 +381,18 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
             icon: Icons.delete_forever,
             backgroundColor: Colors.red,
             textColor: Colors.white,
-            onTap: () { Navigator.pop(ctx); _eliminarReclutador(idUsuario, uidFirebase); },
+            onTap: () { Navigator.pop(ctx); _eliminarAlumno(idUsuario, idAlumno, uidFirebase); },
           ),
         ],
       ),
     );
   }
 
-  Future<void> _eliminarReclutador(int idUsuario, String uidFirebase) async {
+  Future<void> _eliminarAlumno(int idUsuario, int idAlumno, String uidFirebase) async {
     final headers = await context.read<UserDataProvider>().getAuthHeaders();
-    final res = await http.delete(Uri.parse(_delUrl), headers: headers, body: jsonEncode({'id_usuario':idUsuario, 'uid_reclutador': uidFirebase}));
+    final res = await http.delete(Uri.parse(_delUrl), headers: headers, body: jsonEncode({'id_usuario':idUsuario,'id_alumno': idAlumno, 'uid_alumno': uidFirebase}));
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reclutador eliminado')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Alumno eliminado')));
       await _loadPage(_page);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al eliminar: ${res.statusCode}')));
@@ -487,135 +406,112 @@ class _AdminGestionReclutadoresMovilPageState extends State<AdminGestionReclutad
 
     return Scaffold(
       floatingActionButton: SimpleButton(
-        title: 'Nuevo Reclutador',
+        title: 'Nuevo Alumno',
         icon: Icons.person_add_alt,
-        onTap: _openCrearReclutador,
+        onTap: _openCrearAlumno,
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                // Removed footer reserved space usage
-                final minBodyHeight = constraints.maxHeight;
-                return RefreshIndicator(
-                  onRefresh: _refresh,
-                  child: SingleChildScrollView(
-                    controller: _scrollCtrl,
-                    physics: const ClampingScrollPhysics(),
-                    padding: const EdgeInsets.only(
-                      top: 12,
-                      bottom: 12,
-                    ),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 500),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(minHeight: minBodyHeight > 0 ? minBodyHeight : 0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    const Text(
-                                      'Rec. Registrados',
-                                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-                                    ),
-                                    const Spacer(),
-                                    if (_rawResponse != null)
-                                      SimpleButton(
-                                        title: 'Ver JSON',
-                                        icon: Icons.data_object,
-                                        backgroundColor: Colors.grey.shade200,
-                                        textColor: Colors.black87,
-                                        onTap: _showRawDialog,
-                                      ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                if (_paginacion != null)
-                                  Text(
-                                    'Total: ${_paginacion!.totalReclutadores}  •  Página: ${_paginacion!.paginaActual}/${_paginacion!.totalPaginas}  •  Tamaño: ${_paginacion!.tamanoPagina}',
-                                    style: const TextStyle(color: Colors.black54),
-                                  ),
-                                const SizedBox(height: 12),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return RefreshIndicator(
+            onRefresh: _refresh,
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.only(top: 12, bottom: 24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Text(
+                              'Alumnos Registrados',
+                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                            ),
+                            const Spacer(),
+                            if (_rawResponse != null)
+                              SimpleButton(
+                                title: 'Ver JSON',
+                                icon: Icons.data_object,
+                                backgroundColor: Colors.grey.shade200,
+                                textColor: Colors.black87,
+                                onTap: _showRawDialog,
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        if (_paginacion != null)
+                          Text(
+                            'Total: ${_paginacion!.totalAlumnos}  •  Página: ${_paginacion!.paginaActual}/${_paginacion!.totalPaginas}  •  Tamaño: ${_paginacion!.tamanoPagina}  •  Total de Alumnos Inactivos: ${_paginacion!.totalAlumnosInactivos}',
+                            style: const TextStyle(color: Colors.black54),
+                          ),
+                        const SizedBox(height: 12),
 
-                                if (_loading)
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 80),
-                                    child: Center(child: CircularProgressIndicator()),
-                                  )
-                                else if (_error != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 60),
-                                    child: Column(
-                                      children: [
-                                        const Icon(Icons.error_outline, color: Colors.red),
-                                        const SizedBox(height: 8),
-                                        Text('Error: $_error', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
-                                      ],
-                                    ),
-                                  )
-                                else if (_Reclutadores.isEmpty)
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 80),
-                                    child: Center(child: Text('No hay Reclutadores con cuenta activa en firebase.')),
-                                  )
-                                else
-                                  Column(
-                                    children: [
-                                      for (final r in _Reclutadores) _cardReclutador(r),
-                                      const SizedBox(height: 8),
-                                      _paginationBar(),
-                                      const SizedBox(height: 32),
-                                    ],
-                                  ),
+                        if (_loading)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 80),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        else if (_error != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 60),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.error_outline, color: Colors.red),
+                                const SizedBox(height: 8),
+                                Text('Error: $_error', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
                               ],
                             ),
+                          )
+                        else if (_alumnos.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 80),
+                            child: Center(child: Text('No hay alumnos con cuenta activa en firebase.')),
+                          )
+                        else
+                          Column(
+                            children: [
+                              for (final r in _alumnos) _cardAlumno(r),
+                              const SizedBox(height: 8),
+                              _paginationBar(),
+                              const SizedBox(height: 32),
+                            ],
                           ),
-                        ),
-                      ),
+                      ],
                     ),
                   ),
-                );
-              },
+                ),
+              ),
             ),
-          ),
-
-          // Removed footer widget
-        ],
+          );
+        },
       ),
     );
   }
 }
 
 
-class _ReclutadorFormDialog extends StatefulWidget {
+class _AlumnoFormDialog extends StatefulWidget {
   final String title;
-  final ReclutadorItem? initial;
-  final Future<void> Function(ReclutadorItem item) onSubmit;
-  final List<dynamic> data;
-  final List<DropdownMenuItem<String>> empresasItems;
-  const _ReclutadorFormDialog({required this.title, this.initial, required this.onSubmit, required this.data, required this.empresasItems, Key? key}) : super(key: key);
+  final AlumnoItem? initial;
+  final Future<void> Function(AlumnoItem item, String? correoProvisional) onSubmit;
+  const _AlumnoFormDialog({required this.title, this.initial, required this.onSubmit});
   @override
-  State<_ReclutadorFormDialog> createState() => _ReclutadorFormDialogState();
+  State<_AlumnoFormDialog> createState() => _AlumnoFormDialogState();
 }
 
-class _ReclutadorFormDialogState extends State<_ReclutadorFormDialog> {
+class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nombreCtrl;
   late TextEditingController _emailCtrl;
+  late TextEditingController _emailProvCtrl;
   late TextEditingController _generoCtrl;
   late TextEditingController _confirmEmailCtrl;
-  final _empresaNombreCtrl = TextEditingController();
-  String? _empresaSeleccionada;
   bool _sending = false;
-
-  List<DropdownMenuItem<String>> empresasItems = [];
-  List<dynamic> data = [];
 
   @override
   void initState() {
@@ -623,16 +519,13 @@ class _ReclutadorFormDialogState extends State<_ReclutadorFormDialog> {
     _nombreCtrl = TextEditingController(text: widget.initial?.nombre ?? '');
     _emailCtrl   = TextEditingController(text: widget.initial?.correo ?? '');
     _confirmEmailCtrl   = TextEditingController(text: widget.initial?.correo ?? '');
+    _emailProvCtrl   = TextEditingController(text: widget.initial?.correo ?? '');
     _generoCtrl    = TextEditingController(text: widget.initial?.genero ?? '');
-    empresasItems = widget.empresasItems;
-    data = widget.data;
   }
-
- 
 
   @override
   void dispose() {
-    _nombreCtrl.dispose(); _emailCtrl.dispose(); _generoCtrl.dispose(); _confirmEmailCtrl.dispose(); _empresaNombreCtrl.dispose();
+    _nombreCtrl.dispose(); _emailCtrl.dispose(); _generoCtrl.dispose();
     super.dispose();
   }
 
@@ -641,22 +534,19 @@ class _ReclutadorFormDialogState extends State<_ReclutadorFormDialog> {
     setState(()=>_sending=true);
     final nombre = _nombreCtrl.text.trim();
     final correo = _emailCtrl.text.trim();
+    final correoProvisional = _emailProvCtrl.text.trim();
     final genero = _generoCtrl.text.trim();
-    final empresa = _empresaNombreCtrl.text.trim();
-    final idEmpresa = int.tryParse(_empresaSeleccionada?? '') ?? 0;
-    final item = ReclutadorItem(
+    final item = AlumnoItem(
       idUsuario: widget.initial?.idUsuario ?? 0,
-      idReclutador: widget.initial?.idReclutador ?? 0,
+      idAlumno: widget.initial?.idAlumno ?? 0,
       nombre: nombre,
       correo: correo,
       genero: genero,
       urFotoPerfil: widget.initial?.urFotoPerfil ?? '',
       uidFirebase: widget.initial?.uidFirebase ?? '',
-      idEmpresa: idEmpresa,
-      empresa: empresa,
     );
   
-    await widget.onSubmit(item);
+    await widget.onSubmit(item, correoProvisional);
     if (mounted) { setState(()=>_sending=false); Navigator.of(context).maybePop(); }
   }
 
@@ -709,13 +599,13 @@ class _ReclutadorFormDialogState extends State<_ReclutadorFormDialog> {
                 StyledTextFormField(
                   isRequired: true,
                   controller: _emailCtrl,
-                  title: "Correo electrónico",
+                  title: "Correo institucional",
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'El correo es obligatorio.';
                     }
-                    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                    final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
                     if (!emailRegex.hasMatch(value)) {
                       return 'Ingrese un correo válido.';
                     }
@@ -733,7 +623,7 @@ class _ReclutadorFormDialogState extends State<_ReclutadorFormDialog> {
                     !identical(value.trim(), _emailCtrl.text.trim())) {
                       return 'El correo debe coincidir con el proporcionado anteriormente.';
                     }
-                    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                    final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
                     if (!emailRegex.hasMatch(value)) {
                       return 'Ingrese un correo válido.';
                     }
@@ -741,25 +631,20 @@ class _ReclutadorFormDialogState extends State<_ReclutadorFormDialog> {
                   },
                 ),
                 const SizedBox(height: 12),
-                DropdownInput<String>(
-                  title: "Empresa",
-                  required: true,
-                  items: empresasItems,
-                  value: _empresaSeleccionada,
+                StyledTextFormField(
+                  isRequired: true,
+                  title: 'Correo provisional',
+                  controller: _emailProvCtrl,
+                  keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value == null || value.isEmpty ) return 'La empresa es obligatoria.';
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, ingresa tu correo.';
+                    }
+                    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                    if (!emailRegex.hasMatch(value)) {
+                      return 'Ingresa un correo válido.';
+                    }
                     return null;
-                  },
-                  onChanged: (valor) {
-                    if (valor == null) return;
-                    final valorInt = int.tryParse(valor);
-                    final itemEncontrado = data.firstWhere(
-                      (elemento) => elemento['id'] == valorInt
-                    );
-                    setState(() {
-                      _empresaSeleccionada = valor;
-                      _empresaNombreCtrl.text = itemEncontrado['nombre'] ?? '';
-                    });
                   },
                 ),
                 const SizedBox(height: 12),

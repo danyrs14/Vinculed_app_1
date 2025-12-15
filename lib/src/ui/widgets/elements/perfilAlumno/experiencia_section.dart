@@ -8,6 +8,20 @@ import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/habilidades_multi_dropdown.dart';
 
+String _toDateString(dynamic v) {
+  if (v == null) return '';
+  if (v is String) return v;
+  if (v is int) {
+    try {
+      final dt = DateTime.fromMillisecondsSinceEpoch(v);
+      return dt.toIso8601String();
+    } catch (_) {
+      return '$v';
+    }
+  }
+  return '$v';
+}
+
 class ExperienciaItem {
   final int idExperiencia;
   final int idAlumno;
@@ -27,13 +41,15 @@ class ExperienciaItem {
     required this.descripcion,
     required this.habilidadesDesarrolladas,
   });
-  factory ExperienciaItem.fromJson(Map<String, dynamic> j) => ExperienciaItem(
+    factory ExperienciaItem.fromJson(Map<String, dynamic> j) => ExperienciaItem(
         idExperiencia: j['id_experiencia'] ?? 0,
         idAlumno: j['id_alumno'] ?? 0,
         cargo: j['cargo'],
         empresa: j['empresa'],
-        fechaInicio: j['fecha_inicio'],
-        fechaFin: j['fecha_fin'],
+      fechaInicio: _toDateString(j['fecha_inicio']),
+      fechaFin: (j['fecha_fin'] == null || (j['fecha_fin'] is String && (j['fecha_fin'] as String).isEmpty))
+      ? null
+      : _toDateString(j['fecha_fin']),
         descripcion: j['descripcion'],
         habilidadesDesarrolladas: (j['habilidades_desarrolladas'] as List? ?? [])
             .map((e) => HabilidadItem.fromJson(e))

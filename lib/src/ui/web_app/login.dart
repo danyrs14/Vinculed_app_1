@@ -254,7 +254,7 @@ class _LoginPageWebState extends State<LoginPageWeb> {
                                   // Allow the button to expand vertically to wrap long text
                                   LargeButton(
                                     onTap: () => context.go('/lector_qr'),
-                                    title: 'Registrarme como Candidato',
+                                    title: 'Registrarme como Alumno',
                                   ),
                                   const SizedBox(height: 12),
                                   LargeButton(

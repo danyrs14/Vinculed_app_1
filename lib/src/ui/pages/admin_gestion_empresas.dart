@@ -12,6 +12,7 @@ import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header4.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
+import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
 
 class EmpresaItem {
   final int idEmpresa;
@@ -428,7 +429,7 @@ class _EmpresaFormDialogState extends State<_EmpresaFormDialog> {
   String? _validWeb(String? v) {
     if (v==null||v.trim().isEmpty) return 'Requerido';
     final uri = Uri.tryParse(v.trim());
-    if (uri==null || !uri.hasAbsolutePath || !(uri.scheme=='http'||uri.scheme=='https')) return 'URL inválida';
+    if (uri==null || !(uri.scheme=='http'||uri.scheme=='https')) return 'URL inválida';
     return null;
   }
 
@@ -445,28 +446,35 @@ class _EmpresaFormDialogState extends State<_EmpresaFormDialog> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextFormField(
+                StyledTextFormField(
+                  isRequired: true,
+                  title: 'Nombre de la empresa',
                   controller: _nombreCtrl,
-                  decoration: const InputDecoration(labelText: 'Nombre'),
                   validator: _validNotEmpty,
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
+                StyledTextFormField(
+                  isRequired: true ,
+                  title: 'Descripción (máx. 2000 caracteres)',
                   controller: _descCtrl,
-                  maxLines: 3,
-                  decoration: const InputDecoration(labelText: 'Descripción'),
+                  keyboardType: TextInputType.multiline,
+                  maxLines: 6,
+                  maxLength: 2000,
                   validator: _validNotEmpty,
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
+                StyledTextFormField(
+                  isRequired: false,
+                  title: 'Sitio web (opcional)',
                   controller: _webCtrl,
-                  decoration: const InputDecoration(labelText: 'Sitio Web'),
+                  keyboardType: TextInputType.url,
                   validator: _validWeb,
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
+                StyledTextFormField(
+                  isRequired: false,
+                  title: 'URL del logo (opcional si subes archivo)',
                   controller: _logoCtrl,
-                  decoration: const InputDecoration(labelText: 'URL logo (opcional si subes archivo)'),
                 ),
                 const SizedBox(height: 8),
                 Row(
