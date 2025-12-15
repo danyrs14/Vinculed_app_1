@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:vinculed_app_1/src/core/services/notification_service.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart';
@@ -33,13 +33,35 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
   bool _loading = true;
   String? _error;
 
+  static bool _welcomeShown = false;
+
   @override
   void initState() {
     super.initState();
     _scrollCtrl.addListener(_onScroll);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _onScroll();
-      _fetchRecruitedStudents();
+      await _fetchRecruitedStudents();
+
+      // Aseguramos que haya usuario antes de registrar FCM / notificación
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        print('HomeRecruiterPage: no hay usuario autenticado, omito bienvenida.');
+        return;
+      }
+
+      if (_welcomeShown) return;
+      _welcomeShown = true;
+
+      final nombre = user.displayName ?? 'usuario';
+
+      await NotificationService.instance.initPush();
+      await NotificationService.instance.startListeningToIncomingMessages();
+      await NotificationService.instance.addNotification(
+        userId: user.uid,
+        title: '¡Bienvenido $nombre!',
+        body: 'Has iniciado sesión correctamente.',
+      );
     });
   }
 
@@ -244,7 +266,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                   LayoutBuilder(
                                     builder: (_, c) {
                                       final maxExtent = c.maxWidth < 820 ? 580.0 : 520.0;
-                                      final aspect = 0.6; // taller tiles to avoid overflow
+                                      final aspect = 0.6; // taller tiles to evitar overflow
                                       return GridView.builder(
                                         shrinkWrap: true,
                                         physics: const NeverScrollableScrollPhysics(),
@@ -493,8 +515,10 @@ class _RecruitedCandidateCard extends StatelessWidget {
           const SizedBox(height: 6),
 
           // Vacante
-          Text(data.nombreVacante.isEmpty ? 'Vacante no especificada' : data.nombreVacante,
-              style: const TextStyle(color: Colors.black87)),
+          Text(
+            data.nombreVacante.isEmpty ? 'Vacante no especificada' : data.nombreVacante,
+            style: const TextStyle(color: Colors.black87),
+          ),
           const SizedBox(height: 10),
 
           // Estudiante y habilidades

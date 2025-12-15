@@ -122,7 +122,6 @@ class NotificationService {
     final uid = user.uid;
     await _messagesSub?.cancel();
 
-    // 👇 Para evitar que el primer snapshot (histórico) dispare notificaciones
     bool firstSnapshot = true;
 
     _messagesSub = _db
@@ -153,7 +152,6 @@ class NotificationService {
         if (receiverUid != uid) continue;
         if (senderUid == uid) continue;
 
-        // ================== OBTENER NOMBRE DEL REMITENTE ==================
         String senderName = 'Usuario';
         try {
           if (senderUid.isNotEmpty) {
