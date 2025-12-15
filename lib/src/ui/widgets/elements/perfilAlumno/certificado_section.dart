@@ -423,7 +423,7 @@ class CertificadosSection extends StatelessWidget {
                           setState(() => saving = true);
                           try {
                             final provider = Provider.of<UserDataProvider>(context, listen: false);
-                            final uri = Uri.parse('http://localhost:3000/api/alumnos/certificado/eliminar');
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/certificado/eliminar');
                             final payload = jsonEncode({
                               'id_certificado': item.idCertificado,
                               'id_alumno': item.idAlumno,
@@ -477,7 +477,7 @@ class CertificadosSection extends StatelessWidget {
                           setState(() => saving = true);
                           try {
                             final provider = Provider.of<UserDataProvider>(context, listen: false);
-                            final uri = Uri.parse('http://localhost:3000/api/alumnos/certificado/actualizar');
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/certificado/actualizar');
                             final habs = selectedHabOptions.isEmpty
                                 ? <Map<String, dynamic>>[]
                                 : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();
@@ -683,7 +683,7 @@ class CertificadosSection extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se encontró id_alumno')));
                               return;
                             }
-                            final uri = Uri.parse('http://localhost:3000/api/alumnos/certificado/agregar');
+                            final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/certificado/agregar');
                             final habs = selectedHabOptions.isEmpty
                                 ? <Map<String, dynamic>>[]
                                 : selectedHabOptions.map((h) => {'id_habilidad': h.id}).toList();
