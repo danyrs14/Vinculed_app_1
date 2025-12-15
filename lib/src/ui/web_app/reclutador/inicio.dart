@@ -457,7 +457,7 @@ class _RecruitedCandidateCard extends StatelessWidget {
 
   Future<void> _markCompleted(BuildContext context) async {
     try {
-      final uri = Uri.parse('http://localhost:3000/api/reclutadores/marcar_completada_postulacion');
+      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/marcar_completada_postulacion');
       final userProv = context.read<UserDataProvider>();
       final headers = await userProv.getAuthHeaders();
       headers['Content-Type'] = 'application/json';
