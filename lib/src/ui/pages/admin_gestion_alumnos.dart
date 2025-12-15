@@ -93,10 +93,10 @@ class AdminGestionAlumnosMovilPage extends StatefulWidget {
 }
 
 class _AdminGestionAlumnosMovilPageState extends State<AdminGestionAlumnosMovilPage> {
-  static const String _endpoint = 'http://10.0.2.2:3000/api/usuarios/ver_alumnos';
-  static const String _delUrl = 'http://10.0.2.2:3000/api/usuarios/eliminar_alumno';
-  static const String _createUrl = 'http://10.0.2.2:3000/api/usuarios/crear_alumno';
-  static const String _putUrl = 'http://10.0.2.2:3000/api/usuarios/editar_usuario';
+  static const String _endpoint = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/ver_alumnos';
+  static const String _delUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/eliminar_alumno';
+  static const String _createUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/crear_alumno';
+  static const String _putUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/editar_usuario';
 
   // Datos y paginación
   List<AlumnoItem> _alumnos = const [];
