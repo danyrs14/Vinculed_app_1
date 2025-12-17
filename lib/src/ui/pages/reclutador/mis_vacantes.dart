@@ -498,7 +498,7 @@ class _VacancyDetailRichView extends StatelessWidget {
               crossAxisCount: isMobile?1:2,
               crossAxisSpacing:16,
               mainAxisSpacing:16,
-              childAspectRatio: isMobile?3.2:3.6,
+              childAspectRatio: isMobile ? 1.6 : 2.6,
             ),
             itemBuilder: (_,i){
               final p = postulaciones[i];
@@ -519,44 +519,54 @@ class _VacancyDetailRichView extends StatelessWidget {
 class _PostulanteCard extends StatelessWidget {
   const _PostulanteCard({required this.idAlumno, required this.nombre, required this.correo, this.fotoUrl, required this.estatus});
   final int idAlumno; final String nombre; final String correo; final String? fotoUrl; final String estatus;
+  
   @override
   Widget build(BuildContext context){
     final theme = ThemeController.instance;
+    final isMobile = MediaQuery.of(context).size.width < 475;
     return _CardBox(
+      minHeight: isMobile ? 150 : null, // altura mínima para evitar overflow en móviles
       child: Row(
         children:[
-          CircleAvatar(
-            radius:28,
-            backgroundColor: Colors.blue[50],
-            backgroundImage: (fotoUrl != null && fotoUrl!.isNotEmpty) ? NetworkImage(fotoUrl!) : null,
-            child: (fotoUrl == null || fotoUrl!.isEmpty) ? Icon(Icons.person, size:32, color: theme.fuente()) : null,
-          ),
-          const SizedBox(width:12),
+          
           // Allow name and email to wrap so they're fully visible on small screens
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children:[
-                Text(
-                  nombre,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                  maxLines: 4,
-                  overflow: TextOverflow.visible,
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: Colors.blue[50],
+                  backgroundImage: (fotoUrl != null && fotoUrl!.isNotEmpty) ? NetworkImage(fotoUrl!) : null,
+                  child: (fotoUrl == null || fotoUrl!.isEmpty)
+                      ? Icon(Icons.person, size: 32, color: theme.fuente())
+                      : null,
                 ),
-                // const SizedBox(height:4),
-                // Text(
-                //   correo,
-                //   style: const TextStyle(color: Colors.black87),
-                //   maxLines: 2,
-                //   overflow: TextOverflow.visible,
-                // ),
+                Text(nombre, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                Text(correo, maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
           const SizedBox(width:12),
-          _Badge(text: estatus, color: theme.secundario()),
-          const SizedBox(width:12),
-          SizedBox( child: SimpleButton(title: 'Ver perfil', onTap: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => PerfilPostuladoPage(idAlumno: idAlumno))); } )),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _Badge(text: estatus, color: theme.secundario()),
+                const SizedBox(height: 12),
+                SizedBox(
+                  child: SimpleButton(
+                    title: 'Ver perfil',
+                    onTap: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => PerfilPostuladoPage(idAlumno: idAlumno))); }
+                  ),
+                ),
+              ],
+          // _Badge(text: estatus, color: theme.secundario()),
+          // const SizedBox(width:12),
+          // SizedBox( child: SimpleButton(title: 'Ver perfil', onTap: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => PerfilPostuladoPage(idAlumno: idAlumno))); } 
+          )),
         ],
       ),
     );
@@ -569,7 +579,20 @@ class _PillBadge extends StatelessWidget { const _PillBadge(this.text, this.icon
 class _SectionCard extends StatelessWidget { final String title; final List<Widget> children; const _SectionCard({required this.title, required this.children}); @override Widget build(BuildContext context){ return Container(width: double.infinity, margin: const EdgeInsets.only(bottom:24), padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.black12.withOpacity(.12))), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[ Text(title, style: const TextStyle(fontSize:19, fontWeight: FontWeight.bold)), const SizedBox(height:16), ...children, ],), ); }
 }
 
-class _DetailItem extends StatelessWidget { final String label, value; final IconData icon; const _DetailItem(this.label, this.value, this.icon); @override Widget build(BuildContext context){ return Row(mainAxisSize: MainAxisSize.min, children:[ Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: Colors.blue[700], size:22),), const SizedBox(width:12), Column(crossAxisAlignment: CrossAxisAlignment.start, children:[ Text(label, style: TextStyle(fontSize:13, color: Colors.grey[600], fontWeight: FontWeight.w500)), Text(value, style: const TextStyle(fontSize:15, fontWeight: FontWeight.w700)), ],), ],); }
+class _DetailItem extends StatelessWidget { final String label, value; final IconData icon; const _DetailItem(this.label, this.value, this.icon); @override Widget build(BuildContext context){ return Row(crossAxisAlignment: CrossAxisAlignment.start, children:[ Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: Colors.blue[700], size:22),), const SizedBox(width:12),  Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+              Text(
+                value,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                softWrap: true,
+              ),
+            ],
+          ),), ],); }
 }
 
 class _LabeledInfo extends StatelessWidget { const _LabeledInfo(this.label,this.value); final String label; final String value; @override Widget build(BuildContext context){ return Column(crossAxisAlignment: CrossAxisAlignment.start, children:[ Text(label, style: const TextStyle(fontSize:14, fontWeight: FontWeight.bold, color: Colors.black54)), const SizedBox(height:6), Text(value, style: const TextStyle(fontSize:16, height:1.4)), ],); }
@@ -578,7 +601,7 @@ class _LabeledInfo extends StatelessWidget { const _LabeledInfo(this.label,this.
 class _BulletItem extends StatelessWidget { const _BulletItem(this.text); final String text; @override Widget build(BuildContext context){ return Padding(padding: const EdgeInsets.only(bottom:10.0), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children:[ const Padding(padding: EdgeInsets.only(top:7), child: Icon(Icons.circle, size:6, color: Colors.blue)), const SizedBox(width:12), Expanded(child: Text(text, style: const TextStyle(fontSize:16, height:1.5))), ],), ); }
 }
 
-class _CardBox extends StatelessWidget { const _CardBox({this.child}); final Widget? child; @override Widget build(BuildContext context){ return Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: const Color(0x11000000)), boxShadow: const [ BoxShadow(blurRadius:10, spreadRadius:0, offset: Offset(0,2), color: Color(0x0F000000)), ],), child: child, ); }
+class _CardBox extends StatelessWidget { const _CardBox({this.child, this.minHeight}); final Widget? child; final double? minHeight; @override Widget build(BuildContext context){ return Container(padding: const EdgeInsets.all(14),constraints: BoxConstraints(minHeight: minHeight ?? 0), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: const Color(0x11000000)), boxShadow: const [ BoxShadow(blurRadius:10, spreadRadius:0, offset: Offset(0,2), color: Color(0x0F000000)), ],), child: child, ); }
 }
 
 class _Badge extends StatelessWidget { const _Badge({required this.text, required this.color}); final String text; final Color color; @override Widget build(BuildContext context){ return Container(padding: const EdgeInsets.symmetric(horizontal:10, vertical:6), decoration: BoxDecoration(color: color.withOpacity(.12), borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withOpacity(.35))), child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w700)), ); }
