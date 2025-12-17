@@ -332,7 +332,6 @@ class _JobDetailPageState extends State<JobDetailPage> {
         const SizedBox(height: 20),
         SizedBox(
           width: double.infinity,
-          height: 55,
           child: SimpleButton(
             title: botonTitulo,
             onTap: accion,

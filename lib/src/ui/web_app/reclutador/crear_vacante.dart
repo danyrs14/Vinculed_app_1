@@ -539,7 +539,6 @@ class _CreateVacancyPageState extends State<CreateVacancyPage> {
                                     alignment: Alignment.center,
                                     child: SizedBox(
                                       width: isMobile ? 240 : 320,
-                                      height: 48,
                                       child: SimpleButton(
                                         onTap: _publicar,
                                         title: 'Publicar Vacante',

@@ -577,7 +577,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                     Center(
                                       child: SizedBox(
                                         width: 300, // Ancho fijo para que no sea 100% en pantallas grandes
-                                        height: 50,
                                         child: SimpleButton(
                                           title: 'Desactivar Cuenta',
                                           backgroundColor: Colors.red,
@@ -710,7 +709,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                     Center(
                                       child: SizedBox(
                                         width: 300, // Ancho fijo para que no sea 100% en pantallas grandes
-                                        height: 50,
                                         child: SimpleButton(
                                           title: 'Desactivar Cuenta',
                                           backgroundColor: Colors.red,

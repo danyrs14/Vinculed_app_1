@@ -582,7 +582,6 @@ class _JobDetailPageState extends State<JobDetailPage> {
         // 7. BOTÓN DE ACCIÓN (Postular / Cancelar)
         SizedBox(
           width: double.infinity,
-          height: 55,
           child: SimpleButton(
             title: botonTitulo,
             onTap: botonAccion,
