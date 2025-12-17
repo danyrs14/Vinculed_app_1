@@ -440,7 +440,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                           spacing: 8, runSpacing: 8,
                           children: [
                             _Badge(d['modalidad'] ?? 'No esp.', Icons.work_outline, Colors.blue),
-                            _Badge(d['duracion'] ?? 'No esp.', Icons.timer_outlined, Colors.blue),
+                            _Badge('${d['duracion']} meses' ?? 'No esp.', Icons.timer_outlined, Colors.blue),
                             if (d['numero_vacantes'] != null)
                               _Badge('${d['numero_vacantes']} vacantes', Icons.people_outline, Colors.blue),
                             _Badge(d['estado'] ?? 'Activa', Icons.check_circle_outline, Colors.blue),
@@ -582,13 +582,38 @@ class _JobDetailPageState extends State<JobDetailPage> {
         // 7. BOTÓN DE ACCIÓN (Postular / Cancelar)
         SizedBox(
           width: double.infinity,
-          child: SimpleButton(
-            title: botonTitulo,
-            onTap: botonAccion,
-            primaryColor: botonColorPrimario,
-            backgroundColor: botonColorFondo,
-            textColor: botonTextoColor == Colors.white ? botonTextoColor: null,
-          )
+          child: (() {
+            final Widget btn = SimpleButton(
+              title: botonTitulo,
+              onTap: botonAccion,
+              primaryColor: botonColorPrimario,
+              backgroundColor: botonColorFondo,
+              textColor: botonTextoColor == Colors.white ? botonTextoColor : null,
+            );
+
+            if (botonAccion == null) {
+              // Deshabilitar completamente: sin ripple, sin hover, cursor no permitido y estilo atenuado
+              return MouseRegion(
+                cursor: SystemMouseCursors.forbidden,
+                child: AbsorbPointer(
+                  absorbing: true,
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      splashFactory: NoSplash.splashFactory,
+                      hoverColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                    ),
+                    child: Opacity(
+                      opacity: 0.6,
+                      child: btn,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return btn;
+          })(),
         ),
         
         const SizedBox(height: 20),
