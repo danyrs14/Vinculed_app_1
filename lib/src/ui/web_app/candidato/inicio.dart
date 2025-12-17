@@ -140,7 +140,6 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
           Text(empresa.toString(), style: const TextStyle(fontWeight: FontWeight.w700), textAlign: TextAlign.center),
           const SizedBox(height: 14),
           SizedBox(
-            height: 40,
             child: SimpleButton(
               title: 'Ver detalles',
               onTap: idVac == null ? null : () {

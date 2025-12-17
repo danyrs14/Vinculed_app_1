@@ -272,7 +272,6 @@ class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 40,
               child: SimpleButton(
                 title: 'Actualizar',
                 onTap: _fetchPostulacionesRevision,

@@ -256,7 +256,6 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                         Text(_error!, textAlign: TextAlign.center),
                                         const SizedBox(height: 12),
                                         SizedBox(
-                                          height: 40,
                                           child: SimpleButton(title: 'Reintentar', onTap: _fetchRecruitedStudents),
                                         ),
                                       ],
@@ -302,7 +301,6 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                           ),
                                           const SizedBox(height: 14),
                                           SizedBox(
-                                            height: 48,
                                             child: SimpleButton(
                                               title: 'Actualizar',
                                               onTap: _fetchRecruitedStudents,
@@ -583,7 +581,6 @@ class _RecruitedCandidateCard extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: SizedBox(
-                height: 40,
                 child: SimpleButton(
                   title: 'Marcar como Completada',
                   onTap: () => _markCompleted(context),

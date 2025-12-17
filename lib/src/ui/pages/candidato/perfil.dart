@@ -317,7 +317,6 @@ class _PerfilState extends State<Perfil> {
               Center(
                 child: SizedBox(
                   width: 300, // Ancho fijo para que no sea 100% en pantallas grandes
-                  height: 50,
                   child: SimpleButton(
                     title: 'Cerrar Sesión',
                     backgroundColor: Colors.blue,
@@ -330,7 +329,6 @@ class _PerfilState extends State<Perfil> {
               Center(
                 child: SizedBox(
                   width: 300, // Ancho fijo para que no sea 100% en pantallas grandes
-                  height: 50,
                   child: SimpleButton(
                     title: 'Desactivar Cuenta',
                     backgroundColor: Colors.red,

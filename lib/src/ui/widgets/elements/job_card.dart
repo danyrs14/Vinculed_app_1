@@ -73,7 +73,6 @@ class _JobCardState extends State<JobCard> {
               
               const Spacer(),
               SizedBox(
-                height: 36,
                 child: SimpleButton(
                   onTap: widget.onApply,
                   title: 'Postularme',

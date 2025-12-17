@@ -435,7 +435,6 @@ Text("Crear Vacante", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold
                       alignment: Alignment.center,
                       child: SizedBox(
                         width: 240,
-                        height: 48,
                         child: SimpleButton(onTap: _publicar, title: 'Publicar Vacante'),
                       ),
                     ),

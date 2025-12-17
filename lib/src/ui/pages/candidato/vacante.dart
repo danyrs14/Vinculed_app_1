@@ -123,7 +123,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset('assets/images/escom.png', width: 50, height: 50),
+            //Image.asset('assets/images/escom.png', width: 50, height: 50),
             Row(children: [
               IconButton(icon: Icon(Icons.search, color: theme.primario()), onPressed: () {Navigator.push(
                       context,
@@ -193,9 +193,9 @@ class _JobDetailPageState extends State<JobDetailPage> {
     if (_processing) {
       botonTitulo = 'Procesando...'; fondo = Colors.blueGrey; texto = Colors.white; accion = null;
     } else if (perfilIncompleto) {
-      botonTitulo = 'Completa tu perfil para postularte'; fondo = Colors.blueGrey; texto = Colors.white;
+      botonTitulo = 'Completa tu perfil para postularte'; fondo = Color.fromARGB(255, 238, 238, 238); texto = Colors.black;
     } else if (esRechazado) {
-      botonTitulo = 'No aceptado en esta vacante'; fondo = Colors.blueGrey; texto = Colors.white;
+      botonTitulo = 'No ha sido aceptado en esta vacante'; fondo = Color.fromARGB(255, 238, 238, 238); texto = Colors.black;
     } else if (estaReclutado) {
       botonTitulo = 'Ya has sido reclutado'; fondo = Colors.blue;
     } else if (estaCompletado) {
@@ -257,7 +257,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                 const SizedBox(height: 12),
                 Wrap(spacing: 8, runSpacing: 8, children: [
                   _Badge(d['modalidad'] ?? 'No esp.', Icons.work_outline, Colors.blue),
-                  _Badge(d['duracion'] ?? 'No esp.', Icons.timer_outlined, Colors.blue),
+                  _Badge('${d['duracion']} meses' ?? 'No esp.', Icons.timer_outlined, Colors.blue),
                   if (d['numero_vacantes'] != null) _Badge('${d['numero_vacantes']} vacantes', Icons.people_outline, Colors.blue),
                   _Badge(d['estado'] ?? 'Activa', Icons.check_circle_outline, Colors.blue),
                   if (estaReclutado) _Badge('Reclutado', Icons.verified, Colors.blueAccent)
@@ -332,14 +332,38 @@ class _JobDetailPageState extends State<JobDetailPage> {
         const SizedBox(height: 20),
         SizedBox(
           width: double.infinity,
-          height: 55,
-          child: SimpleButton(
-            title: botonTitulo,
-            onTap: accion,
-            primaryColor: primary,
-            backgroundColor: fondo,
-            textColor: texto,
-          ),
+          child: (() {
+            final Widget btn = SimpleButton(
+              title: botonTitulo,
+              onTap: accion,
+              primaryColor: primary,
+              backgroundColor: fondo,
+              textColor: texto,
+            );
+
+            if (accion == null) {
+              // Deshabilitar completamente: sin ripple, sin hover, cursor no permitido y estilo atenuado
+              return MouseRegion(
+                cursor: SystemMouseCursors.forbidden,
+                child: AbsorbPointer(
+                  absorbing: true,
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      splashFactory: NoSplash.splashFactory,
+                      hoverColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                    ),
+                    child: Opacity(
+                      opacity: 0.6,
+                      child: btn,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return btn;
+          })(),
         ),
         const SizedBox(height: 20),
       ]),

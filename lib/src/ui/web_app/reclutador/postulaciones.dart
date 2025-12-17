@@ -336,7 +336,6 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
             const SizedBox(height: 24),
             // Botón de acción (Crear vacante)
             SizedBox(
-              height: 50,
               child: SimpleButton(
                 title: 'Crear Nueva Vacante',
                 // Asumo que esta es la ruta de creación
@@ -432,7 +431,6 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
                                             Text(_error!, textAlign: TextAlign.center),
                                             const SizedBox(height: 12),
                                             SizedBox(
-                                              height: 40,
                                               child: SimpleButton(title: 'Reintentar', onTap: _fetchVacantes),
                                             ),
                                           ],
@@ -617,7 +615,6 @@ class _VacancyListView extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerRight,
                         child: SizedBox(
-                          height: 40,
                           child: SimpleButton(
                             title: 'Ver detalle',
                             onTap: () => onOpen(i),
@@ -1168,7 +1165,6 @@ class _PostulanteCard extends StatelessWidget {
           _Badge(text: estatus, color: theme.secundario()),
           const SizedBox(width: 12),
           SizedBox(
-            height: 36,
             child: SimpleButton(
               title: 'Ver perfil',
               onTap: () => context.go('/reclutador/perfil_candidato/$idAlumno'),

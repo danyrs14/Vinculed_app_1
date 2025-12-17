@@ -378,7 +378,7 @@ class _EditVacancyPageState extends State<EditVacancyPage> {
                           const SizedBox(height:12),
                           StyledTextFormField(controller: _horarioCtrl, title: 'Horario', isRequired:true, validator:(v)=> (v==null||v.trim().isEmpty)?'Obligatorio':null),
                           const SizedBox(height:18),
-                          Align(alignment: Alignment.center, child: SizedBox(width: isMobile?240:320, height:44, child: SimpleButton(title: 'Guardar Cambios', onTap: _guardarCambios))),
+                          Align(alignment: Alignment.center, child: SizedBox(width: isMobile?240:320, child: SimpleButton(title: 'Guardar Cambios', onTap: _guardarCambios))),
                         ],
                       ),
                     ),

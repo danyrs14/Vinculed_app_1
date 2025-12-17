@@ -180,7 +180,6 @@ class _HomeRecState extends State<HomeRec> {
                       Text(_error!, textAlign: TextAlign.center),
                       const SizedBox(height: 12),
                       SizedBox(
-                        height: 40,
                         child: SimpleButton(title: 'Reintentar', onTap: _fetchRecruitedStudents),
                       ),
                     ],
@@ -492,7 +491,6 @@ class _RecruitedCandidateCard extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: SizedBox(
-                height: 40,
                 child: SimpleButton(
                   title: 'Marcar como Completada',
                   onTap: () => _markCompleted(context),

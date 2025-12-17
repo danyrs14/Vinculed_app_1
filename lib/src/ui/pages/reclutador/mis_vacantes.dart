@@ -183,7 +183,7 @@ class _VacantesRecState extends State<VacantesRec> {
             const SizedBox(height: 12),
             const Text('Tu inventario de vacantes está vacío. Crea tu primera oferta para atraer talento.', style: TextStyle(fontSize: 16, color: Colors.black54), textAlign: TextAlign.center),
             const SizedBox(height: 24),
-            SizedBox(height: 50, child: SimpleButton(title: 'Crear Nueva Vacante', onTap: (){Navigator.push(context,MaterialPageRoute(builder: (context) => const CrearVacantePage()),);}, primaryColor: true)),
+            SizedBox(child: SimpleButton(title: 'Crear Nueva Vacante', onTap: (){Navigator.push(context,MaterialPageRoute(builder: (context) => const CrearVacantePage()),);}, primaryColor: true)),
           ],
         ),
       ),
@@ -212,7 +212,7 @@ class _VacantesRecState extends State<VacantesRec> {
                             const SizedBox(height: 8),
                             Text(_error!, textAlign: TextAlign.center),
                             const SizedBox(height: 12),
-                            SizedBox(height: 40, child: SimpleButton(title: 'Reintentar', onTap: _fetchVacantes)),
+                            SizedBox( child: SimpleButton(title: 'Reintentar', onTap: _fetchVacantes)),
                           ],
                         )
                       : (_isEmptyState)

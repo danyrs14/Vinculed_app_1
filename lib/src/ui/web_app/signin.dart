@@ -37,7 +37,8 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
   // Estado de carga y validación
   bool _loading = false;
   bool _hasMinLength = false;
-  bool _hasLetter = false;
+  bool _hasLetterM = false;
+  bool _hasLetterm = false;
   bool _hasNumber = false;
   bool _hasSpecialChar = false;
 
@@ -134,9 +135,10 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
   void _validatePassword(String value) {
     setState(() {
       _hasMinLength = value.length >= 8;
-      _hasLetter = RegExp(r'[A-Za-z]').hasMatch(value);
+      _hasLetterM = RegExp(r'[A-Z]').hasMatch(value);
+      _hasLetterm = RegExp(r'[a-z]').hasMatch(value);
       _hasNumber = RegExp(r'\d').hasMatch(value);
-      _hasSpecialChar = RegExp(r'[@$!%*?&.,;:_\-]').hasMatch(value);
+      _hasSpecialChar = RegExp(r'''[~`!@#$%\^&*()\-_+=|}\]{["':;?/>.<,]''').hasMatch(value);
     });
   }
 
@@ -340,7 +342,7 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                                       if (value == null || value.isEmpty) {
                                         return 'La contraseña es obligatoria.';
                                       }
-                                      if (!_hasMinLength || !_hasLetter || !_hasNumber || !_hasSpecialChar) {
+                                      if (!_hasMinLength || !_hasLetterM || !_hasLetterm || !_hasNumber || !_hasSpecialChar) {
                                         return 'La contraseña no cumple con los requisitos.';
                                       }
                                       return null;
@@ -358,7 +360,9 @@ class _RegisterPageWebState extends State<RegisterPageWeb> {
                                         SizedBox(height: 8),
                                         _buildValidationRow("Al menos 8 caracteres", _hasMinLength),
                                         const SizedBox(height: 4),
-                                        _buildValidationRow("Al menos una letra", _hasLetter),
+                                        _buildValidationRow("Al menos una letra mayúscula", _hasLetterM),
+                                        const SizedBox(height: 4),
+                                        _buildValidationRow("Al menos una letra minúscula", _hasLetterm),
                                         const SizedBox(height: 4),
                                         _buildValidationRow("Al menos un número", _hasNumber),
                                         const SizedBox(height: 4),
