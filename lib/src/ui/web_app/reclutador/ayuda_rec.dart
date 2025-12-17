@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/faq_item.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart';
 
 class FaqPageRec extends StatefulWidget {
@@ -65,7 +63,7 @@ class _FaqPageRecState extends State<FaqPageRec> {
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
-              context.go('/inicio_rec');
+              context.go('/inicio');
               break;
             case "Crear Vacante":
               context.go('/reclutador/new_vacancy');
