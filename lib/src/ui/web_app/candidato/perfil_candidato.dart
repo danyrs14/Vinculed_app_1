@@ -740,14 +740,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
         title: const Text('Confirmar acción'),
         content: const Text('¿Seguro que deseas desactivar tu cuenta? Esta acción no se puede deshacer.'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
+          SimpleButton(
+            title: 'Cancelar',
+            backgroundColor: Colors.grey,
+            primaryColor: false,
+            onTap: () => Navigator.of(ctx).pop(false),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Sí, desactivar'),
+          SimpleButton(
+            title: 'Sí, desactivar',
+            backgroundColor: Colors.red,
+            primaryColor: false,
+            onTap: () => Navigator.of(ctx).pop(true),
           ),
         ],
       ),
@@ -776,8 +779,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
       if (resp.statusCode == 204) {
         context.read<UserDataProvider>().clearData();
+        // Cerrar sesión de Firebase para que el AuthNotifier detecte el cambio
+        await FirebaseAuth.instance.signOut();
         // Ir al inicio de sesión
-        context.go('/login');
+        if (mounted) context.go('/login');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al desactivar: ${resp.statusCode}')),
