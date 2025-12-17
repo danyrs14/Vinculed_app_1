@@ -665,7 +665,13 @@ class _BannerSection extends StatelessWidget {
         const SizedBox(width: 12),
         InkWell(onTap: onUploadCv, child: const Icon(Icons.attach_file, size: 18, color: Colors.black54)),
         const SizedBox(width: 8),
-        Expanded(child: InkWell(onTap: onViewCv, child: Text(cvName, style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline), overflow: TextOverflow.ellipsis, maxLines: 1))),
+        Expanded(child:(cvName == 'Sube tu CV' || cvName == 'CV') ?
+              Text(cvName,
+                  style: const TextStyle(color: Colors.black54),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+              )
+              : InkWell(onTap: onViewCv, child: Text('Ver CV', style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline), overflow: TextOverflow.ellipsis, maxLines: 1))),
         const SizedBox(width: 12),
       ]),
     );
