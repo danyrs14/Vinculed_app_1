@@ -30,7 +30,8 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
 
   //Para la validación de la contraseña
   bool _hasMinLength = false;
-  bool _hasLetter = false;
+  bool _hasLetterM = false;
+  bool _hasLetterm = false;
   bool _hasNumber = false;
   bool _hasSpecialChar = false;
 
@@ -121,9 +122,10 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
   void _validatePassword(String value) {
     setState(() {
       _hasMinLength = value.length >= 8;
-      _hasLetter = RegExp(r'[A-Za-z]').hasMatch(value);
+      _hasLetterM = RegExp(r'[A-Z]').hasMatch(value);
+      _hasLetterm = RegExp(r'[a-z]').hasMatch(value);
       _hasNumber = RegExp(r'\d').hasMatch(value);
-      _hasSpecialChar = RegExp(r'[+@$!%*?&.,;:_\-]').hasMatch(value);
+      _hasSpecialChar = RegExp(r'''[~`!@#$%\^&*()\-_+=|}\]{["':;?/>.<,]''').hasMatch(value);
     });
   }
 
@@ -276,7 +278,7 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
                                           if (value == null || value.isEmpty) {
                                             return 'La contraseña es obligatoria.';
                                           }
-                                          if (!_hasMinLength || !_hasLetter || !_hasNumber || !_hasSpecialChar) {
+                                          if (!_hasMinLength || !_hasLetterm || !_hasLetterM || !_hasNumber || !_hasSpecialChar) {
                                             return 'La contraseña no cumple con los requisitos.';
                                           }
                                           return null;
@@ -290,7 +292,9 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
                                           SizedBox(height: 8),
                                           _buildValidationRow("Al menos 8 caracteres", _hasMinLength),
                                           SizedBox(height: 4),
-                                          _buildValidationRow("Al menos una letra", _hasLetter),
+                                          _buildValidationRow("Al menos una letra mayúscula", _hasLetterM),
+                                          SizedBox(height: 4),
+                                          _buildValidationRow("Al menos una letra minúscula", _hasLetterm),
                                           SizedBox(height: 4),
                                           _buildValidationRow("Al menos un número", _hasNumber),
                                           SizedBox(height: 4),
