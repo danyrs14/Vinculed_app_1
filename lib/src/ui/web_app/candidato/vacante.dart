@@ -308,17 +308,17 @@ class _JobDetailPageState extends State<JobDetailPage> {
       // CASO 7: Perfil incompleto (Bloqueado)
       botonTitulo = 'Completa tu perfil para postularte';
       botonColorPrimario = false;
-      botonColorFondo = Colors.blueGrey;
+      botonColorFondo = Color.fromARGB(255, 238, 238, 238);
       botonAccion = null; // Deshabilita el clic
-      botonTextoColor = Colors.white;
+      botonTextoColor = Colors.black;
 
     }else if (esRechazado) {
       // CASO 2: Rechazado (Bloqueado)
-      botonTitulo = 'No aceptado en esta vacante'; // O "Postulación Rechazada"
+      botonTitulo = 'No ha sido aceptado en esta vacante'; // O "Postulación Rechazada"
       botonColorPrimario = false;
-      botonColorFondo = Colors.blueGrey;
+      botonColorFondo = Color.fromARGB(255, 238, 238, 238);
       botonAccion = null; // Deshabilita el clic
-      botonTextoColor = Colors.white;
+      botonTextoColor = Colors.black;
     }  else if(estaReclutado){
       // CASO 5: Reclutado (Bloqueado)
       botonTitulo = 'Ya has sido reclutado para esta vacante';

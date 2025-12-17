@@ -123,7 +123,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset('assets/images/escom.png', width: 50, height: 50),
+            //Image.asset('assets/images/escom.png', width: 50, height: 50),
             Row(children: [
               IconButton(icon: Icon(Icons.search, color: theme.primario()), onPressed: () {Navigator.push(
                       context,
@@ -193,9 +193,9 @@ class _JobDetailPageState extends State<JobDetailPage> {
     if (_processing) {
       botonTitulo = 'Procesando...'; fondo = Colors.blueGrey; texto = Colors.white; accion = null;
     } else if (perfilIncompleto) {
-      botonTitulo = 'Completa tu perfil para postularte'; fondo = Color.fromARGB(255, 238, 238, 238); texto = Colors.white;
+      botonTitulo = 'Completa tu perfil para postularte'; fondo = Color.fromARGB(255, 238, 238, 238); texto = Colors.black;
     } else if (esRechazado) {
-      botonTitulo = 'No aceptado en esta vacante'; fondo = Colors.blueGrey; texto = Colors.white;
+      botonTitulo = 'No ha sido aceptado en esta vacante'; fondo = Color.fromARGB(255, 238, 238, 238); texto = Colors.black;
     } else if (estaReclutado) {
       botonTitulo = 'Ya has sido reclutado'; fondo = Colors.blue;
     } else if (estaCompletado) {
