@@ -310,7 +310,7 @@ class _PerfilState extends State<Perfil> {
               const SizedBox(height: 16),
               HabilidadesTipoSection(title: 'Habilidades Blandas', tipoDisplay: 'Blandas', items: perfil.habilidades.where(_isBlanda).toList(), idAlumno: perfil.idAlumno, emptyText: 'Agrega tus habilidades blandas', onUpdated: () => _fetchPerfil(perfil.idAlumno)),
               const SizedBox(height: 16),
-              HabilidadesTipoSection(title: 'Idiomas', tipoDisplay: 'Idiomas', items: perfil.habilidades.where(_isIdioma).toList(), idAlumno: perfil.idAlumno, emptyText: 'Agrega tus idiomas', onUpdated: () => _fetchPerfil(perfil.idAlumno)),
+              HabilidadesTipoSection(title: 'Idiomas', tipoDisplay: 'Idioma', items: perfil.habilidades.where(_isIdioma).toList(), idAlumno: perfil.idAlumno, emptyText: 'Agrega tus idiomas', onUpdated: () => _fetchPerfil(perfil.idAlumno)),
               const SizedBox(height: 16),
               UrlsSection(items: perfil.urlsExternas, emptyText: 'Agrega tus URLs externas', onUpdated: () => _fetchPerfil(perfil.idAlumno)),
               const SizedBox(height: 32),

@@ -694,7 +694,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                         Expanded(
                                           child: HabilidadesTipoSection(
                                             title: 'Idiomas',
-                                            tipoDisplay: 'Idiomas',
+                                            tipoDisplay: 'Idioma',
                                             idAlumno: perfil.idAlumno,
                                             items: perfil.habilidades.where((h) => _isIdioma(h)).toList(),
                                             emptyText: 'Agrega los idiomas que hablas',
