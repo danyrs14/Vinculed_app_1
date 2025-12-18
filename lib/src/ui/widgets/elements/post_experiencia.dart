@@ -63,6 +63,9 @@ class ExperiencePost extends StatefulWidget {
     this.padding = const EdgeInsets.all(16),
     // Control de superposición de iframes (YouTube) cuando hay modales
     this.hideMediaOverlays = false,
+    // Modo propietario: muestra menú de opciones en lugar de solo reportar
+    this.isOwner = false,
+    this.onDelete,
   });
 
   final String authorName;
@@ -105,6 +108,9 @@ class ExperiencePost extends StatefulWidget {
   final EdgeInsets padding;
   // Ocultar temporalmente contenido embebido (evitar que capture clicks sobre diálogos)
   final bool hideMediaOverlays;
+  // Modo propietario: muestra menú de opciones en lugar de solo reportar
+  final bool isOwner;
+  final VoidCallback? onDelete;
 
   @override
   State<ExperiencePost> createState() => _ExperiencePostState();
@@ -692,11 +698,47 @@ class _ExperiencePostState extends State<ExperiencePost> {
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: _openReportDialog,
-                  icon: const Icon(Icons.flag_outlined, color: Colors.black54),
-                  tooltip: 'Reportar',
-                ),
+                if (widget.isOwner)
+                  PopupMenuButton<String>(
+                    color: theme.background(),
+                    icon: const Icon(Icons.more_vert, color: Colors.black54),
+                    tooltip: 'Opciones',
+                    onSelected: (value) {
+                      if (value == 'reportar') {
+                        _openReportDialog();
+                      } else if (value == 'eliminar') {
+                        widget.onDelete?.call();
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem<String>(
+                        value: 'reportar',
+                        child: Row(
+                          children: [
+                            Icon(Icons.flag_outlined, size: 20),
+                            SizedBox(width: 8),
+                            Text('Reportar'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'eliminar',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Eliminar', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  IconButton(
+                    onPressed: _openReportDialog,
+                    icon: const Icon(Icons.flag_outlined, color: Colors.black54),
+                    tooltip: 'Reportar',
+                  ),
               ],
             ),
 
