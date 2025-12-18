@@ -342,15 +342,13 @@ class _ReportesAdminPageState extends State<ReportesAdminPage> {
                 );
               }
               if (snap.hasError) {
-                return SizedBox(
-                  width: 520,
-                  height: 200,
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text('Error al cargar: ${snap.error}', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
-                    ),
-                  ),
+                return _ErrorWithResolveContent(
+                  error: snap.error.toString(),
+                  idReporte: r.idReporte,
+                  onUpdate: () {
+                    Navigator.of(context).maybePop();
+                    _refresh();
+                  },
                 );
               }
               final d = snap.data!;
@@ -874,6 +872,95 @@ class _PublicacionModalContent extends StatelessWidget {
                           ),
                         ],
                       ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorWithResolveContent extends StatelessWidget {
+  final String error;
+  final int idReporte;
+  final VoidCallback? onUpdate;
+
+  const _ErrorWithResolveContent({
+    required this.error,
+    required this.idReporte,
+    this.onUpdate,
+  });
+
+  Future<void> _resolverReporte(BuildContext context) async {
+    try {
+      final headersBase = await context.read<UserDataProvider>().getAuthHeaders();
+      final headers = {...headersBase, 'Content-Type': 'application/json'};
+      final res = await http.put(
+        Uri.parse('http://localhost:3000/api/reportes/resolver_reporte'),
+        headers: headers,
+        body: jsonEncode({'id_reporte': idReporte}),
+      );
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reporte resuelto')));
+        onUpdate?.call();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al resolver: ${res.statusCode}')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excepción: $e')));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ThemeController.instance;
+    return SizedBox(
+      width: 520,
+      child: Material(
+        color: theme.background(),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Error al cargar contenido',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Cerrar',
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const Divider(height: 1),
+              const SizedBox(height: 20),
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 12),
+              Text(
+                error,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.red),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'El contenido reportado puede haber sido eliminado o no está disponible.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+              ),
+              const SizedBox(height: 24),
+              SimpleButton(
+                title: 'Resolver reporte',
+                icon: Icons.check_circle,
+                backgroundColor: Colors.green,
+                textColor: Colors.white,
+                onTap: () => _resolverReporte(context),
               ),
             ],
           ),
