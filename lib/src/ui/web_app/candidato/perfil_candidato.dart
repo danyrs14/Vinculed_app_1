@@ -577,7 +577,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                     Center(
                                       child: SizedBox(
                                         width: 300, // Ancho fijo para que no sea 100% en pantallas grandes
-                                        height: 50,
                                         child: SimpleButton(
                                           title: 'Desactivar Cuenta',
                                           backgroundColor: Colors.red,
@@ -695,7 +694,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                         Expanded(
                                           child: HabilidadesTipoSection(
                                             title: 'Idiomas',
-                                            tipoDisplay: 'Idiomas',
+                                            tipoDisplay: 'Idioma',
                                             idAlumno: perfil.idAlumno,
                                             items: perfil.habilidades.where((h) => _isIdioma(h)).toList(),
                                             emptyText: 'Agrega los idiomas que hablas',
@@ -710,7 +709,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                     Center(
                                       child: SizedBox(
                                         width: 300, // Ancho fijo para que no sea 100% en pantallas grandes
-                                        height: 50,
                                         child: SimpleButton(
                                           title: 'Desactivar Cuenta',
                                           backgroundColor: Colors.red,
@@ -742,14 +740,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
         title: const Text('Confirmar acción'),
         content: const Text('¿Seguro que deseas desactivar tu cuenta? Esta acción no se puede deshacer.'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
+          SimpleButton(
+            title: 'Cancelar',
+            backgroundColor: Colors.grey,
+            primaryColor: false,
+            onTap: () => Navigator.of(ctx).pop(false),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Sí, desactivar'),
+          SimpleButton(
+            title: 'Sí, desactivar',
+            backgroundColor: Colors.red,
+            primaryColor: false,
+            onTap: () => Navigator.of(ctx).pop(true),
           ),
         ],
       ),
@@ -778,8 +779,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
       if (resp.statusCode == 204) {
         context.read<UserDataProvider>().clearData();
+        // Cerrar sesión de Firebase para que el AuthNotifier detecte el cambio
+        await FirebaseAuth.instance.signOut();
         // Ir al inicio de sesión
-        context.go('/login');
+        if (mounted) context.go('/login');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al desactivar: ${resp.statusCode}')),
@@ -1386,10 +1389,16 @@ class _BannerSection extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: InkWell(
+              child: (cvName == 'Sube tu CV' || cvName == 'CV') ?
+              Text(cvName,
+                  style: const TextStyle(color: Colors.black54),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+              )
+              : InkWell(
                 onTap: onViewCv,
                 child: Text(
-                  cvName,
+                  'Ver CV',
                   style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,

@@ -272,7 +272,6 @@ class _RecruiterCandidateProfilePage extends State<RecruiterCandidateProfilePage
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 40,
               child: SimpleButton(
                 title: 'Actualizar',
                 onTap: _fetchPostulacionesRevision,
@@ -828,10 +827,16 @@ class _BannerSection extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: InkWell(
+              child: cvName == 'No hay CV para visualizar'?
+                Text(cvName,
+                    style: const TextStyle(color: Colors.black54),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                )
+                :InkWell(
                 onTap: onViewCv,
                 child: Text(
-                  cvName,
+                 'Ver CV',
                   style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,

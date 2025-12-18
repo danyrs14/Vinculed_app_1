@@ -2,8 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_ajustes.dart';
+import 'package:vinculed_app_1/src/ui/pages/admin_gestion_alumnos.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_empresas.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_reclutador.dart';
+import 'package:vinculed_app_1/src/ui/pages/admin_inicio.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_reportes.dart';
 
 
@@ -24,11 +26,11 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
   void initState() {
     super.initState();
     _paginas = const [
-      //PerfilRec(),         // 0
-      ReportesAdminMovilPage(),  // 1
-      InicioAdminPageMovil(),           // 2
-      AdminGestionEmpresasPageMovil(),   // 3
-      AjustesAdmin(),       // 4
+      ReportesAdminMovilPage(),  // 0
+      InicioAdminPageMovil(),           // 1
+      AdminGestionEmpresasPageMovil(),   // 2
+      AdminGestionAlumnosMovilPage(), //3
+      AdminGestionReclutadoresMovilPage(), //4
     ];
     _pageController = PageController(initialPage: _paginaActual);
   }
@@ -61,6 +63,24 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Image.asset('assets/images/graduate.png', width: 50, height: 50),
+            Row(
+              children: [
+                const SizedBox(width: 10),
+                IconButton(
+                  icon: Icon(
+                    Icons.settings_outlined,
+                    color: theme.fuente(),
+                    size: 26,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AjustesAdmin()),
+                    );
+                  },
+                ),
+              ],
+            ),
           ],
         ),
         elevation: 0,
@@ -103,11 +123,12 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
               icon: Icon(
-                Icons.person_search_outlined,
-                color: _paginaActual == 1 ? theme.primario() : Colors.grey,
+                //Icons.person_search_outlined,
+                Icons.person_add_alt_1_outlined,
+                color: _paginaActual == 1 ? theme.fuente() : Colors.grey,
                 size: 26,
               ),
-              label: 'Reclutadores',
+              label: 'Rec. Pendientes',
             ),
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
@@ -121,11 +142,20 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
               icon: Icon(
-                Icons.settings_outlined,
-                color: _paginaActual == 3 ? theme.primario() : Colors.grey,
+                Icons.school_outlined,
+                color: _paginaActual == 3 ? theme.fuente() : Colors.grey,
                 size: 26,
               ),
-              label: 'Ajustes',
+              label: 'Alumnos',
+            ),
+            BottomNavigationBarItem(
+              backgroundColor: theme.background(),
+              icon: Icon(
+                Icons.person_search_outlined,
+                color: _paginaActual == 4 ? theme.fuente() : Colors.grey,
+                size: 26,
+              ),
+              label: 'Alumnos',
             ),
           ],
         ),

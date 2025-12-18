@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -182,7 +181,7 @@ class _YouTubePlayerWeb extends StatefulWidget {
 class _YouTubePlayerWebState extends State<_YouTubePlayerWeb> {
   yt_iframe.YoutubePlayerController? _controller;
   bool _failed = false;
-  Timer? _timer;
+  bool _ready = false;
 
   bool _isValidId(String id) => RegExp(r'^[A-Za-z0-9_-]{11}$').hasMatch(id);
 
@@ -201,10 +200,20 @@ class _YouTubePlayerWebState extends State<_YouTubePlayerWeb> {
           playsInline: true,
         ),
       );
-      _timer = Timer(const Duration(seconds: 4), () {
-        if (!mounted || _failed) return;
-        final v = _controller?.value;
-        if (v == null || v.metaData.duration == Duration.zero) {
+      // Escuchar cambios de estado para detectar si el video está listo
+      _controller!.listen((event) {
+        if (!mounted) return;
+        // Si el video empieza a reproducirse o tiene metadatos, está listo
+        if (event.playerState == yt_iframe.PlayerState.playing ||
+            event.playerState == yt_iframe.PlayerState.paused ||
+            event.playerState == yt_iframe.PlayerState.buffering ||
+            event.playerState == yt_iframe.PlayerState.cued) {
+          if (!_ready) {
+            setState(() { _ready = true; });
+          }
+        }
+        // Solo marcar como fallido si hay un error explícito
+        if (event.playerState == yt_iframe.PlayerState.unknown && event.error != yt_iframe.YoutubeError.none) {
           setState(() { _failed = true; });
         }
       });
@@ -213,7 +222,6 @@ class _YouTubePlayerWebState extends State<_YouTubePlayerWeb> {
 
   @override
   void dispose() {
-    _timer?.cancel();
     _controller?.close();
     super.dispose();
   }
@@ -242,8 +250,6 @@ class _YouTubePlayerMobile extends StatefulWidget {
 class _YouTubePlayerMobileState extends State<_YouTubePlayerMobile> {
   YoutubePlayerController? _controller;
   bool _failed = false;
-  bool _ready = false;
-  Timer? _timer;
 
   bool _isValidId(String id) => RegExp(r'^[A-Za-z0-9_-]{11}$').hasMatch(id);
 
@@ -256,18 +262,11 @@ class _YouTubePlayerMobileState extends State<_YouTubePlayerMobile> {
         initialVideoId: widget.videoId,
         flags: const YoutubePlayerFlags(autoPlay: false, mute: false, forceHD: false, enableCaption: true, disableDragSeek: false),
       );
-      _timer = Timer(const Duration(seconds: 4), () {
-        if (!mounted || _failed) return;
-        if (!_ready && (_controller?.metadata.duration == Duration.zero)) {
-          setState(() { _failed = true; });
-        }
-      });
     } catch (_) { _failed = true; }
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
     _controller?.dispose();
     super.dispose();
   }
@@ -285,7 +284,6 @@ class _YouTubePlayerMobileState extends State<_YouTubePlayerMobile> {
           controller: _controller!,
           showVideoProgressIndicator: true,
           progressIndicatorColor: Colors.redAccent,
-          onReady: () { setState(() { _ready = true; }); },
           bottomActions: [
             const CurrentPosition(),
             const SizedBox(width: 8),

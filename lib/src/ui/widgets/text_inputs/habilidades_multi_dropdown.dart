@@ -234,10 +234,43 @@ class _SelectorDialogState extends State<_SelectorDialog> {
     super.dispose();
   }
 
+  String _normalizeTipo(String s) => s
+      .toLowerCase()
+      .replaceAll('á', 'a')
+      .replaceAll('é', 'e')
+      .replaceAll('í', 'i')
+      .replaceAll('ó', 'o')
+      .replaceAll('ú', 'u');
+
+  String _baseTipoFilter(String s) {
+    final t = _normalizeTipo(s);
+    if (t.contains('tecn')) return 'tecnica';
+    if (t.contains('bland')) return 'blanda';
+    if (t.contains('idiom')) return 'idioma';
+    return t;
+  }
+
   List<HabilidadOption> get _filtered {
     final q = _searchCtrl.text.trim().toLowerCase();
-    if (q.isEmpty) return widget.options;
-    return widget.options.where((o) => o.habilidad.toLowerCase().contains(q) || o.categoria.toLowerCase().contains(q) || o.tipo.toLowerCase().contains(q)).toList();
+    
+    // Primero filtrar por tipo permitido
+    final allowedBase = widget.allowedTipo == null ? null : _baseTipoFilter(widget.allowedTipo!);
+    final allowedBases = widget.allowedTipos == null
+        ? null
+        : widget.allowedTipos!.map((e) => _baseTipoFilter(e)).toSet();
+    
+    var opts = widget.options.where((o) {
+      final baseTipo = _baseTipoFilter(o.tipo);
+      if (allowedBase != null) return baseTipo == allowedBase;
+      if (allowedBases != null) return allowedBases.contains(baseTipo);
+      return true;
+    }).toList();
+    
+    // Luego filtrar por búsqueda de texto
+    if (q.isNotEmpty) {
+      opts = opts.where((o) => o.habilidad.toLowerCase().contains(q) || o.categoria.toLowerCase().contains(q) || o.tipo.toLowerCase().contains(q)).toList();
+    }
+    return opts;
   }
 
   Map<String, Map<String, List<HabilidadOption>>> _grouped(List<HabilidadOption> opts) {
@@ -268,24 +301,6 @@ class _SelectorDialogState extends State<_SelectorDialog> {
     final border = OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: accent));
     final w = MediaQuery.of(context).size.width;
     final isMobile = w < 900;
-    String _norm(String s) => s
-        .toLowerCase()
-        .replaceAll('á', 'a')
-        .replaceAll('é', 'e')
-        .replaceAll('í', 'i')
-        .replaceAll('ó', 'o')
-        .replaceAll('ú', 'u');
-    String _baseTipo(String s) {
-      final t = _norm(s);
-      if (t.contains('tecn')) return 'tecnica';
-      if (t.contains('bland')) return 'blanda';
-      if (t.contains('idiom')) return 'idioma';
-      return t;
-    }
-    final allowedBase = widget.allowedTipo == null ? null : _baseTipo(widget.allowedTipo!);
-    final allowedBases = widget.allowedTipos == null
-        ? null
-        : widget.allowedTipos!.map((e) => _baseTipo(e)).toSet();
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: ConstrainedBox(
@@ -362,28 +377,22 @@ class _SelectorDialogState extends State<_SelectorDialog> {
                                 collapsedIconColor: accent,
                                 children: habilidades.map((h) {
                                   final checked = _selected.contains(h.id);
-                                  final baseTipo = _baseTipo(h.tipo);
-                                  final isAllowed = allowedBase != null
-                                      ? baseTipo == allowedBase
-                                      : (allowedBases != null ? allowedBases.contains(baseTipo) : true);
                                   return CheckboxListTile(
                                     dense: true,
                                     activeColor: accent,
                                     checkColor: theme.primario(),
-                                    title: Text(h.habilidad, style: TextStyle(color: isAllowed ? theme.fuente() : Colors.black38)),
+                                    title: Text(h.habilidad, style: TextStyle(color: theme.fuente())),
                                     subtitle: Text('${h.tipo} • ${h.categoria}', style: const TextStyle(fontSize: 12)),
                                     value: checked,
-                                    onChanged: isAllowed
-                                        ? (v) {
-                                            setState(() {
-                                              if (v == true) {
-                                                _selected.add(h.id);
-                                              } else {
-                                                _selected.remove(h.id);
-                                              }
-                                            });
-                                          }
-                                        : null,
+                                    onChanged: (v) {
+                                      setState(() {
+                                        if (v == true) {
+                                          _selected.add(h.id);
+                                        } else {
+                                          _selected.remove(h.id);
+                                        }
+                                      });
+                                    },
                                   );
                                 }).toList(),
                               );

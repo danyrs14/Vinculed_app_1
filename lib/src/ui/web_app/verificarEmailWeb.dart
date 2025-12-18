@@ -1,6 +1,7 @@
-// ...existing code...
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
@@ -16,6 +17,7 @@ class verificarEmailPage extends StatefulWidget {
 class _verificarEmailPageState extends State<verificarEmailPage> {
   final _scrollCtrl = ScrollController();
   bool _showFooter = false;
+  Timer? _verificationTimer;
 
   static const double _footerReservedSpace = EscomFooter.height;
   static const double _extraBottomPadding = 24.0;
@@ -26,6 +28,39 @@ class _verificarEmailPageState extends State<verificarEmailPage> {
     super.initState();
     _scrollCtrl.addListener(_handleScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) => _handleScroll());
+    
+    // Iniciar polling para verificar si el email ya fue verificado
+    _startVerificationCheck();
+  }
+
+  void _startVerificationCheck() {
+    // Verificar cada 4 segundos si el usuario ya verificó su email
+    _verificationTimer = Timer.periodic(const Duration(seconds: 4), (_) async {
+      await _checkEmailVerified();
+    });
+  }
+
+  Future<void> _checkEmailVerified() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      // Forzar recarga del usuario para obtener el estado actualizado
+      await user.reload();
+      
+      // Obtener el usuario actualizado después del reload
+      final updatedUser = FirebaseAuth.instance.currentUser;
+      
+      if (updatedUser != null && updatedUser.emailVerified && mounted) {
+        _verificationTimer?.cancel();
+        _mostrarMensaje("¡Correo verificado exitosamente!");
+        // Redirigir a la página de inicio
+        context.go('/inicio');
+      }
+    } catch (e) {
+      // Ignorar errores silenciosamente para no interrumpir al usuario
+      debugPrint('Error al verificar email: $e');
+    }
   }
 
   void _handleScroll() {
@@ -43,6 +78,7 @@ class _verificarEmailPageState extends State<verificarEmailPage> {
 
   @override
   void dispose() {
+    _verificationTimer?.cancel();
     _scrollCtrl
       ..removeListener(_handleScroll)
       ..dispose();

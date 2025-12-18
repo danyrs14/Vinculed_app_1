@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header4.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/media.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
@@ -86,14 +85,14 @@ class AlumnoItem {
 }
 
 /* ============================ Página ============================ */
-class AdminGestionAlumnosPage extends StatefulWidget {
-  const AdminGestionAlumnosPage({Key? key}) : super(key: key);
+class AdminGestionAlumnosMovilPage extends StatefulWidget {
+  const AdminGestionAlumnosMovilPage({Key? key}) : super(key: key);
 
   @override
-  State<AdminGestionAlumnosPage> createState() => _AdminGestionAlumnosPageState();
+  State<AdminGestionAlumnosMovilPage> createState() => _AdminGestionAlumnosMovilPageState();
 }
 
-class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
+class _AdminGestionAlumnosMovilPageState extends State<AdminGestionAlumnosMovilPage> {
   static const String _endpoint = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/ver_alumnos';
   static const String _delUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/eliminar_alumno';
   static const String _createUrl = 'https://oda-talent-back-81413836179.us-central1.run.app/api/usuarios/crear_alumno';
@@ -108,26 +107,16 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
   bool _loading = false;
   String? _error;
 
-  // Footer animado estilo dashboard
-  final ScrollController _scrollCtrl = ScrollController();
-  bool _showFooter = false;
-  static const double _footerReservedSpace = EscomFooter.height;
-  static const double _extraBottomPadding = 24.0;
-  static const double _atEndThreshold = 4.0;
+  // Footer animado eliminado
 
   @override
   void initState() {
     super.initState();
-    _scrollCtrl.addListener(_onScroll);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
     _loadPage(1); // carga primeros 10 alumnos
   }
 
   @override
   void dispose() {
-    _scrollCtrl
-      ..removeListener(_onScroll)
-      ..dispose();
     super.dispose();
   }
 
@@ -156,19 +145,7 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
     );
   }
 
-  void _onScroll() {
-    if (!_scrollCtrl.hasClients) return;
-    final pos = _scrollCtrl.position;
-    if (!pos.hasPixels || !pos.hasContentDimensions) return;
-
-    if (pos.maxScrollExtent <= 0) {
-      if (_showFooter) setState(() => _showFooter = false);
-      return;
-    }
-
-    final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
-    if (atBottom != _showFooter) setState(() => _showFooter = atBottom);
-  }
+  // Lógica de scroll para footer eliminada
 
   Future<void> _loadPage(int page) async {
     setState(() {
@@ -210,7 +187,6 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
 
   Future<void> _refresh() async {
     await _loadPage(_page);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
   }
 
   // =============== UI Helpers ===============
@@ -303,7 +279,7 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
           child: Row(
             children: [
               SimpleButton(
-                title: 'Anterior',
+                title: 'Ant.',
                 icon: Icons.chevron_left,
                 backgroundColor: canPrev ? null : Colors.grey.shade300,
                 textColor: canPrev ? null : Colors.grey.shade600,
@@ -313,12 +289,13 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
               Text('Página $_page de $totalPages'),
               const SizedBox(width: 8),
               SimpleButton(
-                title: 'Siguiente',
+                title: 'Sig.',
                 icon: Icons.chevron_right,
                 backgroundColor: canNext ? null : Colors.grey.shade300,
                 textColor: canNext ? null : Colors.grey.shade600,
                 onTap: canNext ? () => _loadPage(_page + 1) : null,
               ),
+              
             ],
           ),
         ),
@@ -428,151 +405,90 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
     final isMobile = width < 700;
 
     return Scaffold(
-      appBar: EscomHeader4(
-        onLoginTap: () => context.go('/admin/reportes'),
-        onNotifTap: () {},
-        onMenuSelected: (label) {
-          switch (label) {
-            case "Inicio":
-              context.go('/inicio');
-              break;
-            case "Empresas":
-              context.go('/admin/empresas');
-              break;
-            case "Alumnos":
-              context.go('/admin/alumnos');
-              break;
-            case "Reclutadores":
-              context.go('/admin/reclutadores');
-              break;
-            case "Artículos":
-              context.go('/admin/articulos');
-              break;
-          }
-        },
-      ),
       floatingActionButton: SimpleButton(
         title: 'Nuevo Alumno',
         icon: Icons.person_add_alt,
         onTap: _openCrearAlumno,
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final minBodyHeight = constraints.maxHeight - _footerReservedSpace - _extraBottomPadding;
-                return NotificationListener<ScrollNotification>(
-                  onNotification: (n) {
-                    if (n is ScrollUpdateNotification || n is UserScrollNotification || n is ScrollEndNotification) {
-                      _onScroll();
-                    }
-                    return false;
-                  },
-                  child: RefreshIndicator(
-                    onRefresh: _refresh,
-                    child: SingleChildScrollView(
-                      controller: _scrollCtrl,
-                      physics: const ClampingScrollPhysics(),
-                      padding: const EdgeInsets.only(
-                        top: 12,
-                        bottom: _footerReservedSpace + _extraBottomPadding,
-                      ),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 500),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(minHeight: minBodyHeight > 0 ? minBodyHeight : 0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      const Text(
-                                        'Alumnos Registrados',
-                                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-                                      ),
-                                      const Spacer(),
-                                      if (_rawResponse != null)
-                                        SimpleButton(
-                                          title: 'Ver JSON',
-                                          icon: Icons.data_object,
-                                          backgroundColor: Colors.grey.shade200,
-                                          textColor: Colors.black87,
-                                          onTap: _showRawDialog,
-                                        ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  if (_paginacion != null)
-                                    Text(
-                                      'Total: ${_paginacion!.totalAlumnos}  •  Página: ${_paginacion!.paginaActual}/${_paginacion!.totalPaginas}  •  Tamaño: ${_paginacion!.tamanoPagina}  •  Total de Alumnos Inactivos: ${_paginacion!.totalAlumnosInactivos}',
-                                      style: const TextStyle(color: Colors.black54),
-                                    ),
-                                  const SizedBox(height: 12),
-
-                                  if (_loading)
-                                    const Padding(
-                                      padding: EdgeInsets.only(top: 80),
-                                      child: Center(child: CircularProgressIndicator()),
-                                    )
-                                  else if (_error != null)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 60),
-                                      child: Column(
-                                        children: [
-                                          const Icon(Icons.error_outline, color: Colors.red),
-                                          const SizedBox(height: 8),
-                                          Text('Error: $_error', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
-                                        ],
-                                      ),
-                                    )
-                                  else if (_alumnos.isEmpty)
-                                    const Padding(
-                                      padding: EdgeInsets.only(top: 80),
-                                      child: Center(child: Text('No hay alumnos con cuenta activa en firebase.')),
-                                    )
-                                  else
-                                    Column(
-                                      children: [
-                                        for (final r in _alumnos) _cardAlumno(r),
-                                        const SizedBox(height: 8),
-                                        _paginationBar(),
-                                      ],
-                                    ),
-                                ],
-                              ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return RefreshIndicator(
+            onRefresh: _refresh,
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.only(top: 12, bottom: 24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Text(
+                              'Alumnos Registrados',
+                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
                             ),
-                          ),
+                            const Spacer(),
+                            if (_rawResponse != null)
+                              SimpleButton(
+                                title: 'Ver JSON',
+                                icon: Icons.data_object,
+                                backgroundColor: Colors.grey.shade200,
+                                textColor: Colors.black87,
+                                onTap: _showRawDialog,
+                              ),
+                          ],
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                        if (_paginacion != null)
+                          Text(
+                            'Total: ${_paginacion!.totalAlumnos}  •  Página: ${_paginacion!.paginaActual}/${_paginacion!.totalPaginas}  •  Tamaño: ${_paginacion!.tamanoPagina}  •  Total de Alumnos Inactivos: ${_paginacion!.totalAlumnosInactivos}',
+                            style: const TextStyle(color: Colors.black54),
+                          ),
+                        const SizedBox(height: 12),
+
+                        if (_loading)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 80),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        else if (_error != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 60),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.error_outline, color: Colors.red),
+                                const SizedBox(height: 8),
+                                Text('Error: $_error', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
+                              ],
+                            ),
+                          )
+                        else if (_alumnos.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 80),
+                            child: Center(child: Text('No hay alumnos con cuenta activa en firebase.')),
+                          )
+                        else
+                          Column(
+                            children: [
+                              for (final r in _alumnos) _cardAlumno(r),
+                              const SizedBox(height: 8),
+                              _paginationBar(),
+                              const SizedBox(height: 32),
+                            ],
+                          ),
+                      ],
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-
-          // Footer animado
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: AnimatedSlide(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOut,
-              offset: _showFooter ? Offset.zero : const Offset(0, 1),
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 220),
-                opacity: _showFooter ? 1 : 0,
-                child: EscomFooter(isMobile: isMobile),
+                ),
               ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

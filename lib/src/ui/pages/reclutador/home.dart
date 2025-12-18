@@ -24,6 +24,7 @@ class _HomeRecState extends State<HomeRec> {
   List<_RecruitedStudent> _students = [];
   bool _loading = true;
   String? _error;
+  String _currentTab = 'Reclutado'; // 'Reclutado' | 'Completado'
 
   static bool _welcomeShown = false;
 
@@ -59,7 +60,7 @@ class _HomeRecState extends State<HomeRec> {
       final headers = await userProv.getAuthHeaders();
       final idRol = userProv.idRol;
       final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reclutadores/alumnos_reclutados')
-          .replace(queryParameters: { 'id_reclutador': '$idRol' });
+          .replace(queryParameters: { 'id_reclutador': '$idRol', 'estado': _currentTab });
       final resp = await http.get(uri, headers: headers);
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
         final data = jsonDecode(resp.body);
@@ -75,6 +76,41 @@ class _HomeRecState extends State<HomeRec> {
       setState(() { _loading = false; _error = 'Error al cargar: $e'; });
     }
   }
+  
+  void _changeTab(String tab) {
+    if (_currentTab == tab) {
+      _fetchRecruitedStudents();
+      return;
+    }
+    setState(() => _currentTab = tab);
+    _fetchRecruitedStudents();
+  }
+
+  Widget _tabButton(String label, bool isMobile) {
+    final selected = _currentTab == label;
+    final theme = ThemeController.instance;
+    final accent = theme.secundario();
+    final baseBg = Colors.blueGrey.shade200;
+    return ElevatedButton(
+      onPressed: () => _changeTab(label),
+      style: ElevatedButton.styleFrom(
+        elevation: selected ? 2 : 0,
+        backgroundColor: selected ? accent : baseBg,
+        foregroundColor: theme.primario(),
+        padding: EdgeInsets.symmetric(horizontal: isMobile ? 18 : 28, vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        textStyle: TextStyle(
+          fontSize: isMobile ? 14 : 16,
+          fontWeight: FontWeight.w700,
+          letterSpacing: .4,
+        ),
+      ),
+      child: Text(label),
+    );
+  }
+
 
   @override
   void dispose() {
@@ -121,6 +157,17 @@ class _HomeRecState extends State<HomeRec> {
               ),
               const SizedBox(height: 28),
 
+                // Pestañas Reclutado / Completado
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _tabButton('Reclutado', isMobile),
+                    const SizedBox(width: 16),
+                    _tabButton('Completado', isMobile),
+                ],
+              ),
+              const SizedBox(height: 24),
+
               // Contenido dinámico
               if (_loading) ...[
                 const Center(child: CircularProgressIndicator()),
@@ -133,7 +180,6 @@ class _HomeRecState extends State<HomeRec> {
                       Text(_error!, textAlign: TextAlign.center),
                       const SizedBox(height: 12),
                       SizedBox(
-                        height: 40,
                         child: SimpleButton(title: 'Reintentar', onTap: _fetchRecruitedStudents),
                       ),
                     ],
@@ -156,7 +202,9 @@ class _HomeRecState extends State<HomeRec> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Aún no hay alumnos reclutados',
+                          _currentTab == 'Reclutado'
+                          ? 'Aún no hay alumnos reclutados'
+                          : 'Tus becarios aún no han completado sus prácticas',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: isMobile ? 18 : 20,
@@ -166,7 +214,9 @@ class _HomeRecState extends State<HomeRec> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Cuando reclutes alumnos, sus tarjetas aparecerán aquí.',
+                          _currentTab == 'Reclutado'
+                            ? 'Cuando reclutes alumnos, sus tarjetas aparecerán aquí.'
+                            : 'Los becarios cuya postulación hayas marcado como Completada aparecerán en esta sección.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: isMobile ? 13.5 : 14.5,
@@ -192,6 +242,7 @@ class _HomeRecState extends State<HomeRec> {
                         padding: const EdgeInsets.only(bottom: 16),
                         child: _RecruitedCandidateCard(
                           data: s,
+                          showMarkCompleted: _currentTab == 'Reclutado',
                           onCompleted: (id) {
                             setState(() {
                               _students.removeWhere((e) => e.idPostulacion == id);
@@ -281,9 +332,10 @@ class _Habilidad {
 
 // =================== CARD ===================
 class _RecruitedCandidateCard extends StatelessWidget {
-  const _RecruitedCandidateCard({required this.data, required this.onCompleted});
+  const _RecruitedCandidateCard({required this.data, required this.onCompleted, this.showMarkCompleted = true});
   final _RecruitedStudent data;
   final void Function(int idPostulacion) onCompleted;
+  final bool showMarkCompleted;
 
   Widget _buildProfileImage() {
     final url = data.urlFotoPerfil;
@@ -435,15 +487,16 @@ class _RecruitedCandidateCard extends StatelessWidget {
           _detailRow(
               'Habilidades:', skills.isEmpty ? 'No especificadas' : skills),
           const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: SizedBox(
-              child: SimpleButton(
-                title: 'Marcar como Completada',
-                onTap: () => _markCompleted(context),
+          if (showMarkCompleted)
+            Align(
+              alignment: Alignment.centerRight,
+              child: SizedBox(
+                child: SimpleButton(
+                  title: 'Marcar como Completada',
+                  onTap: () => _markCompleted(context),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

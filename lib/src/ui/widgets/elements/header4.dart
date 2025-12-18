@@ -23,6 +23,7 @@ class EscomHeader4 extends StatelessWidget implements PreferredSizeWidget {
     "Empresas",
     "Alumnos",
     "Reclutadores",
+    "Artículos",
   ];
 
   Future<void> _cerrarSesion(BuildContext context) async {

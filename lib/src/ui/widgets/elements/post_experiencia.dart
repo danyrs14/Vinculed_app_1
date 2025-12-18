@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/comentarios_auxiliar.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/formulario_reporte.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/media.dart';
@@ -63,6 +64,9 @@ class ExperiencePost extends StatefulWidget {
     this.padding = const EdgeInsets.all(16),
     // Control de superposición de iframes (YouTube) cuando hay modales
     this.hideMediaOverlays = false,
+    // Modo propietario: muestra menú de opciones en lugar de solo reportar
+    this.isOwner = false,
+    this.onDelete,
   });
 
   final String authorName;
@@ -105,6 +109,9 @@ class ExperiencePost extends StatefulWidget {
   final EdgeInsets padding;
   // Ocultar temporalmente contenido embebido (evitar que capture clicks sobre diálogos)
   final bool hideMediaOverlays;
+  // Modo propietario: muestra menú de opciones en lugar de solo reportar
+  final bool isOwner;
+  final VoidCallback? onDelete;
 
   @override
   State<ExperiencePost> createState() => _ExperiencePostState();
@@ -121,7 +128,8 @@ class _ExperiencePostState extends State<ExperiencePost> {
   // Lista interna de comentarios que se quedan en la tarjeta
   late List<ExperienceComment> _comments; // ← NUEVO
   late int _likesCount; // nuevo contador dinámico
-  late int _commentCount; // contador dinámico de comentarios (incluye respuestas)
+  late int
+      _commentCount; // contador dinámico de comentarios (incluye respuestas)
   bool _sendingReaction = false; // bandera para evitar doble clic spam
 
   // Comentarios remotos
@@ -335,8 +343,9 @@ class _ExperiencePostState extends State<ExperiencePost> {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = jsonDecode(res.body);
         if (data is List) {
-          _remoteComments =
-              data.map((e) => RemoteReply.fromJson(e as Map<String, dynamic>)).toList();
+          _remoteComments = data
+              .map((e) => RemoteReply.fromJson(e as Map<String, dynamic>))
+              .toList();
         } else {
           _commentsError = 'Formato inesperado';
         }
@@ -371,8 +380,10 @@ class _ExperiencePostState extends State<ExperiencePost> {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final data = jsonDecode(res.body);
         if (data is List) {
-          final list =
-          data.map((e) => RemoteCommentReply.fromJson(e as Map<String, dynamic>)).toList();
+          final list = data
+              .map(
+                  (e) => RemoteCommentReply.fromJson(e as Map<String, dynamic>))
+              .toList();
           _replies[idComentario] = list;
         } else {
           _repliesError[idComentario] = 'Formato inesperado';
@@ -408,9 +419,12 @@ class _ExperiencePostState extends State<ExperiencePost> {
     }
   }
 
-  List<Widget> _buildReplyTree(RemoteCommentReply reply, int depth) {
+  List<Widget> _buildReplyTree(
+      RemoteCommentReply reply, int depth, int? currentUserIdRol) {
     const double baseIndent = 42.0;
     final double indent = baseIndent * depth;
+    final isReplyOwner =
+        currentUserIdRol != null && reply.idAlumno == currentUserIdRol;
 
     return [
       Padding(
@@ -419,12 +433,18 @@ class _ExperiencePostState extends State<ExperiencePost> {
           reply: reply,
           fallbackAvatar: widget.currentUserAvatarAsset,
           showRepliesButton: reply.respuestas,
-          onShowReplies:
-          reply.respuestas ? () => _toggleRepliesById(reply.idComentario) : null,
+          onShowReplies: reply.respuestas
+              ? () => _toggleRepliesById(reply.idComentario)
+              : null,
           repliesButtonLabel: _expandedReplies.contains(reply.idComentario)
               ? 'Ocultar respuestas'
               : 'Mostrar respuestas',
           onReply: () => _startReply(reply.idComentario),
+          isOwner: isReplyOwner,
+          onReport: () => _reportarComentario(reply.idComentario),
+          onDelete: isReplyOwner
+              ? () => _eliminarComentario(reply.idComentario)
+              : null,
         ),
       ),
       if (_replyingTo == reply.idComentario)
@@ -442,7 +462,9 @@ class _ExperiencePostState extends State<ExperiencePost> {
           Padding(
             padding: EdgeInsets.only(left: indent + 24, bottom: 8),
             child: const SizedBox(
-                height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2)),
           )
         else if (_repliesError.containsKey(reply.idComentario))
           Padding(
@@ -451,14 +473,16 @@ class _ExperiencePostState extends State<ExperiencePost> {
                 style: const TextStyle(color: Colors.red)),
           )
         else ...[
-            if ((_replies[reply.idComentario] ?? const []).isEmpty)
-              Padding(
-                padding: EdgeInsets.only(left: indent + 24, bottom: 8),
-                child: const Text('No hay respuestas'),
-              )
-            else ...(_replies[reply.idComentario] ?? const <RemoteCommentReply>[])
-                .expand((child) => _buildReplyTree(child, depth + 1)),
-          ],
+          if ((_replies[reply.idComentario] ?? const []).isEmpty)
+            Padding(
+              padding: EdgeInsets.only(left: indent + 24, bottom: 8),
+              child: const Text('No hay respuestas'),
+            )
+          else
+            ...(_replies[reply.idComentario] ?? const <RemoteCommentReply>[])
+                .expand((child) =>
+                    _buildReplyTree(child, depth + 1, currentUserIdRol)),
+        ],
       ],
     ];
   }
@@ -533,10 +557,12 @@ class _ExperiencePostState extends State<ExperiencePost> {
               ? parsed.idComentario
               : DateTime.now().millisecondsSinceEpoch,
           idAlumno: parsed.idAlumno != 0 ? parsed.idAlumno : widget.idAlumno,
-          idComentarioPadre:
-          parsed.idComentarioPadre != 0 ? parsed.idComentarioPadre : parentId,
-          nombre:
-          (parsed.nombre.isNotEmpty) ? parsed.nombre : widget.currentUserName,
+          idComentarioPadre: parsed.idComentarioPadre != 0
+              ? parsed.idComentarioPadre
+              : parentId,
+          nombre: (parsed.nombre.isNotEmpty)
+              ? parsed.nombre
+              : widget.currentUserName,
           urlFotoPerfil: (parsed.urlFotoPerfil.isNotEmpty)
               ? parsed.urlFotoPerfil
               : widget.currentUserAvatarAsset,
@@ -604,12 +630,100 @@ class _ExperiencePostState extends State<ExperiencePost> {
     }
   }
 
+  // Método para reportar un comentario
+  Future<void> _reportarComentario(int idComentario) async {
+    setState(() {
+      _modalOpen = true;
+    });
+    try {
+      final result = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => ReportContentDialog(
+          idAlumno: widget.idAlumno,
+          idContenido: idComentario,
+          tipoContenidoInicial: 'Comentario',
+        ),
+      );
+      if (result == true && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Reporte de comentario enviado correctamente.')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _modalOpen = false;
+        });
+      }
+    }
+  }
+
+  // Método para eliminar un comentario
+  Future<void> _eliminarComentario(int idComentario) async {
+    final userProv = Provider.of<UserDataProvider>(context, listen: false);
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Eliminar comentario'),
+        content:
+            const Text('¿Estás seguro de que deseas eliminar este comentario?'),
+        actions: [
+          SimpleButton(
+            onTap: () => Navigator.pop(ctx, false),
+            title: 'Cancelar',
+          ),
+          SimpleButton(
+            onTap: () => Navigator.pop(ctx, true),
+            title: 'Eliminar',
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    try {
+      final headers = await userProv.getAuthHeaders();
+      final resp = await http.delete(
+        Uri.parse(
+            'https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/comentarios/borrar/$idComentario'),
+        headers: headers,
+      );
+      if (resp.statusCode == 204 && mounted) {
+        setState(() {
+          // Quitar de _remoteComments si está ahí
+          _remoteComments.removeWhere((c) => c.idComentario == idComentario);
+          // Quitar de _replies si está ahí (respuestas)
+          _replies.forEach((key, list) {
+            list.removeWhere((r) => r.idComentario == idComentario);
+          });
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Comentario eliminado correctamente')),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al eliminar: ${resp.statusCode}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
   Widget _defaultAvatarIcon(double size) {
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
-          shape: BoxShape.circle, color: Color(0xFFE0E0E0)),
+      decoration:
+          const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFE0E0E0)),
       alignment: Alignment.center,
       child: Icon(Icons.person, size: size * 0.6, color: Colors.grey.shade700),
     );
@@ -645,8 +759,13 @@ class _ExperiencePostState extends State<ExperiencePost> {
     final theme = ThemeController.instance;
     final accent = theme.primario(); // color de acento
     final suppressMedia = widget.hideMediaOverlays || _modalOpen;
-    final dynamicCommentLabel =
-    _commentCount > 0 ? '$_commentCount Comentarios' : null; // etiqueta dinámica
+    final dynamicCommentLabel = _commentCount > 0
+        ? '$_commentCount Comentarios'
+        : null; // etiqueta dinámica
+
+    // Obtener idRol del usuario actual para comparar con id_alumno de comentarios
+    final userProv = Provider.of<UserDataProvider>(context, listen: false);
+    final currentUserIdRol = userProv.idRol;
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: widget.maxWidth),
@@ -692,11 +811,47 @@ class _ExperiencePostState extends State<ExperiencePost> {
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: _openReportDialog,
-                  icon: const Icon(Icons.flag_outlined, color: Colors.black54),
-                  tooltip: 'Reportar',
-                ),
+                if (widget.isOwner)
+                  PopupMenuButton<String>(
+                    color: theme.background(),
+                    icon: const Icon(Icons.more_vert, color: Colors.black54),
+                    tooltip: 'Opciones',
+                    onSelected: (value) {
+                      if (value == 'reportar') {
+                        _openReportDialog();
+                      } else if (value == 'eliminar') {
+                        widget.onDelete?.call();
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem<String>(
+                        value: 'reportar',
+                        child: Row(
+                          children: [
+                            Icon(Icons.flag_outlined, size: 20),
+                            SizedBox(width: 8),
+                            Text('Reportar'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'eliminar',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Eliminar', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  IconButton(
+                    onPressed: _openReportDialog,
+                    icon: const Icon(Icons.flag_outlined, color: Colors.black54),
+                    tooltip: 'Reportar',
+                  ),
               ],
             ),
 
@@ -818,12 +973,13 @@ class _ExperiencePostState extends State<ExperiencePost> {
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.blue,
                     side: const BorderSide(color: Colors.blue),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   onPressed: _onCommentsButtonPressed,
-                  child: Text(
-                      _showRemoteComments ? 'Ocultar comentarios' : 'Ver comentarios'),
+                  child: Text(_showRemoteComments
+                      ? 'Ocultar comentarios'
+                      : 'Ver comentarios'),
                 ),
               ),
             ],
@@ -854,82 +1010,86 @@ class _ExperiencePostState extends State<ExperiencePost> {
                       style: const TextStyle(color: Colors.red)),
                 )
               else if (_remoteComments.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 8),
-                    child: Text('No hay comentarios'),
-                  )
-                else ...[
-                    ..._remoteComments.map((rc) => Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CommentBubble(
-                            avatar: rc.urlFotoPerfil.isEmpty
-                                ? ''
-                                : rc
-                                .urlFotoPerfil, // usar placeholder si null/empty
-                            name: rc.nombre,
-                            text: rc.comentario,
-                            showRepliesButton: rc.respuestas,
-                            onShowReplies:
-                            rc.respuestas ? () => _toggleReplies(rc) : null,
-                            onReply: () => _startReply(rc.idComentario),
-                            repliesButtonLabel:
-                            _expandedReplies.contains(rc.idComentario)
-                                ? 'Ocultar respuestas'
-                                : 'Mostrar respuestas',
-                          ),
-                          if (_replyingTo == rc.idComentario) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 42, top: 6, bottom: 6),
-                              child: InlineReplyComposer(
-                                controller: _replyCtrl,
-                                sending: _sendingReply,
-                                onCancel: _cancelReply,
-                                onSend: _submitReply,
-                              ),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 8),
+                  child: Text('No hay comentarios'),
+                )
+              else ...[
+                ..._remoteComments.map((rc) {
+                  final isCommentOwner = currentUserIdRol != null &&
+                      rc.idAlumno == currentUserIdRol;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CommentBubble(
+                          avatar:
+                              rc.urlFotoPerfil.isEmpty ? '' : rc.urlFotoPerfil,
+                          name: rc.nombre,
+                          text: rc.comentario,
+                          showRepliesButton: rc.respuestas,
+                          onShowReplies:
+                              rc.respuestas ? () => _toggleReplies(rc) : null,
+                          onReply: () => _startReply(rc.idComentario),
+                          repliesButtonLabel:
+                              _expandedReplies.contains(rc.idComentario)
+                                  ? 'Ocultar respuestas'
+                                  : 'Mostrar respuestas',
+                          isOwner: isCommentOwner,
+                          onReport: () => _reportarComentario(rc.idComentario),
+                          onDelete: isCommentOwner
+                              ? () => _eliminarComentario(rc.idComentario)
+                              : null,
+                        ),
+                        if (_replyingTo == rc.idComentario) ...[
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 42, top: 6, bottom: 6),
+                            child: InlineReplyComposer(
+                              controller: _replyCtrl,
+                              sending: _sendingReply,
+                              onCancel: _cancelReply,
+                              onSend: _submitReply,
                             ),
-                          ],
-                          if (_expandedReplies.contains(rc.idComentario)) ...[
-                            const SizedBox(height: 6),
-                            if (_loadingReplies.contains(rc.idComentario))
+                          ),
+                        ],
+                        if (_expandedReplies.contains(rc.idComentario)) ...[
+                          const SizedBox(height: 6),
+                          if (_loadingReplies.contains(rc.idComentario))
+                            const Padding(
+                              padding: EdgeInsets.only(left: 42, bottom: 8),
+                              child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2)),
+                            )
+                          else if (_repliesError.containsKey(rc.idComentario))
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 42, bottom: 8),
+                              child: Text(_repliesError[rc.idComentario]!,
+                                  style: const TextStyle(color: Colors.red)),
+                            )
+                          else ...[
+                            if ((_replies[rc.idComentario] ?? const []).isEmpty)
                               const Padding(
-                                padding:
-                                EdgeInsets.only(left: 42, bottom: 8),
-                                child: SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2)),
+                                padding: EdgeInsets.only(left: 42, bottom: 8),
+                                child: Text('No hay respuestas'),
                               )
-                            else if (_repliesError.containsKey(rc.idComentario))
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 42, bottom: 8),
-                                child: Text(_repliesError[rc.idComentario]!,
-                                    style:
-                                    const TextStyle(color: Colors.red)),
-                              )
-                            else ...[
-                                if ((_replies[rc.idComentario] ??
-                                    const [])
-                                    .isEmpty)
-                                  const Padding(
-                                    padding: EdgeInsets.only(
-                                        left: 42, bottom: 8),
-                                    child: Text('No hay respuestas'),
-                                  )
-                                else ...(_replies[rc.idComentario] ??
-                                    const <RemoteCommentReply>[])
-                                    .expand((r) => _buildReplyTree(r, 1)),
-                              ],
+                            else
+                              ...(_replies[rc.idComentario] ??
+                                      const <RemoteCommentReply>[])
+                                  .expand((r) =>
+                                      _buildReplyTree(r, 1, currentUserIdRol)),
                           ],
                         ],
-                      ),
-                    )),
-                  ],
+                      ],
+                    ),
+                  );
+                }),
+              ],
             ],
 
             // ── Comentario destacado (si lo hubiera)
@@ -946,7 +1106,7 @@ class _ExperiencePostState extends State<ExperiencePost> {
             if (_comments.isNotEmpty) ...[
               const SizedBox(height: 12),
               ..._comments.map(
-                    (c) => Padding(
+                (c) => Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: CommentBubble(
                     avatar: c.avatarAsset,
