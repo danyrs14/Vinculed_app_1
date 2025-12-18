@@ -35,7 +35,7 @@ class _MessagesPageRecState extends State<MessagesPageRec> {
 
   String _myUid = '';
 
-  // Para el panel derecho (chat embebido)
+  // Para el panel derecho (chat embebido) o pantalla de chat en móvil
   String? _selectedPeerUid;
   String? _selectedContactName;
 
@@ -109,7 +109,7 @@ class _MessagesPageRecState extends State<MessagesPageRec> {
   }
 
   /// Nuevo chat: usamos ChatNewHelper para elegir usuario
-  /// y mostramos la conversación en el panel derecho.
+  /// y mostramos la conversación (embed) o pantalla de chat en móvil.
   Future<void> _startNewChat() async {
     if (_myUid.isEmpty) return;
 
@@ -299,10 +299,31 @@ class _MessagesPageRecState extends State<MessagesPageRec> {
                                 const Texto(text: 'Mensajes', fontSize: 22),
                                 const SizedBox(height: 12),
 
-                                // Layout web: lista izquierda + chat derecho
+                                // Layout: web (row) / móvil (pantallas: lista o chat)
                                 SizedBox(
                                   height: 520,
-                                  child: Row(
+                                  child: isMobile
+                                      ? (
+                                      // SOLO modo móvil:
+                                      //  - si no hay seleccionado -> lista completa
+                                      //  - si hay seleccionado -> chat a pantalla completa (dentro de este alto)
+                                      _selectedPeerUid == null
+                                          ? _buildChatListMobile()
+                                          : _ChatPanelRec(
+                                        myUid: _myUid,
+                                        peerUid: _selectedPeerUid!,
+                                        contactName:
+                                        _selectedContactName ??
+                                            'Usuario',
+                                        onBack: () {
+                                          setState(() {
+                                            _selectedPeerUid = null;
+                                            _selectedContactName = null;
+                                          });
+                                        },
+                                      )
+                                  )
+                                      : Row(
                                     children: [
                                       // ========== LISTA DE CONVERSACIONES (IZQUIERDA) ==========
                                       SizedBox(
@@ -317,8 +338,10 @@ class _MessagesPageRecState extends State<MessagesPageRec> {
                                               return const Center(
                                                 child: Text(
                                                   'Ocurrió un error al cargar tus chats',
-                                                  style: TextStyle(fontSize: 14),
-                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                      fontSize: 14),
+                                                  textAlign:
+                                                  TextAlign.center,
                                                 ),
                                               );
                                             }
@@ -326,17 +349,20 @@ class _MessagesPageRecState extends State<MessagesPageRec> {
                                             if (snapshot.connectionState ==
                                                 ConnectionState.waiting) {
                                               return const Center(
-                                                child: CircularProgressIndicator(),
+                                                child:
+                                                CircularProgressIndicator(),
                                               );
                                             }
 
-                                            final threads = snapshot.data ?? [];
+                                            final threads =
+                                                snapshot.data ?? [];
 
                                             if (threads.isEmpty) {
                                               return const Center(
                                                 child: Text(
                                                   'Aún no tienes conversaciones',
-                                                  style: TextStyle(fontSize: 14),
+                                                  style: TextStyle(
+                                                      fontSize: 14),
                                                 ),
                                               );
                                             }
@@ -349,19 +375,22 @@ class _MessagesPageRecState extends State<MessagesPageRec> {
                                                 final thread = threads[i];
 
                                                 // Encontrar al otro usuario (peerUid)
-                                                final peerUid =
-                                                thread.participants.firstWhere(
+                                                final peerUid = thread
+                                                    .participants
+                                                    .firstWhere(
                                                       (uid) => uid != _myUid,
                                                   orElse: () => '',
                                                 );
 
                                                 if (peerUid.isEmpty) {
-                                                  return const SizedBox.shrink();
+                                                  return const SizedBox
+                                                      .shrink();
                                                 }
 
                                                 final timeLabel =
                                                 _formatTimeLabel(
-                                                    thread.lastMessageAt);
+                                                    thread
+                                                        .lastMessageAt);
 
                                                 final int totalUnread =
                                                     thread.unreadCount;
@@ -380,24 +409,32 @@ class _MessagesPageRecState extends State<MessagesPageRec> {
                                                 String displayName =
                                                 _fallbackName(peerUid);
 
-                                                final Map<String, dynamic>?
-                                                namesMap =
-                                                    thread.participantsDisplayNames;
+                                                final Map<String,
+                                                    dynamic>?
+                                                namesMap = thread
+                                                    .participantsDisplayNames;
                                                 if (namesMap != null &&
-                                                    namesMap.containsKey(peerUid)) {
-                                                  final raw = namesMap[peerUid];
+                                                    namesMap.containsKey(
+                                                        peerUid)) {
+                                                  final raw =
+                                                  namesMap[peerUid];
                                                   if (raw is String &&
-                                                      raw.trim().isNotEmpty) {
-                                                    displayName = raw.trim();
+                                                      raw
+                                                          .trim()
+                                                          .isNotEmpty) {
+                                                    displayName =
+                                                        raw.trim();
                                                   }
                                                 }
                                                 // =============================================================
 
                                                 final preview = ChatPreview(
                                                   name: displayName,
-                                                  lastMessage: thread.lastMessage,
+                                                  lastMessage:
+                                                  thread.lastMessage,
                                                   timeLabel: timeLabel,
-                                                  unreadCount: unreadForMe,
+                                                  unreadCount:
+                                                  unreadForMe,
                                                   isTyping: false,
                                                 );
 
@@ -405,7 +442,8 @@ class _MessagesPageRecState extends State<MessagesPageRec> {
                                                   preview: preview,
                                                   onTap: () {
                                                     setState(() {
-                                                      _selectedPeerUid = peerUid;
+                                                      _selectedPeerUid =
+                                                          peerUid;
                                                       _selectedContactName =
                                                           displayName;
                                                     });
@@ -426,7 +464,8 @@ class _MessagesPageRecState extends State<MessagesPageRec> {
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             borderRadius:
-                                            BorderRadius.circular(12),
+                                            BorderRadius.circular(
+                                                12),
                                             border: Border.all(
                                               color: Colors.black12,
                                             ),
@@ -434,9 +473,10 @@ class _MessagesPageRecState extends State<MessagesPageRec> {
                                           child: const Center(
                                             child: Text(
                                               'Selecciona una conversación o inicia un chat nuevo',
-                                              style:
-                                              TextStyle(fontSize: 14),
-                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                  fontSize: 14),
+                                              textAlign:
+                                              TextAlign.center,
                                             ),
                                           ),
                                         )
@@ -483,20 +523,119 @@ class _MessagesPageRecState extends State<MessagesPageRec> {
       ),
     );
   }
+
+  /// Lista de conversaciones para MODO MÓVIL (pantalla de lista completa),
+  /// basada en tu widget `Mensajes`.
+  Widget _buildChatListMobile() {
+    return StreamBuilder<List<ChatThread>>(
+      stream: ChatService.instance.streamUserChats(_myUid),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          debugPrint('Error en streamUserChats (rec): ${snapshot.error}');
+          return const Center(
+            child: Text(
+              'Ocurrió un error al cargar tus chats',
+              style: TextStyle(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final threads = snapshot.data ?? [];
+
+        if (threads.isEmpty) {
+          return const Center(
+            child: Text(
+              'Aún no tienes conversaciones',
+              style: TextStyle(fontSize: 14),
+            ),
+          );
+        }
+
+        return ListView.separated(
+          itemCount: threads.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 6),
+          itemBuilder: (context, i) {
+            final thread = threads[i];
+
+            // Encontrar al otro usuario (peerUid)
+            final peerUid = thread.participants.firstWhere(
+                  (uid) => uid != _myUid,
+              orElse: () => '',
+            );
+
+            if (peerUid.isEmpty) {
+              return const SizedBox.shrink();
+            }
+
+            final timeLabel = _formatTimeLabel(thread.lastMessageAt);
+
+            final int totalUnread = thread.unreadCount;
+            final bool lastFromMe = thread.lastSenderUid == _myUid;
+
+            final bool hasNewForMe = !lastFromMe && totalUnread > 0;
+
+            final int unreadForMe = hasNewForMe ? 1 : 0;
+
+            // ========= OBTENER NOMBRE DESDE EL DOCUMENTO DEL CHAT =========
+            String displayName = _fallbackName(peerUid);
+
+            final Map<String, dynamic>? namesMap =
+                thread.participantsDisplayNames;
+            if (namesMap != null && namesMap.containsKey(peerUid)) {
+              final raw = namesMap[peerUid];
+              if (raw is String && raw.trim().isNotEmpty) {
+                displayName = raw.trim();
+              }
+            }
+            // =============================================================
+
+            final preview = ChatPreview(
+              name: displayName,
+              lastMessage: thread.lastMessage,
+              timeLabel: timeLabel,
+              unreadCount: unreadForMe,
+              isTyping: false,
+            );
+
+            return ChatPreviewTile(
+              preview: preview,
+              onTap: () {
+                setState(() {
+                  _selectedPeerUid = peerUid;
+                  _selectedContactName = displayName;
+                });
+              },
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
-/// ======================= PANEL DE CHAT (WEB REC) =======================
-/// Versión adaptada del ChatConversationPage, pero embebida en el lado derecho
+/// ======================= PANEL DE CHAT (WEB REC / MÓVIL) =======================
+/// Versión adaptada del ChatConversationPage, pero embebida.
+/// En móvil se muestra a pantalla completa dentro del contenedor de 520px,
+/// con botón de regreso opcional.
 class _ChatPanelRec extends StatefulWidget {
   const _ChatPanelRec({
     required this.myUid,
     required this.peerUid,
     required this.contactName,
+    this.onBack,
   });
 
   final String myUid;
   final String peerUid;
   final String contactName;
+  final VoidCallback? onBack; // solo se usa en modo móvil
 
   @override
   State<_ChatPanelRec> createState() => _ChatPanelRecState();
@@ -616,10 +755,11 @@ class _ChatPanelRecState extends State<_ChatPanelRec> {
       ),
       child: Column(
         children: [
-          // Header interno del chat
+          // Header interno del chat (con o sin back)
           _ChatHeaderRec(
             name: widget.contactName,
             subtitle: null,
+            onBack: widget.onBack,
           ),
 
           // Separador de fecha como en el diseño móvil
@@ -745,14 +885,17 @@ class _MsgRec {
 }
 
 /// Encabezado del panel de chat (reclutador)
+/// Ahora puede opcionalmente mostrar un botón de back (solo en móvil).
 class _ChatHeaderRec extends StatelessWidget {
   const _ChatHeaderRec({
     required this.name,
     this.subtitle,
+    this.onBack,
   });
 
   final String name;
   final String? subtitle;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -761,6 +904,11 @@ class _ChatHeaderRec extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
       child: Row(
         children: [
+          if (onBack != null)
+            IconButton(
+              onPressed: onBack,
+              icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            ),
           CircleAvatar(
             backgroundColor: Colors.blue[50],
             radius: 18,
