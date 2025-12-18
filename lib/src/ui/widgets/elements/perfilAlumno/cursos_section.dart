@@ -478,7 +478,7 @@ class CursosSection extends StatelessWidget {
                             controller: inicioCtrl,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) return 'Requerida';
-                              if (!RegExp(r'^\\d{4}-\\d{2}-\\d{2}').hasMatch(v)) return 'Formato inválido';
+                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(v)) return 'Formato inválido';
                               return null;
                             },
                           ),
@@ -500,7 +500,7 @@ class CursosSection extends StatelessWidget {
                             controller: finCtrl,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) return 'Requerida';
-                              if (!RegExp(r'^\\d{4}-\\d{2}-\\d{2}').hasMatch(v)) return 'Formato inválido';
+                              if (!RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(v)) return 'Formato inválido';
                               return null;
                             },
                           ),
