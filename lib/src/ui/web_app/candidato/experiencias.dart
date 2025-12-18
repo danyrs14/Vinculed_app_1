@@ -162,6 +162,75 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
     return '${d.year}-${_two(d.month)}-${_two(d.day)} ${_two(d.hour)}:${_two(d.minute)}';
   }
 
+  Future<void> _eliminarPublicacion(int idPublicacion) async {
+    // Mostrar diálogo de confirmación
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Eliminar publicación'),
+        content: const Text(
+          '¿Estás seguro de que deseas eliminar esta publicación? Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          SimpleButton(
+            backgroundColor: Colors.blueGrey,
+            title: 'Cancelar',
+            onTap: () => Navigator.of(ctx).pop(false),
+          ),
+          SimpleButton(
+            backgroundColor: Colors.red,
+            title: 'Eliminar',
+            onTap: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar != true) return;
+
+    try {
+      final userProv = Provider.of<UserDataProvider>(context, listen: false);
+      final headers = await userProv.getAuthHeaders();
+
+      final res = await http.delete(
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/experiencias_alumnos/borrar/$idPublicacion'),
+        headers: headers,
+      );
+
+      if (res.statusCode == 204) {
+        // Eliminar el post de la lista
+        setState(() {
+          _items.removeWhere((e) => (e['id_publicacion'] as num?)?.toInt() == idPublicacion);
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Publicación eliminada exitosamente'),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al eliminar: ${res.statusCode}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   // Eliminado _buildPost; ahora usamos _buildPostWithHide para poder ocultar media con modales
   Widget _buildPostWithHide(Map<String, dynamic> e, bool isMobile) {
     final autor = (e['nombre'] ?? '').toString();
@@ -188,6 +257,18 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
     final isLiked = miReaccion == 'upvote';
     final isDisliked = miReaccion == 'downvote';
 
+    // Safe parsing del id_alumno del post
+    final postIdAlumno = (e['id_alumno'] as num?)?.toInt();
+    
+    // Obtener idRol del usuario actual para comparar
+    final userProv = Provider.of<UserDataProvider>(context, listen: false);
+    final currentUserIdRol = userProv.idRol;
+    
+    // Verificar si el usuario actual es el propietario del post
+    final isOwner = postIdAlumno != null && currentUserIdRol != null && postIdAlumno == currentUserIdRol;
+    
+    final idPublicacion = (e['id_publicacion'] as num?)?.toInt() ?? 0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -198,7 +279,7 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
           subtitle: subtitle,
           content: titulo.isEmpty ? contenido : '$titulo\n\n$contenido',
           initialLikesCount: reacciones,
-          idPublicacion: (e['id_publicacion'] as num?)?.toInt() ?? 0,
+          idPublicacion: idPublicacion,
           idAlumno: _idAlumno ?? 0,
           initialIsLiked: isLiked,
           initialIsDisliked: isDisliked,
@@ -207,6 +288,8 @@ class _ExperiencesPageState extends State<ExperiencesPage> {
           maxWidth: 720,
           mediaUrl: e['url_multimedia'] as String?,
           hideMediaOverlays: _anyModalOpen,
+          isOwner: isOwner,
+          onDelete: isOwner ? () => _eliminarPublicacion(idPublicacion) : null,
         ),
         const SizedBox(height: 20),
       ],
