@@ -743,13 +743,15 @@ class _Badge extends StatelessWidget {
 }
 
 class _CardBox extends StatelessWidget {
-  const _CardBox({this.child});
+  const _CardBox({this.child, this.minHeight});
   final Widget? child;
+  final double? minHeight;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
+      constraints: BoxConstraints(minHeight: minHeight ?? 0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -1110,7 +1112,7 @@ class _VacancyDetailRichView extends StatelessWidget {
               crossAxisCount: isMobile ? 1 : 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: isMobile ? 3.2 : 3.6,
+              childAspectRatio: isMobile ? 1.6 : 2.6,
             ),
             itemBuilder: (_, i) {
               final p = postulaciones[i];
@@ -1139,22 +1141,26 @@ class _PostulanteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
+    final isMobile = MediaQuery.of(context).size.width < 475;
     return _CardBox(
+      minHeight: isMobile ? 150 : null, // altura mínima para evitar overflow en móviles
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: Colors.blue[50],
-            backgroundImage: (fotoUrl != null && fotoUrl!.isNotEmpty) ? NetworkImage(fotoUrl!) : null,
-            child: (fotoUrl == null || fotoUrl!.isEmpty)
-                ? Icon(Icons.person, size: 32, color: theme.fuente())
-                : null,
-          ),
-          const SizedBox(width: 12),
+          
+          //const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: Colors.blue[50],
+                  backgroundImage: (fotoUrl != null && fotoUrl!.isNotEmpty) ? NetworkImage(fotoUrl!) : null,
+                  child: (fotoUrl == null || fotoUrl!.isEmpty)
+                      ? Icon(Icons.person, size: 32, color: theme.fuente())
+                      : null,
+                ),
                 Text(nombre, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
                 Text(correo, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -1162,12 +1168,19 @@ class _PostulanteCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          _Badge(text: estatus, color: theme.secundario()),
-          const SizedBox(width: 12),
-          SizedBox(
-            child: SimpleButton(
-              title: 'Ver perfil',
-              onTap: () => context.go('/reclutador/perfil_candidato/$idAlumno'),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _Badge(text: estatus, color: theme.secundario()),
+                const SizedBox(height: 12),
+                SizedBox(
+                  child: SimpleButton(
+                    title: 'Ver perfil',
+                    onTap: () => context.go('/reclutador/perfil_candidato/$idAlumno'),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -1231,7 +1244,7 @@ class _DetailItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.all(10),
@@ -1239,12 +1252,20 @@ class _DetailItem extends StatelessWidget {
           child: Icon(icon, color: Colors.blue[700], size: 22),
         ),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500)),
-            Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+              Text(
+                value,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                softWrap: true,
+              ),
+            ],
+          ),
         ),
       ],
     );

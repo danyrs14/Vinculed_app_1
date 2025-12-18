@@ -558,6 +558,9 @@ class _ReportesAdminPageState extends State<ReportesAdminPage> {
             case "Reclutadores":
               context.go('/admin/reclutadores');
               break;
+            case "Artículos":
+              context.go('/admin/articulos');
+              break;
           }
         },
       ),

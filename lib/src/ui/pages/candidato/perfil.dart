@@ -310,7 +310,7 @@ class _PerfilState extends State<Perfil> {
               const SizedBox(height: 16),
               HabilidadesTipoSection(title: 'Habilidades Blandas', tipoDisplay: 'Blandas', items: perfil.habilidades.where(_isBlanda).toList(), idAlumno: perfil.idAlumno, emptyText: 'Agrega tus habilidades blandas', onUpdated: () => _fetchPerfil(perfil.idAlumno)),
               const SizedBox(height: 16),
-              HabilidadesTipoSection(title: 'Idiomas', tipoDisplay: 'Idiomas', items: perfil.habilidades.where(_isIdioma).toList(), idAlumno: perfil.idAlumno, emptyText: 'Agrega tus idiomas', onUpdated: () => _fetchPerfil(perfil.idAlumno)),
+              HabilidadesTipoSection(title: 'Idiomas', tipoDisplay: 'Idioma', items: perfil.habilidades.where(_isIdioma).toList(), idAlumno: perfil.idAlumno, emptyText: 'Agrega tus idiomas', onUpdated: () => _fetchPerfil(perfil.idAlumno)),
               const SizedBox(height: 16),
               UrlsSection(items: perfil.urlsExternas, emptyText: 'Agrega tus URLs externas', onUpdated: () => _fetchPerfil(perfil.idAlumno)),
               const SizedBox(height: 32),
@@ -665,7 +665,13 @@ class _BannerSection extends StatelessWidget {
         const SizedBox(width: 12),
         InkWell(onTap: onUploadCv, child: const Icon(Icons.attach_file, size: 18, color: Colors.black54)),
         const SizedBox(width: 8),
-        Expanded(child: InkWell(onTap: onViewCv, child: Text(cvName, style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline), overflow: TextOverflow.ellipsis, maxLines: 1))),
+        Expanded(child:(cvName == 'Sube tu CV' || cvName == 'CV') ?
+              Text(cvName,
+                  style: const TextStyle(color: Colors.black54),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+              )
+              : InkWell(onTap: onViewCv, child: Text('Ver CV', style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline), overflow: TextOverflow.ellipsis, maxLines: 1))),
         const SizedBox(width: 12),
       ]),
     );

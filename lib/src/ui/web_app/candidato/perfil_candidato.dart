@@ -694,7 +694,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                         Expanded(
                                           child: HabilidadesTipoSection(
                                             title: 'Idiomas',
-                                            tipoDisplay: 'Idiomas',
+                                            tipoDisplay: 'Idioma',
                                             idAlumno: perfil.idAlumno,
                                             items: perfil.habilidades.where((h) => _isIdioma(h)).toList(),
                                             emptyText: 'Agrega los idiomas que hablas',
@@ -1389,10 +1389,16 @@ class _BannerSection extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: InkWell(
+              child: (cvName == 'Sube tu CV' || cvName == 'CV') ?
+              Text(cvName,
+                  style: const TextStyle(color: Colors.black54),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+              )
+              : InkWell(
                 onTap: onViewCv,
                 child: Text(
-                  cvName,
+                  'Ver CV',
                   style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
