@@ -1236,7 +1236,7 @@ class _ErrorWithResolveContent extends StatelessWidget {
       final headersBase = await context.read<UserDataProvider>().getAuthHeaders();
       final headers = {...headersBase, 'Content-Type': 'application/json'};
       final res = await http.put(
-        Uri.parse('http://localhost:3000/api/reportes/resolver_reporte'),
+        Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/reportes/resolver_reporte'),
         headers: headers,
         body: jsonEncode({'id_reporte': idReporte}),
       );
