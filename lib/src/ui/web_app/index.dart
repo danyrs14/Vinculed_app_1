@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/auth_notifier.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/web_app/admin_gestion_alumnos.dart';
+import 'package:vinculed_app_1/src/ui/web_app/admin_gestion_articulos.dart';
 //import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil_visible.dart';
 import 'package:vinculed_app_1/src/ui/web_app/admin_gestion_empresas.dart';
 import 'package:vinculed_app_1/src/ui/web_app/admin_gestion_reclutadores.dart';
@@ -195,6 +196,10 @@ class _AdminAppState extends State<AdminApp> {
             GoRoute(
               path: 'reclutadores',
               builder: (context, state) => const AdminGestionReclutadoresPage(),
+            ),
+            GoRoute(
+              path: 'articulos',
+              builder: (context, state) => const AdminGestionArticulosWebPage(),
             ),
           ],
         ),
