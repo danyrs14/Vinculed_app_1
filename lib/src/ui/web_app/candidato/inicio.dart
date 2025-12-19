@@ -11,6 +11,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:vinculed_app_1/src/ui/web_app/candidato/vacante.dart'; // detalle
 
+// ======= SOLO AGREGADO PARA NOTIFICACIONES + GUARDAR TOKEN/DISPLAYNAME =======
+import 'package:vinculed_app_1/src/core/services/notification_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 class HomeRegisteredPage extends StatefulWidget {
   const HomeRegisteredPage({super.key});
 
@@ -33,11 +38,61 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
   static const double _extraBottomPadding = 24.0;
   static const double _atEndThreshold = 4.0;
 
+  // ======= SOLO AGREGADO PARA EVITAR DUPLICAR SETUP / BIENVENIDA =======
+  static bool _welcomeShown = false;
+
   @override
   void initState() {
     super.initState();
     _scrollCtrl.addListener(_onScroll);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _onScroll();
+
+      // ======= SETUP DE PUSH + GUARDAR FCM TOKEN Y DISPLAY NAME EN /users/{uid} =======
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        print('HomeRegisteredPage: no hay usuario autenticado, omito push.');
+        return;
+      }
+
+      // Inicializa push y listeners (igual que reclutador)
+      await NotificationService.instance.initPush();
+      await NotificationService.instance.startListeningToIncomingMessages();
+
+      // ======= FIX: SIEMPRE guarda displayName; token solo si se puede obtener =======
+      String? token;
+      try {
+        token = await FirebaseMessaging.instance.getToken();
+        print('HomeRegisteredPage: token obtenido: $token');
+      } catch (e) {
+        print('HomeRegisteredPage: getToken() falló (normal en Web si falta SW/VAPID): $e');
+      }
+
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
+          {
+            'displayName': user.displayName ?? 'Usuario',
+            if (token != null) 'fcmToken': token,
+          },
+          SetOptions(merge: true),
+        );
+        print('HomeRegisteredPage: users/${user.uid} actualizado (displayName y token si existe).');
+      } catch (e) {
+        print('HomeRegisteredPage: error guardando displayName/token en Firestore: $e');
+      }
+
+      // Notificación de bienvenida (una sola vez)
+      if (_welcomeShown) return;
+      _welcomeShown = true;
+
+      final nombre = user.displayName ?? 'usuario';
+      await NotificationService.instance.addNotification(
+        userId: user.uid,
+        title: '¡Bienvenido $nombre!',
+        body: 'Has iniciado sesión correctamente.',
+      );
+    });
   }
 
   void _onScroll() {
@@ -163,19 +218,9 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        //borderRadius: BorderRadius.circular(16),
-        //border: Border.all(color: Colors.blue.shade50),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.blue.withOpacity(0.05),
-        //     blurRadius: 15,
-        //     offset: const Offset(0, 5),
-        //   ),
-        // ],
       ),
       child: Column(
         children: [
-          // "Dibujito" hecho con Iconos y Contenedores
           Stack(
             alignment: Alignment.center,
             children: [
@@ -286,7 +331,6 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // Saludo con avatar
                                 Row(
                                   children: [
                                     CircleAvatar(
@@ -310,7 +354,6 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                 ),
                                 const SizedBox(height: 28),
 
-                                // --- LÓGICA MODIFICADA AQUÍ ---
                                 if (_loadingVac)
                                   const Center(child: Padding(
                                     padding: EdgeInsets.symmetric(vertical: 40),
@@ -327,38 +370,34 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                     child: Text(_errorVac!, style: const TextStyle(color: Colors.red)),
                                   )
                                 else if (_vacantes.isEmpty)
-                                  // SI LA LISTA ESTÁ VACÍA, MOSTRAMOS EL MENSAJE OPTIMISTA
-                                  _buildEmptyState()
-                                else
-                                  // SI HAY DATOS, MOSTRAMOS FILA EN DESKTOP / COLUMNA EN MÓVIL
-                                  (isMobile
-                                      ? Column(
-                                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                                          children: _vacantes.map((v) => Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 1.0),
+                                    _buildEmptyState()
+                                  else
+                                    (isMobile
+                                        ? Column(
+                                      children: _vacantes.map((v) => Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 1.0),
+                                        child: _buildVacanteCard(v),
+                                      )).toList(),
+                                    )
+                                        : Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: List.generate(3, (index) {
+                                        Map<String, dynamic>? v = index < _vacantes.length ? _vacantes[index] : null;
+                                        if (v == null) {
+                                          return const Expanded(child: SizedBox());
+                                        }
+                                        return Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                             child: _buildVacanteCard(v),
-                                          )).toList(),
-                                        )
-                                      : Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: List.generate(3, (index) {
-                                            Map<String, dynamic>? v = index < _vacantes.length ? _vacantes[index] : null;
-                                            if (v == null) {
-                                              return const Expanded(child: SizedBox());
-                                            }
-                                            return Expanded(
-                                              child: Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                                child: _buildVacanteCard(v),
-                                              ),
-                                            );
-                                          }),
-                                        )
-                                  ),
+                                          ),
+                                        );
+                                      }),
+                                    )
+                                    ),
 
                                 const SizedBox(height: 28),
 
-                                // Botones grandes inferior (responsive)
                                 LayoutBuilder(
                                   builder: (context, c) {
                                     final stackButtons = c.maxWidth < 680;
@@ -408,7 +447,6 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
             ),
           ),
 
-          // Footer animado
           Positioned(
             left: 0,
             right: 0,

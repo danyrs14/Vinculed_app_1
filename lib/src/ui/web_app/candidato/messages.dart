@@ -305,13 +305,34 @@ class _MessagesPageState extends State<MessagesPage> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 const SizedBox(height: 8),
-                                const Texto(text: 'MessagesPage', fontSize: 22),
+                                const Texto(text: 'Mensajes', fontSize: 22),
                                 const SizedBox(height: 12),
 
-                                // Layout web: lista izquierda + chat derecho
+                                // Layout web / móvil
                                 SizedBox(
                                   height: 520, // altura fija razonable para el panel
-                                  child: Row(
+                                  child: w < 700
+                                      ? (
+                                      // MODO MÓVIL:
+                                      //  - si no hay chat seleccionado -> lista completa
+                                      //  - si hay chat seleccionado -> chat a pantalla completa
+                                      _selectedPeerUid == null
+                                          ? _buildChatListMobile()
+                                          : _ChatPanel(
+                                        myUid: _myUid,
+                                        peerUid: _selectedPeerUid!,
+                                        contactName:
+                                        _selectedContactName ??
+                                            'Usuario',
+                                        onBack: () {
+                                          setState(() {
+                                            _selectedPeerUid = null;
+                                            _selectedContactName = null;
+                                          });
+                                        },
+                                      )
+                                  )
+                                      : Row(
                                     children: [
                                       // ==================== LISTA DE CONVERSACIONES (IZQUIERDA) ====================
                                       SizedBox(
@@ -326,8 +347,10 @@ class _MessagesPageState extends State<MessagesPage> {
                                               return const Center(
                                                 child: Text(
                                                   'Ocurrió un error al cargar tus chats',
-                                                  style: TextStyle(fontSize: 14),
-                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                      fontSize: 14),
+                                                  textAlign:
+                                                  TextAlign.center,
                                                 ),
                                               );
                                             }
@@ -335,17 +358,20 @@ class _MessagesPageState extends State<MessagesPage> {
                                             if (snapshot.connectionState ==
                                                 ConnectionState.waiting) {
                                               return const Center(
-                                                child: CircularProgressIndicator(),
+                                                child:
+                                                CircularProgressIndicator(),
                                               );
                                             }
 
-                                            final threads = snapshot.data ?? [];
+                                            final threads =
+                                                snapshot.data ?? [];
 
                                             if (threads.isEmpty) {
                                               return const Center(
                                                 child: Text(
                                                   'Aún no tienes conversaciones',
-                                                  style: TextStyle(fontSize: 14),
+                                                  style: TextStyle(
+                                                      fontSize: 14),
                                                 ),
                                               );
                                             }
@@ -358,24 +384,32 @@ class _MessagesPageState extends State<MessagesPage> {
                                                 final thread = threads[i];
 
                                                 // Encontrar al otro usuario (peerUid)
-                                                final peerUid = thread.participants.firstWhere(
+                                                final peerUid = thread
+                                                    .participants
+                                                    .firstWhere(
                                                       (uid) => uid != _myUid,
                                                   orElse: () => '',
                                                 );
 
                                                 if (peerUid.isEmpty) {
-                                                  return const SizedBox.shrink();
+                                                  return const SizedBox
+                                                      .shrink();
                                                 }
 
                                                 final timeLabel =
-                                                _formatTimeLabel(thread.lastMessageAt);
+                                                _formatTimeLabel(
+                                                    thread
+                                                        .lastMessageAt);
 
-                                                final int totalUnread = thread.unreadCount;
+                                                final int totalUnread =
+                                                    thread.unreadCount;
                                                 final bool lastFromMe =
-                                                    thread.lastSenderUid == _myUid;
+                                                    thread.lastSenderUid ==
+                                                        _myUid;
 
                                                 final bool hasNewForMe =
-                                                    !lastFromMe && totalUnread > 0;
+                                                    !lastFromMe &&
+                                                        totalUnread > 0;
 
                                                 final int unreadForMe =
                                                 hasNewForMe ? 1 : 0;
@@ -384,24 +418,32 @@ class _MessagesPageState extends State<MessagesPage> {
                                                 String displayName =
                                                 _fallbackName(peerUid);
 
-                                                final Map<String, dynamic>?
-                                                namesMap =
-                                                    thread.participantsDisplayNames;
+                                                final Map<String,
+                                                    dynamic>?
+                                                namesMap = thread
+                                                    .participantsDisplayNames;
                                                 if (namesMap != null &&
-                                                    namesMap.containsKey(peerUid)) {
-                                                  final raw = namesMap[peerUid];
+                                                    namesMap.containsKey(
+                                                        peerUid)) {
+                                                  final raw =
+                                                  namesMap[peerUid];
                                                   if (raw is String &&
-                                                      raw.trim().isNotEmpty) {
-                                                    displayName = raw.trim();
+                                                      raw
+                                                          .trim()
+                                                          .isNotEmpty) {
+                                                    displayName =
+                                                        raw.trim();
                                                   }
                                                 }
                                                 // =============================================================
 
                                                 final preview = ChatPreview(
                                                   name: displayName,
-                                                  lastMessage: thread.lastMessage,
+                                                  lastMessage:
+                                                  thread.lastMessage,
                                                   timeLabel: timeLabel,
-                                                  unreadCount: unreadForMe,
+                                                  unreadCount:
+                                                  unreadForMe,
                                                   isTyping: false,
                                                 );
 
@@ -409,7 +451,8 @@ class _MessagesPageState extends State<MessagesPage> {
                                                   preview: preview,
                                                   onTap: () {
                                                     setState(() {
-                                                      _selectedPeerUid = peerUid;
+                                                      _selectedPeerUid =
+                                                          peerUid;
                                                       _selectedContactName =
                                                           displayName;
                                                     });
@@ -430,7 +473,8 @@ class _MessagesPageState extends State<MessagesPage> {
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             borderRadius:
-                                            BorderRadius.circular(12),
+                                            BorderRadius.circular(
+                                                12),
                                             border: Border.all(
                                               color: Colors.black12,
                                             ),
@@ -438,9 +482,10 @@ class _MessagesPageState extends State<MessagesPage> {
                                           child: const Center(
                                             child: Text(
                                               'Selecciona una conversación o inicia un chat nuevo',
-                                              style:
-                                              TextStyle(fontSize: 14),
-                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                  fontSize: 14),
+                                              textAlign:
+                                              TextAlign.center,
                                             ),
                                           ),
                                         )
@@ -487,20 +532,118 @@ class _MessagesPageState extends State<MessagesPage> {
       ),
     );
   }
+
+  /// Lista de conversaciones para MODO MÓVIL (pantalla de lista completa)
+  Widget _buildChatListMobile() {
+    return StreamBuilder<List<ChatThread>>(
+      stream: ChatService.instance.streamUserChats(_myUid),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          debugPrint('Error en streamUserChats: ${snapshot.error}');
+          return const Center(
+            child: Text(
+              'Ocurrió un error al cargar tus chats',
+              style: TextStyle(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final threads = snapshot.data ?? [];
+
+        if (threads.isEmpty) {
+          return const Center(
+            child: Text(
+              'Aún no tienes conversaciones',
+              style: TextStyle(fontSize: 14),
+            ),
+          );
+        }
+
+        return ListView.separated(
+          itemCount: threads.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 6),
+          itemBuilder: (context, i) {
+            final thread = threads[i];
+
+            // Encontrar al otro usuario (peerUid)
+            final peerUid = thread.participants.firstWhere(
+                  (uid) => uid != _myUid,
+              orElse: () => '',
+            );
+
+            if (peerUid.isEmpty) {
+              return const SizedBox.shrink();
+            }
+
+            final timeLabel = _formatTimeLabel(thread.lastMessageAt);
+
+            final int totalUnread = thread.unreadCount;
+            final bool lastFromMe = thread.lastSenderUid == _myUid;
+
+            final bool hasNewForMe = !lastFromMe && totalUnread > 0;
+
+            final int unreadForMe = hasNewForMe ? 1 : 0;
+
+            // ========= OBTENER NOMBRE DESDE EL DOCUMENTO DEL CHAT =========
+            String displayName = _fallbackName(peerUid);
+
+            final Map<String, dynamic>? namesMap =
+                thread.participantsDisplayNames;
+            if (namesMap != null && namesMap.containsKey(peerUid)) {
+              final raw = namesMap[peerUid];
+              if (raw is String && raw.trim().isNotEmpty) {
+                displayName = raw.trim();
+              }
+            }
+            // =============================================================
+
+            final preview = ChatPreview(
+              name: displayName,
+              lastMessage: thread.lastMessage,
+              timeLabel: timeLabel,
+              unreadCount: unreadForMe,
+              isTyping: false,
+            );
+
+            return ChatPreviewTile(
+              preview: preview,
+              onTap: () {
+                setState(() {
+                  _selectedPeerUid = peerUid;
+                  _selectedContactName = displayName;
+                });
+              },
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
-/// ======================= PANEL DE CHAT (WEB) =======================
-/// Versión adaptada del ChatConversationPage, pero embebida en el lado derecho
+/// ======================= PANEL DE CHAT (WEB / MÓVIL) =======================
+/// Versión adaptada del ChatConversationPage, pero embebida en el lado derecho.
+/// En móvil se muestra a pantalla completa dentro del contenedor de 520px,
+/// con botón de regreso opcional.
 class _ChatPanel extends StatefulWidget {
   const _ChatPanel({
     required this.myUid,
     required this.peerUid,
     required this.contactName,
+    this.onBack,
   });
 
   final String myUid;
   final String peerUid;
   final String contactName;
+  final VoidCallback? onBack;
 
   @override
   State<_ChatPanel> createState() => _ChatPanelState();
@@ -624,6 +767,7 @@ class _ChatPanelState extends State<_ChatPanel> {
           _ChatHeader(
             name: widget.contactName,
             subtitle: null,
+            onBack: widget.onBack,
           ),
 
           // Separador de fecha como en el diseño móvil
@@ -753,10 +897,12 @@ class _ChatHeader extends StatelessWidget {
   const _ChatHeader({
     required this.name,
     this.subtitle,
+    this.onBack,
   });
 
   final String name;
   final String? subtitle;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -765,6 +911,11 @@ class _ChatHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
       child: Row(
         children: [
+          if (onBack != null)
+            IconButton(
+              onPressed: onBack,
+              icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            ),
           CircleAvatar(
             backgroundColor: Colors.blue[50],
             radius: 18,

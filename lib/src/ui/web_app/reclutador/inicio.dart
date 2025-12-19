@@ -12,6 +12,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lottie/lottie.dart';
 
+// ======= SOLO AGREGADO PARA GUARDAR DISPLAYNAME / TOKEN EN /users/{uid} =======
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 class HomeRecruiterPage extends StatefulWidget {
   const HomeRecruiterPage({super.key});
 
@@ -40,6 +44,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
   void initState() {
     super.initState();
     _scrollCtrl.addListener(_onScroll);
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _onScroll();
       await _fetchRecruitedStudents();
@@ -51,13 +56,38 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
         return;
       }
 
+      // Inicializa push y listeners
+      await NotificationService.instance.initPush();
+      await NotificationService.instance.startListeningToIncomingMessages();
+
+      // ======= FIX: SIEMPRE guarda displayName; token solo si se puede obtener =======
+      String? token;
+      try {
+        token = await FirebaseMessaging.instance.getToken();
+        print('HomeRecruiterPage: token obtenido: $token');
+      } catch (e) {
+        print('HomeRecruiterPage: getToken() falló (normal en Web si falta SW/VAPID): $e');
+      }
+
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
+          {
+            'displayName': user.displayName ?? 'Usuario',
+            if (token != null) 'fcmToken': token,
+          },
+          SetOptions(merge: true),
+        );
+        print('HomeRecruiterPage: users/${user.uid} actualizado (displayName y token si existe).');
+      } catch (e) {
+        print('HomeRecruiterPage: error guardando displayName/token en Firestore: $e');
+      }
+
+      // Bienvenida solo 1 vez
       if (_welcomeShown) return;
       _welcomeShown = true;
 
       final nombre = user.displayName ?? 'usuario';
 
-      await NotificationService.instance.initPush();
-      await NotificationService.instance.startListeningToIncomingMessages();
       await NotificationService.instance.addNotification(
         userId: user.uid,
         title: '¡Bienvenido $nombre!',
@@ -229,9 +259,9 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                         ),
                                       ),
                                     ),
-                                ],
-                              ),
-                              const SizedBox(height: 28),
+                                  ],
+                                ),
+                                const SizedBox(height: 28),
 
                                 // Pestañas Reclutado / Completado
                                 Row(
