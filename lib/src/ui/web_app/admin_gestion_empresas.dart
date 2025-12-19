@@ -484,8 +484,13 @@ class _EmpresaFormDialogState extends State<_EmpresaFormDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
+    final isMobile = MediaQuery.of(context).size.width < 640;
     return AlertDialog(
-      title: Text(widget.title),
+      title: Text(widget.title, style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: theme.fuente(),
+                            ),),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 500),
         child: SingleChildScrollView(
@@ -541,7 +546,23 @@ class _EmpresaFormDialogState extends State<_EmpresaFormDialog> {
           ),
         ),
       ),
-      actions: [
+      actions: isMobile ?
+      [
+        Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
+            children: [ SimpleButton(
+                title: 'Cancelar',
+                primaryColor: false,
+                backgroundColor: Colors.blueGrey,
+                textColor: Colors.black87,
+                onTap: _sending? null : () => Navigator.of(context).maybePop(),
+              ),
+              SimpleButton(
+                title: _sending ? 'Guardando...' : 'Guardar',
+                icon: Icons.save,
         SimpleButton(
           title: 'Cancelar',
           primaryColor: false,

@@ -218,10 +218,10 @@ class _AdminGestionArticulosWebPageState extends State<AdminGestionArticulosWebP
                             ),
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => Navigator.of(ctx).pop(),
-                        ),
+                        // IconButton(
+                        //   icon: const Icon(Icons.close),
+                        //   onPressed: () => Navigator.of(ctx).pop(),
+                        // ),
                       ],
                     ),
                   ),

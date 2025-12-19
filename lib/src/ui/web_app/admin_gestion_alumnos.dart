@@ -295,6 +295,10 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
     final bool canPrev = _page > 1 && !_loading;
     final bool canNext = _page < totalPages && !_loading;
 
+    final isMobile = MediaQuery.of(context).size.width < 640;
+    final prevText = isMobile ? 'Ant.' : 'Anterior';
+    final nextText = isMobile ? 'Sig.' : 'Siguiente';
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900),
@@ -303,7 +307,7 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
           child: Row(
             children: [
               SimpleButton(
-                title: 'Anterior',
+                title: prevText,
                 icon: Icons.chevron_left,
                 backgroundColor: canPrev ? null : Colors.grey.shade300,
                 textColor: canPrev ? null : Colors.grey.shade600,
@@ -313,7 +317,7 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
               Text('Página $_page de $totalPages'),
               const SizedBox(width: 8),
               SimpleButton(
-                title: 'Siguiente',
+                title: nextText,
                 icon: Icons.chevron_right,
                 backgroundColor: canNext ? null : Colors.grey.shade300,
                 textColor: canNext ? null : Colors.grey.shade600,
@@ -640,8 +644,13 @@ class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
+    final isMobile = MediaQuery.of(context).size.width < 640;
     return AlertDialog(
-      title: Text(widget.title),
+      title: Text(widget.title, style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: theme.fuente(),
+                            ),),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 500),
         child: SingleChildScrollView(
@@ -740,7 +749,22 @@ class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
           ),
         ),
       ),
-      actions: [
+      actions: isMobile?
+      [Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
+            children: [ SimpleButton(
+                title: 'Cancelar',
+                primaryColor: false,
+                backgroundColor: Colors.blueGrey,
+                textColor: Colors.black87,
+                onTap: _sending? null : () => Navigator.of(context).maybePop(),
+              ),
+              SimpleButton(
+                title: _sending ? 'Guardando...' : 'Guardar',
+                icon: Icons.save,
         SimpleButton(
           title: 'Cancelar',
           primaryColor: false,
