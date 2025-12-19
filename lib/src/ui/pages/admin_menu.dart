@@ -7,6 +7,7 @@ import 'package:vinculed_app_1/src/ui/pages/admin_gestion_empresas.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_reclutador.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_inicio.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_reportes.dart';
+import 'package:vinculed_app_1/src/ui/pages/admin_vacantes.dart';
 
 
 class MenuPageAdmin extends StatefulWidget {
@@ -65,6 +66,18 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
             Image.asset('assets/images/graduate.png', width: 50, height: 50),
             Row(
               children: [
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AdminJobSearchMovilPage()),
+                    );
+                  }, 
+                  icon: Icon(
+                    Icons.work_outlined,
+                    color: theme.fuente(),
+                    size: 26,
+                  )),
                 const SizedBox(width: 10),
                 IconButton(
                   icon: Icon(
@@ -123,7 +136,7 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
               icon: Icon(
-                Icons.work_outlined,
+                Icons.domain_outlined,
                 color: _paginaActual == 1 ? theme.primario() : Colors.grey,
                 size: 26,
               ),
