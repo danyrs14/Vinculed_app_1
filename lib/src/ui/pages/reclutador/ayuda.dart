@@ -1,16 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
-
-// TUS COMPONENTES
+import 'package:vinculed_app_1/src/ui/pages/reclutador/new_vacancy.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/notificaciones.dart';
+import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header3.dart' show EscomHeader3;
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart' show EscomFooter;
 import 'package:vinculed_app_1/src/ui/widgets/elements/faq_item.dart' show FaqItem;
 
-// ===============================
-// 1) PANTALLA CON TUS COMPONENTES
-// ===============================
 class FaqPageRec extends StatefulWidget {
   const FaqPageRec({super.key});
 
@@ -226,6 +224,8 @@ class AyudaRec extends StatefulWidget {
 class _AyudaRecState extends State<AyudaRec> {
   int? _openIndex; // índice de la tarjeta abierta, null si ninguna
 
+  final usuario = FirebaseAuth.instance.currentUser!;
+
   void _toggleCard(int index) {
     setState(() {
       _openIndex = (_openIndex == index) ? null : index;
@@ -237,6 +237,55 @@ class _AyudaRecState extends State<AyudaRec> {
     final theme = ThemeController.instance;
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: theme.background(),
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset('assets/images/graduate.png', width: 50, height: 50),
+
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.add, color: theme.primario()),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CrearVacantePage()),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.notifications_none, color: theme.primario()),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => NotificacionesRec()),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.blue[50],
+                    backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
+                    child: usuario.photoURL == null ? const Icon(Icons.person, size: 18, color: Colors.blueGrey) : null,
+                  ),
+                  onPressed: () {
+                    // Acción para perfil
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PerfilRec()),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+        elevation: 0,
+      ),
       backgroundColor: theme.background(),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -451,14 +500,14 @@ class _FaqCard extends StatelessWidget {
                   child: Text(
                     title,
                     style: TextStyle(
-                      color: theme.primario(),
+                      color: theme.secundario(),
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
                 Material(
-                  color: theme.primario(),
+                  color: theme.secundario(),
                   shape: const CircleBorder(),
                   child: InkWell(
                     customBorder: const CircleBorder(),

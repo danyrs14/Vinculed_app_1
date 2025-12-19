@@ -117,7 +117,7 @@ class _AjustesRecState extends State<AjustesRec> {
                           );
                         },
                       ),
-                      _SettingsItem(
+                      /*_SettingsItem(
                         title: 'Preferencias',
                         onTap: () {
                           Navigator.of(context).push(
@@ -126,7 +126,7 @@ class _AjustesRecState extends State<AjustesRec> {
                             ),
                           );
                         },
-                      ),
+                      ),*/
                       _SettingsItem(
                         title: 'Cerrar Sesion',
                         isDestructive: true,

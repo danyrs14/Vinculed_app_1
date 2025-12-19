@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 
 class ChatUserSelection {
   final String peerUid;
@@ -75,7 +76,7 @@ class _ChatUserListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = ThemeController.instance;
 
     return Scaffold(
       appBar: AppBar(
@@ -122,10 +123,12 @@ class _ChatUserListPage extends StatelessWidget {
 
               return ListTile(
                 leading: CircleAvatar(
+                  backgroundColor: theme.secundario(),
                   child: Text(
                     displayName.isNotEmpty
                         ? displayName[0].toUpperCase()
                         : '?',
+                    style: TextStyle(color: theme.primario()),
                   ),
                 ),
                 title: Text(
@@ -136,7 +139,7 @@ class _ChatUserListPage extends StatelessWidget {
                     ? Text(
                   email,
                   style: TextStyle(
-                    color: theme.textTheme.bodySmall?.color,
+                    color: theme.secundario(),
                   ),
                 )
                     : null,

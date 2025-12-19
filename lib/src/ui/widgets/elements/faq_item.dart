@@ -35,7 +35,7 @@ class _FaqItemState extends State<FaqItem> {
       curve: Curves.easeOut,
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: Colors.black26),
+        border: Border.all(color: theme.secundario()),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(

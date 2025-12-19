@@ -355,22 +355,59 @@ class _VacancyDetailRichView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children:[
-        Wrap(
-          spacing:12,
-          runSpacing:8,
-          children:[
-            SizedBox(width: isMobile?170:200, child: SimpleButton(title: 'Regresar', onTap: onBackToList)),
-            SizedBox(width: isMobile?170:200, child: SimpleButton(title: 'Editar Vacante', onTap: () async {
-              final raw = detail['id_vacante'] ?? detail['idVacante'] ?? detail['id'];
-              final id = raw is int ? raw : int.tryParse(raw.toString());
-              if(id != null){
-                final shouldRefresh = await Navigator.push(context, MaterialPageRoute(builder: (context) => EditarVacantePage(idVacante: id)));
-                if(shouldRefresh == true){ onEdited(true); }
-              } else { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ID de vacante no disponible'))); }
-            })),
-            SizedBox(width: isMobile?170:200, child: SimpleButton(title:'Eliminar Vacante', backgroundColor: Colors.redAccent, onTap: onDeleting)),
-            SizedBox(width: isMobile?205:225, child: SimpleButton(title: esExpirada ? 'Marcar como Activa' : 'Marcar como Expirada', onTap: onToggleEstado)),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth; // ancho real disponible (móvil)
+
+            return Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                SizedBox(
+                  width: w,
+                  child: SimpleButton(title: 'Regresar', onTap: onBackToList),
+                ),
+                SizedBox(
+                  width: w,
+                  child: SimpleButton(
+                    title: 'Editar Vacante',
+                    onTap: () async {
+                      final raw = detail['id_vacante'] ?? detail['idVacante'] ?? detail['id'];
+                      final id = raw is int ? raw : int.tryParse(raw.toString());
+                      if (id != null) {
+                        final shouldRefresh = await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => EditarVacantePage(idVacante: id)),
+                        );
+                        if (shouldRefresh == true) {
+                          onEdited(true);
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('ID de vacante no disponible')),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: w,
+                  child: SimpleButton(
+                    title: 'Eliminar Vacante',
+                    backgroundColor: Colors.redAccent,
+                    onTap: onDeleting,
+                  ),
+                ),
+                SizedBox(
+                  width: w,
+                  child: SimpleButton(
+                    title: esExpirada ? 'Marcar como Activa' : 'Marcar como Expirada',
+                    onTap: onToggleEstado,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         const SizedBox(height:20),
         Container(

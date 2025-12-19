@@ -135,7 +135,7 @@ class _MenuPageRecState extends State<MenuPageRec> {
               backgroundColor: theme.background(),
               icon: Image.asset(
                 'assets/icons/perfil.png',
-                color: _paginaActual == 0 ? theme.fuente() : Colors.grey,
+                color: _paginaActual == 0 ? theme.primario() : Colors.grey,
                 width: 26, height: 26,
               ),
               label: 'Perfil',
@@ -144,7 +144,7 @@ class _MenuPageRecState extends State<MenuPageRec> {
               backgroundColor: theme.background(),
               icon: Icon(
                 Icons.work_outline,
-                color: _paginaActual == 1 ? theme.fuente() : Colors.grey,
+                color: _paginaActual == 1 ? theme.primario() : Colors.grey,
                 size: 26,
               ),
               label: 'Mis Vacantes',
@@ -153,7 +153,7 @@ class _MenuPageRecState extends State<MenuPageRec> {
               backgroundColor: theme.background(),
               icon: Image.asset(
                 'assets/icons/home.png',
-                color: _paginaActual == 2 ? theme.fuente() : Colors.grey,
+                color: _paginaActual == 2 ? theme.primario() : Colors.grey,
                 width: 26, height: 26,
               ),
               label: 'Inicio',
@@ -162,7 +162,7 @@ class _MenuPageRecState extends State<MenuPageRec> {
               backgroundColor: theme.background(),
               icon: Image.asset(
                 'assets/icons/configuracion.png',
-                color: _paginaActual == 3 ? theme.fuente() : Colors.grey,
+                color: _paginaActual == 3 ? theme.primario() : Colors.grey,
                 width: 26, height: 26,
               ),
               label: 'Ajustes',
@@ -171,7 +171,7 @@ class _MenuPageRecState extends State<MenuPageRec> {
               backgroundColor: theme.background(),
               icon: Image.asset(
                 'assets/icons/mail.png',
-                color: _paginaActual == 4 ? theme.fuente() : Colors.grey,
+                color: _paginaActual == 4 ? theme.primario() : Colors.grey,
                 width: 26, height: 26,
               ),
               label: 'Mensajes',

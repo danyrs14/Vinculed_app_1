@@ -68,8 +68,6 @@ class _MensajesRecState extends State<MensajesRec> {
     return 'Usuario';
   }
 
-  /// Lógica para iniciar un chat nuevo desde el FAB
-  /// 👉 Ahora usamos el service ChatNewHelper para buscar por nombre
   Future<void> _startNewChat() async {
     if (_myUid.isEmpty) return;
 
