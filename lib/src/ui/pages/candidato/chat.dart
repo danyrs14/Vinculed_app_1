@@ -312,7 +312,7 @@ class _ChatHeader extends StatelessWidget {
                     ),
                   ),
               ],
-            ),
+            )
           ),
         ],
       ),
