@@ -283,6 +283,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
                                                         DropdownMenuItem(value: 'Presencial', child: Text('Presencial')),
                                                         DropdownMenuItem(value: 'Remoto', child: Text('Remoto')),
                                                         DropdownMenuItem(value: 'Híbrido', child: Text('Híbrido')),
+                                                        DropdownMenuItem(value: '', child: Text('Sin especificar')),
                                                       ],
                                                     ),
                                                   ),
