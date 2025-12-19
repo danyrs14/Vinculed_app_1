@@ -333,6 +333,7 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                   // SI HAY DATOS, MOSTRAMOS FILA EN DESKTOP / COLUMNA EN MÓVIL
                                   (isMobile
                                       ? Column(
+                                          crossAxisAlignment: CrossAxisAlignment.stretch,
                                           children: _vacantes.map((v) => Padding(
                                             padding: const EdgeInsets.symmetric(vertical: 1.0),
                                             child: _buildVacanteCard(v),
