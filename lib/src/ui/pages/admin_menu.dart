@@ -18,7 +18,7 @@ class MenuPageAdmin extends StatefulWidget {
 
 class _MenuPageAdminState extends State<MenuPageAdmin> {
   final usuario = FirebaseAuth.instance.currentUser!;
-  int _paginaActual = 1; // Inicia en 'Inicio'
+  int _paginaActual = 2; // Inicia en 'Inicio'
   late final List<Widget> _paginas;
   late final PageController _pageController;
 
@@ -27,8 +27,8 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
     super.initState();
     _paginas = const [
       ReportesAdminMovilPage(),  // 0
-      InicioAdminPageMovil(),           // 1
-      AdminGestionEmpresasPageMovil(),   // 2
+      AdminGestionEmpresasPageMovil(),   // 1
+      InicioAdminPageMovil(),           // 2
       AdminGestionAlumnosMovilPage(), //3
       AdminGestionReclutadoresMovilPage(), //4
     ];
@@ -123,21 +123,21 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
               icon: Icon(
-                //Icons.person_search_outlined,
-                Icons.person_add_alt_1_outlined,
-                color: _paginaActual == 1 ? theme.fuente() : Colors.grey,
+                Icons.work_outlined,
+                color: _paginaActual == 1 ? theme.primario() : Colors.grey,
                 size: 26,
               ),
-              label: 'Rec. Pendientes',
+              label: 'Empresas',
             ),
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
               icon: Icon(
-                Icons.work_outlined,
-                color: _paginaActual == 2 ? theme.primario() : Colors.grey,
+                //Icons.person_search_outlined,
+                Icons.person_add_alt_1_outlined,
+                color: _paginaActual == 2 ? theme.fuente() : Colors.grey,
                 size: 26,
               ),
-              label: 'Empresas',
+              label: 'Rec. Pendientes',
             ),
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
@@ -155,7 +155,7 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
                 color: _paginaActual == 4 ? theme.fuente() : Colors.grey,
                 size: 26,
               ),
-              label: 'Alumnos',
+              label: 'Reclutadores',
             ),
           ],
         ),

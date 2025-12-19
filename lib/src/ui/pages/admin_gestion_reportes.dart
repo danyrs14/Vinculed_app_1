@@ -452,6 +452,10 @@ class _ReportesAdminMovilPageState extends State<ReportesAdminMovilPage> {
     final bool canPrev = _page > 1 && !_loading;
     final bool canNext = _page < totalPages && !_loading;
 
+    final isMobile = MediaQuery.of(context).size.width < 640;
+    final prevText = isMobile ? 'Ant.' : 'Anterior';
+    final nextText = isMobile ? 'Sig.' : 'Siguiente';
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900),
@@ -459,10 +463,8 @@ class _ReportesAdminMovilPageState extends State<ReportesAdminMovilPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              Text('Total: $total'),
-              const Spacer(),
               SimpleButton(
-                title: 'Anterior',
+                title: prevText,
                 icon: Icons.chevron_left,
                 backgroundColor: canPrev ? null : Colors.grey.shade300,
                 textColor: canPrev ? null : Colors.grey.shade600,
@@ -472,7 +474,7 @@ class _ReportesAdminMovilPageState extends State<ReportesAdminMovilPage> {
               Text('Página $_page de $totalPages'),
               const SizedBox(width: 8),
               SimpleButton(
-                title: 'Siguiente',
+                title: nextText,
                 icon: Icons.chevron_right,
                 backgroundColor: canNext ? null : Colors.grey.shade300,
                 textColor: canNext ? null : Colors.grey.shade600,
