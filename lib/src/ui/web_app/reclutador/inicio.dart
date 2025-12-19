@@ -12,6 +12,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lottie/lottie.dart';
 
+// ======= SOLO AGREGADO PARA GUARDAR DISPLAYNAME / TOKEN EN /users/{uid} =======
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 class HomeRecruiterPage extends StatefulWidget {
   const HomeRecruiterPage({super.key});
 
@@ -40,6 +44,7 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
   void initState() {
     super.initState();
     _scrollCtrl.addListener(_onScroll);
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _onScroll();
       await _fetchRecruitedStudents();
@@ -51,11 +56,33 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
         return;
       }
 
-      // ✅ FIX: initPush + listeners SIEMPRE (no depende de _welcomeShown)
+      // Inicializa push y listeners
       await NotificationService.instance.initPush();
       await NotificationService.instance.startListeningToIncomingMessages();
 
-      // ✅ Bienvenida solo 1 vez
+      // ======= FIX: SIEMPRE guarda displayName; token solo si se puede obtener =======
+      String? token;
+      try {
+        token = await FirebaseMessaging.instance.getToken();
+        print('HomeRecruiterPage: token obtenido: $token');
+      } catch (e) {
+        print('HomeRecruiterPage: getToken() falló (normal en Web si falta SW/VAPID): $e');
+      }
+
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
+          {
+            'displayName': user.displayName ?? 'Usuario',
+            if (token != null) 'fcmToken': token,
+          },
+          SetOptions(merge: true),
+        );
+        print('HomeRecruiterPage: users/${user.uid} actualizado (displayName y token si existe).');
+      } catch (e) {
+        print('HomeRecruiterPage: error guardando displayName/token en Firestore: $e');
+      }
+
+      // Bienvenida solo 1 vez
       if (_welcomeShown) return;
       _welcomeShown = true;
 
@@ -525,6 +552,7 @@ class _RecruitedCandidateCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Foto ocupa espacio disponible superior (clic para ir al perfil)
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
@@ -539,6 +567,7 @@ class _RecruitedCandidateCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
+          // Nombre y badge de estatus
           Row(
             children: [
               Expanded(
@@ -565,12 +594,14 @@ class _RecruitedCandidateCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
 
+          // Vacante
           Text(
             data.nombreVacante.isEmpty ? 'Vacante no especificada' : data.nombreVacante,
             style: const TextStyle(color: Colors.black87),
           ),
           const SizedBox(height: 10),
 
+          // Estudiante y habilidades
           _detailRow('Estudiante:', estudianteInfo),
           const SizedBox(height: 6),
           _detailRow('Habilidades:', skills.isEmpty ? 'No especificadas' : skills),
