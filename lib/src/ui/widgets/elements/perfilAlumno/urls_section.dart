@@ -290,7 +290,7 @@ class UrlsSection extends StatelessWidget {
                               'id_alumno': item.idAlumno,
                               'id_url': item.idUrl,
                               'tipo': tipoSel,
-                              'url': urlCtrl.text.trim(),
+                              'url_externa': urlCtrl.text.trim(),
                             });
                             final headers = await provider.getAuthHeaders();
                             final resp = await http.put(
@@ -405,7 +405,7 @@ class UrlsSection extends StatelessWidget {
                             final payload = jsonEncode({
                               'id_alumno': idAlumno,
                               'tipo': tipoSel,
-                              'url': urlCtrl.text.trim(),
+                              'url_externa': urlCtrl.text.trim(),
                             });
                             final headers = await provider.getAuthHeaders();
                             final resp = await http.post(
