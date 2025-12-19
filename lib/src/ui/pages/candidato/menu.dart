@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/articulos.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/busqueda.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/experiencias.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/home.dart';
@@ -26,7 +27,7 @@ class _MenuPageState extends State<MenuPage> {
   void initState() {
     super.initState();
     _paginas =  [
-      const Perfil(),         // 0
+      const AlumnoArticulosPage(),         // 0
       const Postulaciones(),  // 1
       Home(),           // 2
       const Experiencias(),   // 3
@@ -132,12 +133,12 @@ class _MenuPageState extends State<MenuPage> {
           items: [
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
-              icon: Image.asset(
-                'assets/icons/perfil.png',
+              icon: Icon(
+                Icons.read_more_outlined,
                 color: _paginaActual == 0 ? theme.primario() : Colors.grey,
-                width: 26, height: 26,
+                size: 26,
               ),
-              label: 'Perfil',
+              label: 'Puestos en TI',
             ),
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
