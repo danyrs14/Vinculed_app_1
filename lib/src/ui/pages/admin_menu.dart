@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_ajustes.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_alumnos.dart';
+import 'package:vinculed_app_1/src/ui/pages/admin_gestion_articulos.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_empresas.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_gestion_reclutador.dart';
 import 'package:vinculed_app_1/src/ui/pages/admin_inicio.dart';
@@ -66,6 +67,19 @@ class _MenuPageAdminState extends State<MenuPageAdmin> {
             Image.asset('assets/images/graduate.png', width: 50, height: 50),
             Row(
               children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.article_outlined,
+                    color: theme.fuente(),
+                    size: 26,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AdminGestionArticulosMovilPage()),
+                    );
+                  },
+                ),
                 IconButton(
                   onPressed: () {
                     Navigator.push(
