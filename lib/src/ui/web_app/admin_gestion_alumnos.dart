@@ -765,6 +765,13 @@ class _AlumnoFormDialogState extends State<_AlumnoFormDialog> {
               SimpleButton(
                 title: _sending ? 'Guardando...' : 'Guardar',
                 icon: Icons.save,
+                onTap: _sending? null : _submit,
+              ),
+            ]
+          ),
+        ),
+      ]
+      :[
         SimpleButton(
           title: 'Cancelar',
           primaryColor: false,

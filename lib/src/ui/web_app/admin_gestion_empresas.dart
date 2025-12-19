@@ -563,6 +563,13 @@ class _EmpresaFormDialogState extends State<_EmpresaFormDialog> {
               SimpleButton(
                 title: _sending ? 'Guardando...' : 'Guardar',
                 icon: Icons.save,
+                onTap: _sending? null : _submit,
+              ),
+            ]
+          ),
+        ),
+      ]
+      :[
         SimpleButton(
           title: 'Cancelar',
           primaryColor: false,
