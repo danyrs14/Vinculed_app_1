@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_form_field.dart';
@@ -136,17 +137,44 @@ class UrlsSection extends StatelessWidget {
   }
 
   void _openViewDetails(BuildContext context, UrlItem item) {
-    Widget row(String k, String v) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(width: 130, child: Text('$k:', style: const TextStyle(fontWeight: FontWeight.w700))),
-          const SizedBox(width: 8),
-          Expanded(child: Text(v.isEmpty ? '-' : v)),
-        ],
-      ),
-    );
+    Future<void> openUrl(String raw) async {
+      final v = raw.trim();
+      if (v.isEmpty) return;
+      final uri = Uri.tryParse(v);
+      if (uri == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('URL inválida')));
+        return;
+      }
+      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!ok && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo abrir el enlace')));
+      }
+    }
+
+    Widget row(String k, String v, {bool link = false}) => Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(width: 130, child: Text('$k:', style: const TextStyle(fontWeight: FontWeight.w700))),
+              const SizedBox(width: 8),
+              Expanded(
+                child: link
+                    ? InkWell(
+                        onTap: () => openUrl(v),
+                        child: Text(
+                          v.isEmpty ? '-' : v,
+                          style: TextStyle(
+                            color: v.isEmpty ? null : Colors.blue,
+                            decoration: v.isEmpty ? null : TextDecoration.underline,
+                          ),
+                        ),
+                      )
+                    : Text(v.isEmpty ? '-' : v),
+              ),
+            ],
+          ),
+        );
 
     showDialog(
       context: context,
@@ -159,7 +187,7 @@ class UrlsSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               row('Tipo', item.tipo),
-              row('URL', item.url),
+              row('URL', item.url, link: true),
             ],
           ),
         ),
