@@ -4,42 +4,40 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
+import 'package:vinculed_app_1/src/ui/pages/admin_ajustes.dart';
+import 'package:vinculed_app_1/src/ui/pages/admin_vacantes.dart';
 
-import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/widgets/elements/header4.dart';
 
-class AdminJobDetailWebPage extends StatefulWidget {
+class AdminJobDetailMovilPage extends StatefulWidget {
   final int idVacante;
-  const AdminJobDetailWebPage({super.key, required this.idVacante});
+  const AdminJobDetailMovilPage({super.key, required this.idVacante});
 
   @override
-  State<AdminJobDetailWebPage> createState() => _AdminJobDetailWebPageState();
+  State<AdminJobDetailMovilPage> createState() => _AdminJobDetailMovilPageState();
 }
 
-class _AdminJobDetailWebPageState extends State<AdminJobDetailWebPage> {
-  final _scrollCtrl = ScrollController();
-  bool _showFooter = false;
+class _AdminJobDetailMovilPageState extends State<AdminJobDetailMovilPage> {
   Map<String, dynamic>? _detalle;
 
   // Estados de carga
   bool _loading = true; // Carga inicial de la página
   String? _error;
 
-  static const double _footerReservedSpace = EscomFooter.height;
-  static const double _extraBottomPadding = 24.0;
-  static const double _atEndThreshold = 4.0;
-
   @override
   void initState() {
     super.initState();
-    _scrollCtrl.addListener(_handleScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _handleScroll();
       _fetchDetalle();
     });
+  }
+
+  @override
+  void  dispose() {
+    super.dispose();
   }
 
   Future<void> _fetchDetalle() async {
@@ -85,26 +83,6 @@ class _AdminJobDetailWebPageState extends State<AdminJobDetailWebPage> {
     }
   }
 
-  // ... (Resto de funciones: _handleScroll, dispose, _fmtDate, _launchURL igual que antes) ...
-  void _handleScroll() {
-    final pos = _scrollCtrl.position;
-    if (!pos.hasPixels || !pos.hasContentDimensions) return;
-    if (pos.maxScrollExtent <= 0) {
-      if (_showFooter) setState(() => _showFooter = false);
-      return;
-    }
-    final atBottom = pos.pixels >= (pos.maxScrollExtent - _atEndThreshold);
-    if (atBottom != _showFooter) {
-      setState(() => _showFooter = atBottom);
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollCtrl.dispose();
-    super.dispose();
-  }
-
   String _fmtDate(String? iso) {
     if (iso == null || iso.isEmpty) return 'No especificada';
     try {
@@ -125,76 +103,53 @@ class _AdminJobDetailWebPageState extends State<AdminJobDetailWebPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 700;
-
+    final theme = ThemeController.instance;
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: EscomHeader4(
-        onLoginTap: () => context.go('/admin/reportes'),
-        onNotifTap: () {},
-        onMenuSelected: (label) {
-          switch (label) {
-            case "Inicio":
-              context.go('/inicio');
-              break;
-            case "Empresas":
-              context.go('/admin/empresas');
-              break;
-            case "Alumnos":
-              context.go('/admin/alumnos');
-              break;
-            case "Reclutadores":
-              context.go('/admin/reclutadores');
-              break;
-            case "Artículos":
-              context.go('/admin/articulos');
-              break;
-            case "Vacantes":
-              context.go('/admin/vacantes');
-              break;
-          }
-        },
-      ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (n) {
-                if (n is ScrollUpdateNotification || n is ScrollEndNotification) {
-                  _handleScroll();
-                }
-                return false;
-              },
-              child: SingleChildScrollView(
-                controller: _scrollCtrl,
-                padding: const EdgeInsets.only(bottom: _footerReservedSpace + _extraBottomPadding),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 900),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: _buildContent(),
-                    ),
+      appBar: AppBar(
+        backgroundColor: theme.background(),
+        //automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset('assets/images/graduate.png', width: 50, height: 50),
+            Row(
+              children: [
+                const SizedBox(width: 10),
+                IconButton(
+                  icon: Icon(
+                    Icons.settings_outlined,
+                    color: theme.fuente(),
+                    size: 26,
                   ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AjustesAdmin()),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+        elevation: 0,
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 900),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: _buildContent(),
                 ),
               ),
             ),
-          ),
-          // Footer
-          Positioned(
-            left: 0, right: 0, bottom: 0,
-            child: AnimatedSlide(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOut,
-              offset: _showFooter ? Offset.zero : const Offset(0, 1),
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 220),
-                opacity: _showFooter ? 1 : 0,
-                child: EscomFooter(isMobile: isMobile),
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

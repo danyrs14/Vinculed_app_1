@@ -475,7 +475,7 @@ class _EmpresaFormDialogState extends State<_EmpresaFormDialog> {
 
   String? _validNotEmpty(String? v) => (v==null||v.trim().isEmpty) ? 'Requerido' : null;
   String? _validWeb(String? v) {
-    if (v==null||v.trim().isEmpty) return 'Requerido';
+    if (v==null||v.trim().isEmpty) return null;
     final uri = Uri.tryParse(v.trim());
     if (uri==null || !(uri.scheme=='http'||uri.scheme=='https')) return 'URL inválida';
     return null;
@@ -484,8 +484,13 @@ class _EmpresaFormDialogState extends State<_EmpresaFormDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
+    final isMobile = MediaQuery.of(context).size.width < 640;
     return AlertDialog(
-      title: Text(widget.title),
+      title: Text(widget.title, style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: theme.fuente(),
+                            ),),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 500),
         child: SingleChildScrollView(
@@ -533,7 +538,7 @@ class _EmpresaFormDialogState extends State<_EmpresaFormDialog> {
                       onTap: _pickLogo,
                     ),
                     const SizedBox(width: 12),
-                    if (_pickedBytes != null) Text('Archivo listo: ${_pickedName}', style: TextStyle(color: theme.primario())),
+                    if (_pickedBytes != null) Flexible(child: Text('Archivo listo: ${_pickedName}', style: TextStyle(color: theme.primario(),overflow: TextOverflow.visible,))),
                   ],
                 ),
               ],
@@ -541,7 +546,30 @@ class _EmpresaFormDialogState extends State<_EmpresaFormDialog> {
           ),
         ),
       ),
-      actions: [
+      actions: isMobile ?
+      [
+        Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
+            children: [ SimpleButton(
+                title: 'Cancelar',
+                primaryColor: false,
+                backgroundColor: Colors.blueGrey,
+                textColor: Colors.black87,
+                onTap: _sending? null : () => Navigator.of(context).maybePop(),
+              ),
+              SimpleButton(
+                title: _sending ? 'Guardando...' : 'Guardar',
+                icon: Icons.save,
+                onTap: _sending? null : _submit,
+              ),
+            ]
+          ),
+        ),
+      ]
+      :[
         SimpleButton(
           title: 'Cancelar',
           primaryColor: false,

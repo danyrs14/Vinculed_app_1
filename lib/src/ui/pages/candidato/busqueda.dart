@@ -4,6 +4,7 @@ import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/menu.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/notificaciones.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/perfil.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/vacante.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 import 'package:vinculed_app_1/src/ui/widgets/textos/textos.dart';
@@ -198,6 +199,8 @@ class _BusquedaState extends State<Busqueda> {
                           items: const [
                             DropdownMenuItem(value: 'fecha_publicacion_desc', child: Text('Más recientes')),
                             DropdownMenuItem(value: 'fecha_publicacion_asc', child: Text('Más antiguas')),
+                            DropdownMenuItem(value: 'monto_beca_desc', child: Text('Mayor Beca')),
+                            DropdownMenuItem(value: 'monto_beca_asc', child: Text('Menor Beca')),
                           ],
                           onChanged: (v) {
                             if (v != null) setState(() => _ordenarPor = v);
@@ -317,7 +320,13 @@ class _BusquedaState extends State<Busqueda> {
                         ),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                         onTap: idVac == null ? null : () {
-                          // TODO: navegar a detalle móvil
+                          Navigator.push(context, 
+                            MaterialPageRoute(
+                              builder: (_) => JobDetailPage(
+                                idVacante: idVac!,
+                              ),
+                            ),
+                          );
                         },
                       );
                     },
