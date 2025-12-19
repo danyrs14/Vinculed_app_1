@@ -88,7 +88,7 @@ class EscomFooter extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 48),
-        const Flexible(child: _FooterSubscribeBox()),
+        //const Flexible(child: _FooterSubscribeBox()),
       ],
     );
   }
@@ -133,20 +133,8 @@ class _FooterSubscribeBox extends StatelessWidget {
         const SizedBox(height: 8),
         SizedBox(
           width: 220,
-          child: TextField(
+          child: Text("drodriguezs1700@alumno.ipn.mx",
             style: TextStyle(color: theme.background()),
-            decoration: InputDecoration(
-              hintText: "Cuentanos",
-              hintStyle: TextStyle(color: theme.primario()),
-              filled: true,
-              fillColor: theme.secundario(),
-              suffixIcon: Icon(Icons.send, color: theme.primario(), size: 20),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-            ),
           ),
         ),
       ],

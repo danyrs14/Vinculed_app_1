@@ -1,8 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 // removed: import 'package:go_router/go_router.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/busqueda.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/notificaciones.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/perfil.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
@@ -28,6 +32,7 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
   final _youtubeCtrl = TextEditingController();
   YoutubePlayerController? _ytController;
   bool _hideYoutube = false; // ocultar preview cuando dropdown está abierto
+  final usuario = FirebaseAuth.instance.currentUser!;
 
   // Roles múltiples seleccionados
   List<RoleOption> _selectedRoles = [];
@@ -81,6 +86,55 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
 
     return Scaffold(
       backgroundColor: theme.background(),
+      appBar: AppBar(
+        backgroundColor: theme.background(),
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset('assets/images/graduate.png', width: 50, height: 50),
+
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.search, color: theme.primario()),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Busqueda()),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.notifications_none, color: theme.primario()),
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => Notificaciones()),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.blue[50],
+                    backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
+                    child: usuario.photoURL == null ? const Icon(Icons.person, size: 18, color: Colors.blueGrey) : null,
+                  ),
+                  onPressed: () {
+                    // Acción para perfil
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Perfil()),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+        elevation: 0,
+      ),
       // removed AppBar (header)
       body: SafeArea(
         child: SingleChildScrollView(

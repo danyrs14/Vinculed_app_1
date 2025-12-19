@@ -315,6 +315,19 @@ class _HomeState extends State<Home> {
                     }
 
                     final mostrar = _vacantes.take(3).toList();
+
+                    final cards = <Widget>[];
+                    for (final v in mostrar) {
+                      if (cards.isNotEmpty) cards.add(const SizedBox(height: 12)); // espacio ENTRE cards
+                      cards.add(_buildVacanteCard(v));
+                    }
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: cards,
+                    );
+
+                    /*final mostrar = _vacantes.take(3).toList();
                     return Column(
                       crossAxisAlignment:
                       CrossAxisAlignment.stretch,
@@ -322,7 +335,7 @@ class _HomeState extends State<Home> {
                         for (final v in mostrar)
                           _buildVacanteCard(v),
                       ],
-                    );
+                    );*/
                   },
                 ),
               ),

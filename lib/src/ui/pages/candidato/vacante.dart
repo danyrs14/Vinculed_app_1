@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/busqueda.dart';
+import 'package:vinculed_app_1/src/ui/pages/candidato/notificaciones.dart';
 import 'package:vinculed_app_1/src/ui/pages/candidato/perfil.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -118,7 +119,56 @@ class _JobDetailPageState extends State<JobDetailPage> {
     final theme = ThemeController.instance;
     return Scaffold(
       backgroundColor: theme.background(),
-      appBar: AppBar( // keep existing style
+      appBar: AppBar(
+        backgroundColor: theme.background(),
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset('assets/images/graduate.png', width: 50, height: 50),
+
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.search, color: theme.primario()),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Busqueda()),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.notifications_none, color: theme.primario()),
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => Notificaciones()),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.blue[50],
+                    backgroundImage: usuario.photoURL != null ? NetworkImage(usuario.photoURL!) : null,
+                    child: usuario.photoURL == null ? const Icon(Icons.person, size: 18, color: Colors.blueGrey) : null,
+                  ),
+                  onPressed: () {
+                    // Acción para perfil
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Perfil()),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+        elevation: 0,
+      ),
+      /*AppBar( // keep existing style
         backgroundColor: theme.background(),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -149,7 +199,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
           ],
         ),
         elevation: 0,
-      ),
+      ),*/
       body: SafeArea(
         child: _buildContent(theme),
       ),

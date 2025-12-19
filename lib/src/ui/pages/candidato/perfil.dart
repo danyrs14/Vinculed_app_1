@@ -319,13 +319,12 @@ class _PerfilState extends State<Perfil> {
                   width: 300, // Ancho fijo para que no sea 100% en pantallas grandes
                   child: SimpleButton(
                     title: 'Cerrar Sesión',
-                    backgroundColor: Colors.blue,
                     //primaryColor: false,
                     onTap: () => _cerrarSesion(context), // Implementa esta función
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 12),
               Center(
                 child: SizedBox(
                   width: 300, // Ancho fijo para que no sea 100% en pantallas grandes
