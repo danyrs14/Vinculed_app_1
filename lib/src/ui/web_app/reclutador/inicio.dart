@@ -51,13 +51,16 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
         return;
       }
 
+      // ✅ FIX: initPush + listeners SIEMPRE (no depende de _welcomeShown)
+      await NotificationService.instance.initPush();
+      await NotificationService.instance.startListeningToIncomingMessages();
+
+      // ✅ Bienvenida solo 1 vez
       if (_welcomeShown) return;
       _welcomeShown = true;
 
       final nombre = user.displayName ?? 'usuario';
 
-      await NotificationService.instance.initPush();
-      await NotificationService.instance.startListeningToIncomingMessages();
       await NotificationService.instance.addNotification(
         userId: user.uid,
         title: '¡Bienvenido $nombre!',
@@ -229,9 +232,9 @@ class _HomeRecruiterPageState extends State<HomeRecruiterPage> {
                                         ),
                                       ),
                                     ),
-                                ],
-                              ),
-                              const SizedBox(height: 28),
+                                  ],
+                                ),
+                                const SizedBox(height: 28),
 
                                 // Pestañas Reclutado / Completado
                                 Row(
@@ -522,7 +525,6 @@ class _RecruitedCandidateCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Foto ocupa espacio disponible superior (clic para ir al perfil)
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
@@ -537,7 +539,6 @@ class _RecruitedCandidateCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Nombre y badge de estatus
           Row(
             children: [
               Expanded(
@@ -564,14 +565,12 @@ class _RecruitedCandidateCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
 
-          // Vacante
           Text(
             data.nombreVacante.isEmpty ? 'Vacante no especificada' : data.nombreVacante,
             style: const TextStyle(color: Colors.black87),
           ),
           const SizedBox(height: 10),
 
-          // Estudiante y habilidades
           _detailRow('Estudiante:', estudianteInfo),
           const SizedBox(height: 6),
           _detailRow('Habilidades:', skills.isEmpty ? 'No especificadas' : skills),
