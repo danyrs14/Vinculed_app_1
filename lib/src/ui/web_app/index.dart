@@ -9,6 +9,7 @@ import 'package:vinculed_app_1/src/ui/web_app/admin_gestion_articulos.dart';
 //import 'package:vinculed_app_1/src/ui/pages/reclutador/perfil_visible.dart';
 import 'package:vinculed_app_1/src/ui/web_app/admin_gestion_empresas.dart';
 import 'package:vinculed_app_1/src/ui/web_app/admin_gestion_reclutadores.dart';
+import 'package:vinculed_app_1/src/ui/web_app/admin_visualizar_vacantes.dart';
 
 // Candidato
 import 'package:vinculed_app_1/src/ui/web_app/candidato/add_experiencia.dart';
@@ -200,6 +201,17 @@ class _AdminAppState extends State<AdminApp> {
             GoRoute(
               path: 'articulos',
               builder: (context, state) => const AdminGestionArticulosWebPage(),
+            ),
+            GoRoute(
+              path: 'vacantes',
+              builder: (context, state) => const AdminJobSearchWebPage(),
+            ),
+            GoRoute(
+              path: 'vacante_job/:id',
+              builder: (context, state) {
+                final String id = state.pathParameters['id']!;
+                return JobDetailPage(idVacante: int.parse(id));
+              },
             ),
           ],
         ),

@@ -5,9 +5,10 @@ import 'package:vinculed_app_1/src/core/controllers/theme_controller.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:vinculed_app_1/src/core/providers/user_provider.dart';
+import 'package:vinculed_app_1/src/ui/web_app/admin_detalle_vacante.dart';
 
 import 'package:vinculed_app_1/src/ui/widgets/elements/footer.dart';
-import 'package:vinculed_app_1/src/ui/widgets/elements/header2.dart';
+import 'package:vinculed_app_1/src/ui/widgets/elements/header4.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/text_input.dart';
 import 'package:vinculed_app_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:vinculed_app_1/src/ui/widgets/text_inputs/dropdown.dart';
@@ -21,14 +22,14 @@ class _HistoryItem {
   const _HistoryItem({required this.id, required this.consulta});
 }
 
-class JobSearchPage extends StatefulWidget {
-  const JobSearchPage({super.key});
+class AdminJobSearchWebPage extends StatefulWidget {
+  const AdminJobSearchWebPage({super.key});
 
   @override
-  State<JobSearchPage> createState() => _JobSearchPageState();
+  State<AdminJobSearchWebPage> createState() => _AdminJobSearchWebPageState();
 }
 
-class _JobSearchPageState extends State<JobSearchPage> {
+class _AdminJobSearchWebPageState extends State<AdminJobSearchWebPage> {
   final _queryCtrl = TextEditingController();
   final _locationCtrl = TextEditingController(); // entidad
   final _cityCtrl = TextEditingController(); // ciudad
@@ -99,39 +100,39 @@ class _JobSearchPageState extends State<JobSearchPage> {
     final isMobile = w < 700;
 
     // Dispara la petición inicial cuando ya tengamos idRol del usuario
-    final userProv = context.watch<UserDataProvider>();
-    if (!_initialRequested && userProv.idRol != null) {
+    //final userProv = context.watch<UserDataProvider>();
+    if (!_initialRequested ) {
       _initialRequested = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _fetchVacantes(onlyRequired: true, resetPage: true);
-        _fetchHistory();
+        //_fetchHistory();
       });
     }
 
     return Scaffold(
       backgroundColor: theme.background(),
-      appBar: EscomHeader2(
-        onLoginTap: () => context.go('/alumno/perfil_cand'),
+      appBar: EscomHeader4(
+        onLoginTap: () => context.go('/admin/reportes'),
         onNotifTap: () {},
         onMenuSelected: (label) {
           switch (label) {
             case "Inicio":
               context.go('/inicio');
               break;
-            case "Postulaciones":
-              context.go('/alumno/mis_postulaciones');
+            case "Empresas":
+            context.go('/admin/empresas');
+            break;
+            case "Alumnos":
+              context.go('/admin/alumnos');
               break;
-            case "Mensajes":
-              context.go('/alumno/messages');
+            case "Reclutadores":
+              context.go('/admin/reclutadores');
               break;
-            case "Experiencias":
-              context.go('/alumno/experiencias');
+            case "Artículos":
+              context.go('/admin/articulos');
               break;
-            case "FAQ":
-              context.go('/alumno/faq');
-              break;
-            case "Explorar Puestos en TI":
-              context.go('/alumno/preferences');
+            case "Vacantes":
+              context.go('/admin/vacantes');
               break;
           }
         },
@@ -330,40 +331,40 @@ class _JobSearchPageState extends State<JobSearchPage> {
                                       ),
                                       const SizedBox(height: 18),
                                       // Historial debajo de filtros (desde backend)
-                                      if (_history.isNotEmpty) ...[
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Text(
-                                              'Historial',
-                                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                                            ),
-                                            TextButton(
-                                              onPressed: _clearHistory,
-                                              child: const Text('Limpiar'),
-                                            ),
-                                          ],
-                                        ),
-                                        Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Wrap(
-                                            spacing: 8,
-                                            runSpacing: 8,
-                                            children: _history
-                                                .where((it) => it.consulta.trim().isNotEmpty)
-                                                .map((it) => InputChip(
-                                                      label: Text(it.consulta),
-                                                      onPressed: () {
-                                                        _queryCtrl.text = it.consulta;
-                                                        _onSearch(fromChip: true);
-                                                      },
-                                                      onDeleted: () => _removeHistoryItem(it),
-                                                    ))
-                                                .toList(),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                      ],
+                                      // if (_history.isNotEmpty) ...[
+                                      //   Row(
+                                      //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      //     children: [
+                                      //       const Text(
+                                      //         'Historial',
+                                      //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                                      //       ),
+                                      //       // TextButton(
+                                      //       //   onPressed: _clearHistory,
+                                      //       //   child: const Text('Limpiar'),
+                                      //       // ),
+                                      //     ],
+                                      //   ),
+                                      //   Align(
+                                      //     alignment: Alignment.centerLeft,
+                                      //     child: Wrap(
+                                      //       spacing: 8,
+                                      //       runSpacing: 8,
+                                      //       children: _history
+                                      //           .where((it) => it.consulta.trim().isNotEmpty)
+                                      //           .map((it) => InputChip(
+                                      //                 label: Text(it.consulta),
+                                      //                 onPressed: () {
+                                      //                   _queryCtrl.text = it.consulta;
+                                      //                   _onSearch(fromChip: true);
+                                      //                 },
+                                      //                 onDeleted: () => _removeHistoryItem(it),
+                                      //               ))
+                                      //           .toList(),
+                                      //     ),
+                                      //   ),
+                                      //   const SizedBox(height: 12),
+                                      // ],
 
                                     ],
                                   ),
@@ -473,7 +474,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
                                               : () {
                                                   Navigator.of(context).push(
                                                     MaterialPageRoute(
-                                                      builder: (_) => JobDetailPage(idVacante: idVac!),
+                                                      builder: (_) => AdminJobDetailWebPage(idVacante: idVac!),
                                                     ),
                                                   );
                                                 },
@@ -582,70 +583,6 @@ class _JobSearchPageState extends State<JobSearchPage> {
     // Actualmente no se usa para evitar desincronización con el servidor
   }
 
-  void _clearHistory() async {
-    try {
-      final userProv = context.read<UserDataProvider>();
-      final idRol = userProv.idRol;
-      if (idRol == null) return;
-      final headers = await userProv.getAuthHeaders();
-      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/limpiar_historial');
-      final res = await http.delete(
-        uri,
-        headers: headers,
-        body: jsonEncode({'id_alumno': idRol}),
-      );
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        setState(() => _history.clear());
-      }
-    } catch (_) {}
-  }
-
-  Future<void> _removeHistoryItem(_HistoryItem item) async {
-    try {
-      final userProv = context.read<UserDataProvider>();
-      final idRol = userProv.idRol;
-      if (idRol == null) return;
-      final headers = await userProv.getAuthHeaders();
-      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/borrar_busqueda');
-      final res = await http.delete(
-        uri,
-        headers: headers,
-        body: jsonEncode({'id_alumno': idRol, 'id_busqueda': item.id}),
-      );
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        setState(() => _history.removeWhere((h) => h.id == item.id));
-      }
-    } catch (_) {}
-  }
-
-  Future<void> _fetchHistory() async {
-    try {
-      final userProv = context.read<UserDataProvider>();
-      final idRol = userProv.idRol;
-      if (idRol == null) return;
-      final headers = await userProv.getAuthHeaders();
-      final uri = Uri.parse('https://oda-talent-back-81413836179.us-central1.run.app/api/alumnos/historial_busquedas')
-          .replace(queryParameters: {'id_alumno': idRol.toString(), 'limit': '10'});
-      final res = await http.get(uri, headers: headers);
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        final data = jsonDecode(res.body);
-        if (data is List) {
-          final list = data
-              .whereType<Map>()
-              .map((m) => Map<String, dynamic>.from(m))
-              .map((m) => _HistoryItem(
-                    id: (m['id_busqueda'] ?? 0) is int
-                        ? (m['id_busqueda'] as int)
-                        : int.tryParse('${m['id_busqueda']}') ?? 0,
-                    consulta: (m['consulta'] ?? '').toString(),
-                  ))
-              .toList();
-          setState(() => _history = list);
-        }
-      }
-    } catch (_) {}
-  }
-
   // Pequeño helper para mostrar icono + texto
   Widget _info(IconData icon, String text) {
     final theme = ThemeController.instance;
@@ -674,13 +611,7 @@ class _JobSearchPageState extends State<JobSearchPage> {
   // ===== Llamada real al backend con paginación =====
   Future<void> _fetchVacantes({bool onlyRequired = false, bool resetPage = false}) async {
     final userProv = context.read<UserDataProvider>();
-    final idRol = userProv.idRol; // requerido como id_alumno
-    if (idRol == null) {
-      setState(() {
-        _error = 'Cargando datos de usuario...';
-      });
-      return;
-    }
+    final idRol = 1; // requerido como id_alumno (no requerido para el admin)
 
     if (resetPage) _page = 1;
 

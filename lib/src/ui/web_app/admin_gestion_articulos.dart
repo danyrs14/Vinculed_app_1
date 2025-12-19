@@ -664,6 +664,9 @@ class _AdminGestionArticulosWebPageState extends State<AdminGestionArticulosWebP
             case "Artículos":
               context.go('/admin/articulos');
               break;
+            case "Vacantes":
+              context.go('/admin/vacantes');
+              break;
           }
         },
       ),

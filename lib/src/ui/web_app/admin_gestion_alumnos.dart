@@ -448,6 +448,9 @@ class _AdminGestionAlumnosPageState extends State<AdminGestionAlumnosPage> {
             case "Artículos":
               context.go('/admin/articulos');
               break;
+            case "Vacantes":
+              context.go('/admin/vacantes');
+              break;
           }
         },
       ),
