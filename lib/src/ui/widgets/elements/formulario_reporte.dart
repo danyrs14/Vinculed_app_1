@@ -100,6 +100,7 @@ class ReportContentDialogState extends State<ReportContentDialog> {
               // ),
               // const SizedBox(height: 8),
               DropdownInput<String>(
+                enabled: false,
                 value: _tipoContenido,
                 items: const [
                   DropdownMenuItem(value: 'Publicacion', child: Text('Publicación (Experiencia)')),
@@ -115,7 +116,7 @@ class ReportContentDialogState extends State<ReportContentDialog> {
                 value: _razon,
                 items: const [
                   DropdownMenuItem(value: 'Contenido inapropiado', child: Text('Contenido inapropiado')),
-                  DropdownMenuItem(value: 'Sin vacantes', child: Text('Sin vacantes')),
+                 // DropdownMenuItem(value: 'Sin vacantes', child: Text('Sin vacantes')),
                   DropdownMenuItem(value: 'Otro', child: Text('Otro')),
                 ],
                 onChanged: (v) => setState(() => _razon = v),
