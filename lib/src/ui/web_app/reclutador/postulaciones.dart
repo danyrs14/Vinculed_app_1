@@ -374,7 +374,7 @@ class _VacancyDetailPageState extends State<VacancyDetailPage> {
               context.go('/inicio');
               break;
             case "Crear Vacante":
-              context.go('/reclutador/new_vacante');
+              context.go('/reclutador/new_vacancy');
               break;
             case "Mis Vacantes":
               context.go('/reclutador/postulaciones');
