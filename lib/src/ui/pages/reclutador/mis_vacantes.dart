@@ -414,7 +414,7 @@ class _VacancyDetailRichView extends StatelessWidget {
                           runSpacing:8,
                           children:[
                             _PillBadge(detail['modalidad']?.toString() ?? 'No esp.', Icons.work_outline, theme.secundario()),
-                            _PillBadge(detail['duracion']?.toString() ?? 'No esp.', Icons.timer_outlined, theme.secundario()),
+                            _PillBadge('${detail['duracion'] ?? 'No esp.'} ${detail['duracion'].contains('meses') ? '' : 'meses'}', Icons.timer_outlined, theme.secundario()),
                             if(detail['numero_vacantes'] != null) _PillBadge('${detail['numero_vacantes']} vacantes', Icons.people_outline, theme.secundario()),
                             _PillBadge(estadoActual, Icons.check_circle_outline, (estadoActual.toLowerCase()=='activa') ? theme.primario() : Colors.blueGrey),
                           ],

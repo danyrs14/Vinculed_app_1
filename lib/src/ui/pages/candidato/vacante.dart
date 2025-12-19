@@ -257,7 +257,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                 const SizedBox(height: 12),
                 Wrap(spacing: 8, runSpacing: 8, children: [
                   _Badge(d['modalidad'] ?? 'No esp.', Icons.work_outline, Colors.blue),
-                  _Badge('${d['duracion']} meses' ?? 'No esp.', Icons.timer_outlined, Colors.blue),
+                  _Badge('${d['duracion'] ?? 'No esp.'} ${d['duracion'].contains('meses') ? '' : 'meses'}', Icons.timer_outlined, Colors.blue),
                   if (d['numero_vacantes'] != null) _Badge('${d['numero_vacantes']} vacantes', Icons.people_outline, Colors.blue),
                   _Badge(d['estado'] ?? 'Activa', Icons.check_circle_outline, Colors.blue),
                   if (estaReclutado) _Badge('Reclutado', Icons.verified, Colors.blueAccent)
