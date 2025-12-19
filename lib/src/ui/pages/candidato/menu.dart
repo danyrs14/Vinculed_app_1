@@ -134,7 +134,7 @@ class _MenuPageState extends State<MenuPage> {
             BottomNavigationBarItem(
               backgroundColor: theme.background(),
               icon: Icon(
-                Icons.read_more_outlined,
+                Icons.book_online_outlined,
                 color: _paginaActual == 0 ? theme.primario() : Colors.grey,
                 size: 26,
               ),
