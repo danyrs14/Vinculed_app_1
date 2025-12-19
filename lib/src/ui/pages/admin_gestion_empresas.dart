@@ -427,7 +427,7 @@ class _EmpresaFormDialogState extends State<_EmpresaFormDialog> {
 
   String? _validNotEmpty(String? v) => (v==null||v.trim().isEmpty) ? 'Requerido' : null;
   String? _validWeb(String? v) {
-    if (v==null||v.trim().isEmpty) return 'Requerido';
+    if (v==null||v.trim().isEmpty) return null;
     final uri = Uri.tryParse(v.trim());
     if (uri==null || !(uri.scheme=='http'||uri.scheme=='https')) return 'URL inválida';
     return null;
@@ -485,7 +485,7 @@ class _EmpresaFormDialogState extends State<_EmpresaFormDialog> {
                       onTap: _pickLogo,
                     ),
                     const SizedBox(width: 12),
-                    if (_pickedBytes != null) Text('Archivo listo: ${_pickedName}', style: TextStyle(color: theme.primario())),
+                    if (_pickedBytes != null) Flexible(child: Text('Archivo listo: ${_pickedName}', style: TextStyle(color: theme.primario(), overflow: TextOverflow.visible,), )),
                   ],
                 ),
               ],
