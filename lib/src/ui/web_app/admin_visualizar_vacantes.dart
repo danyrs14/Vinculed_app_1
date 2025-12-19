@@ -439,6 +439,7 @@ class _AdminJobSearchWebPageState extends State<AdminJobSearchWebPage> {
                                         final fPub = _fmtDate(v['fecha_publicacion']?.toString());
                                         final fLim = v['fecha_limite'];
                                         final fLimStr = fLim != null ? _fmtDate(fLim.toString()) : '';
+                                        final estado = v['estado']?.toString() ?? '';
 
                                         // id de la vacante para navegar al detalle
                                         int? idVac;
@@ -465,6 +466,7 @@ class _AdminJobSearchWebPageState extends State<AdminJobSearchWebPage> {
                                                 if (modalidad.isNotEmpty) _info(Icons.work_outline, modalidad),
                                                 if (fPub.isNotEmpty) _info(Icons.calendar_today_outlined, 'Publicada: ' + fPub),
                                                 if (fLimStr.isNotEmpty) _info(Icons.event_busy_outlined, 'Límite: ' + fLimStr),
+                                                if (estado.isNotEmpty) _info(Icons.info_outline, 'Estado: ' + estado),
                                               ],
                                             ),
                                           ),
