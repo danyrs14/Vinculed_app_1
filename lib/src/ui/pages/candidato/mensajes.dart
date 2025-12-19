@@ -105,11 +105,7 @@ class _MensajesState extends State<Mensajes> {
 
     return Scaffold(
       backgroundColor: theme.background(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _startNewChat,
-        backgroundColor: theme.secundario(),
-        child: const Icon(Icons.chat_bubble_outline),
-      ),
+      // 🔹 Se quitó el floatingActionButton, todo lo demás igual
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -127,7 +123,8 @@ class _MensajesState extends State<Mensajes> {
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
                       debugPrint(
-                          'Error en streamUserChats: ${snapshot.error}');
+                        'Error en streamUserChats: ${snapshot.error}',
+                      );
                       return const Center(
                         child: Text(
                           'Ocurrió un error al cargar tus chats',
@@ -137,8 +134,7 @@ class _MensajesState extends State<Mensajes> {
                       );
                     }
 
-                    if (snapshot.connectionState ==
-                        ConnectionState.waiting) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
                         child: CircularProgressIndicator(),
                       );

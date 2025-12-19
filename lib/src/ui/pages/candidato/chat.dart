@@ -156,7 +156,7 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(
-                    'TODAY, JULY 15',
+                    'CHAT',
                     style: TextStyle(fontSize: 12, letterSpacing: 0.6),
                   ),
                 ),
@@ -171,7 +171,7 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                   if (snapshot.hasError) {
                     return const Center(
                       child: Text(
-                        'Ocurrió un error al cargar el chat',
+                        'No hay chat existente',
                         style: TextStyle(fontSize: 14),
                       ),
                     );
@@ -313,10 +313,6 @@ class _ChatHeader extends StatelessWidget {
                   ),
               ],
             ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none),
           ),
         ],
       ),

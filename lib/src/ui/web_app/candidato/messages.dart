@@ -261,11 +261,11 @@ class _MessagesPageState extends State<MessagesPage> {
           }
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      /*floatingActionButton: FloatingActionButton(
         onPressed: _startNewChat,
         backgroundColor: theme.secundario(),
         child: const Icon(Icons.chat_bubble_outline),
-      ),
+      ),*/
       body: Stack(
         children: [
           // Scroll global con padding inferior para el footer
@@ -346,7 +346,7 @@ class _MessagesPageState extends State<MessagesPage> {
                                                   'Error en streamUserChats: ${snapshot.error}');
                                               return const Center(
                                                 child: Text(
-                                                  'Ocurrió un error al cargar tus chats',
+                                                  'No existe el chat',
                                                   style: TextStyle(
                                                       fontSize: 14),
                                                   textAlign:
@@ -784,7 +784,7 @@ class _ChatPanelState extends State<_ChatPanel> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(
-                  'TODAY, JULY 15',
+                  'CHAT',
                   style: TextStyle(fontSize: 12, letterSpacing: 0.6),
                 ),
               ),
@@ -939,10 +939,6 @@ class _ChatHeader extends StatelessWidget {
                   ),
               ],
             ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none),
           ),
         ],
       ),

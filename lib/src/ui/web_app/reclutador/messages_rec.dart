@@ -337,7 +337,7 @@ class _MessagesPageRecState extends State<MessagesPageRec> {
                                                   'Error en streamUserChats (rec): ${snapshot.error}');
                                               return const Center(
                                                 child: Text(
-                                                  'Ocurrió un error al cargar tus chats',
+                                                  'No existe el chat',
                                                   style: TextStyle(
                                                       fontSize: 14),
                                                   textAlign:
@@ -776,7 +776,7 @@ class _ChatPanelRecState extends State<_ChatPanelRec> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(
-                  'TODAY, JULY 15',
+                  'CHAT',
                   style: TextStyle(fontSize: 12, letterSpacing: 0.6),
                 ),
               ),
@@ -932,10 +932,6 @@ class _ChatHeaderRec extends StatelessWidget {
                   ),
               ],
             ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none),
           ),
         ],
       ),

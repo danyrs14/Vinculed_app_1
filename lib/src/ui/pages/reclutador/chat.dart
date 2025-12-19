@@ -156,7 +156,7 @@ class _ChatConversationState extends State<ChatConversation> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(
-                    'TODAY, JULY 15',
+                    'CHAT',
                     style: TextStyle(fontSize: 12, letterSpacing: 0.6),
                   ),
                 ),
@@ -313,10 +313,6 @@ class _ChatHeader extends StatelessWidget {
                   ),
               ],
             ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none),
           ),
         ],
       ),
