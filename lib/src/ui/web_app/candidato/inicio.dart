@@ -60,18 +60,26 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
       await NotificationService.instance.initPush();
       await NotificationService.instance.startListeningToIncomingMessages();
 
-      // Guarda token + displayName en Firestore (/users)
+      // ======= FIX: SIEMPRE guarda displayName; token solo si se puede obtener =======
+      String? token;
       try {
-        final token = await FirebaseMessaging.instance.getToken();
+        token = await FirebaseMessaging.instance.getToken();
+        print('HomeRegisteredPage: token obtenido: $token');
+      } catch (e) {
+        print('HomeRegisteredPage: getToken() falló (normal en Web si falta SW/VAPID): $e');
+      }
+
+      try {
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
           {
-            'fcmToken': token,
-            'displayName': user.displayName,
+            'displayName': user.displayName ?? 'Usuario',
+            if (token != null) 'fcmToken': token,
           },
           SetOptions(merge: true),
         );
+        print('HomeRegisteredPage: users/${user.uid} actualizado (displayName y token si existe).');
       } catch (e) {
-        print('HomeRegisteredPage: error guardando token/displayName: $e');
+        print('HomeRegisteredPage: error guardando displayName/token en Firestore: $e');
       }
 
       // Notificación de bienvenida (una sola vez)
@@ -210,19 +218,9 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        //borderRadius: BorderRadius.circular(16),
-        //border: Border.all(color: Colors.blue.shade50),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.blue.withOpacity(0.05),
-        //     blurRadius: 15,
-        //     offset: const Offset(0, 5),
-        //   ),
-        // ],
       ),
       child: Column(
         children: [
-          // "Dibujito" hecho con Iconos y Contenedores
           Stack(
             alignment: Alignment.center,
             children: [
@@ -333,7 +331,6 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // Saludo con avatar
                                 Row(
                                   children: [
                                     CircleAvatar(
@@ -357,7 +354,6 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                 ),
                                 const SizedBox(height: 28),
 
-                                // --- LÓGICA MODIFICADA AQUÍ ---
                                 if (_loadingVac)
                                   const Center(child: Padding(
                                     padding: EdgeInsets.symmetric(vertical: 40),
@@ -374,10 +370,8 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
                                     child: Text(_errorVac!, style: const TextStyle(color: Colors.red)),
                                   )
                                 else if (_vacantes.isEmpty)
-                                  // SI LA LISTA ESTÁ VACÍA, MOSTRAMOS EL MENSAJE OPTIMISTA
                                     _buildEmptyState()
                                   else
-                                  // SI HAY DATOS, MOSTRAMOS FILA EN DESKTOP / COLUMNA EN MÓVIL
                                     (isMobile
                                         ? Column(
                                       children: _vacantes.map((v) => Padding(
@@ -404,7 +398,6 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
 
                                 const SizedBox(height: 28),
 
-                                // Botones grandes inferior (responsive)
                                 LayoutBuilder(
                                   builder: (context, c) {
                                     final stackButtons = c.maxWidth < 680;
@@ -454,7 +447,6 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
             ),
           ),
 
-          // Footer animado
           Positioned(
             left: 0,
             right: 0,
@@ -475,4 +467,3 @@ class _HomeRegisteredPageState extends State<HomeRegisteredPage> {
     );
   }
 }
-//
