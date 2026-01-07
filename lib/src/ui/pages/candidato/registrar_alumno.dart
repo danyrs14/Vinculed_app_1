@@ -170,7 +170,7 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset('assets/images/escom.png', width: 50, height: 50),
+            Image.asset('assets/images/graduate.png', width: 50, height: 50),
           ],
         ),
         elevation: 0,
@@ -256,7 +256,7 @@ class _RegisterStudentPageState extends State<RegisterStudentPage> {
                                         keyboardType: TextInputType.emailAddress,
                                         validator: (value) {
                                           if (value == null || value.isEmpty || 
-                                          !identical(value.trim(), _emailController.text.trim())) {
+                                          value.trim()!= _emailController.text.trim()) {
                                             return 'El correo debe coincidir con el proporcionado anteriormente.';
                                           }
                                           final emailRegex = RegExp(r'^[^@]+@alumno.ipn.mx$');
